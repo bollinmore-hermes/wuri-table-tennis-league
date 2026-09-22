@@ -2,7 +2,7 @@
   "name": "wuri-table-tennis-league",
   "version": "0.2.0",
   "private": true,
-  "description": "烏日桌協秋季聯賽前台、管理後台與 Excel 匯入原型",
+  "description": "烏日桌球聯賽前台、管理後台與 Excel 匯入原型",
   "scripts": {
     "generate:excel": "node scripts/generate-demo-excel.cjs",
     "build:pages": "node scripts/build-pages.cjs",

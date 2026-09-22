@@ -41,7 +41,7 @@ MOTIFS = {
 def svg(team):
     fs = 28 if len(team['name']) >= 6 else 33
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-<title id="title">{escape(team['name'])}隊徽</title><desc id="desc">烏日桌協聯賽 {escape(team['code'])} 隊徽</desc>
+<title id="title">{escape(team['name'])}隊徽</title><desc id="desc">烏日桌球聯賽 {escape(team['code'])} 隊徽</desc>
 <defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="{team['primary']}"/><stop offset="1" stop-color="{team['secondary']}"/></linearGradient></defs>
 <circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="{team['secondary']}" stroke-width="18" filter="url(#shadow)"/>
 <circle cx="256" cy="256" r="201" fill="none" stroke="{team['accent']}" stroke-width="6" opacity=".9"/>

@@ -41,7 +41,7 @@ const snapshots = [
 ];
 function sheet(headers, rows, widths){const ws=XLSX.utils.aoa_to_sheet([headers,...rows]);ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:rows.length,c:headers.length-1}})};ws['!cols']=widths.map(w=>({wch:w}));return ws}
 const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,sheet(['說明'],[['這是烏日桌協聯賽管理後台的 DEMO 匯入檔。Results 內含兩筆假賽果，僅供測試。'],['不可將本檔示範賽果視為官方紀錄。'],['請勿修改欄位名稱；正式版型轉換器將在取得原始 Excel 後調整。']],[90]),'README');
+XLSX.utils.book_append_sheet(wb,sheet(['說明'],[['這是烏日桌球聯賽管理後台的 DEMO 匯入檔。Results 內含兩筆假賽果，僅供測試。'],['不可將本檔示範賽果視為官方紀錄。'],['請勿修改欄位名稱；正式版型轉換器將在取得原始 Excel 後調整。']],[90]),'README');
 XLSX.utils.book_append_sheet(wb,sheet(['team_code','name','short_name','group','active'],teams,[14,22,18,10,10]),'Teams');
 XLSX.utils.book_append_sheet(wb,sheet(['match_code','group','date','time','home_team_code','away_team_code','venue','status'],schedule,[22,8,14,10,18,18,18,14]),'Schedule');
 XLSX.utils.book_append_sheet(wb,sheet(['match_code','home_score','away_score','status','note'],results,[22,14,14,14,48]),'Results');

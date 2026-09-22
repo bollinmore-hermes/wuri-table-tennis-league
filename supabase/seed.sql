@@ -1,5 +1,5 @@
 insert into public.seasons(code,name,status,start_date,end_date)
-values('2026-autumn-second-half','2026 烏日桌協秋季聯賽（下半季）','active','2026-08-23','2026-12-06')
+values('2026-autumn-second-half','2026 烏日桌球聯賽（下半季）','active','2026-08-23','2026-12-06')
 on conflict(code) do update set name=excluded.name,status=excluded.status,start_date=excluded.start_date,end_date=excluded.end_date;
 
 insert into public.groups(season_id,code,name,display_order)
