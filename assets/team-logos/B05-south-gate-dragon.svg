@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">南門金龍隊徽</title><desc id="desc">烏日桌協聯賽 B05 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B62025"/><stop offset="1" stop-color="#DFAE2B"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#DFAE2B" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#FFF3C4" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#FFF3C4" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · B05</text>
+<g fill="none" stroke="#FFF3C4" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"><path d="M129 293 H383 M154 293 V184 H358 V293 M137 184 H375 L342 143 H170 Z"/><path d="M205 263 Q188 207 241 195 Q292 183 306 143 Q361 180 329 233 Q307 272 257 254 Q222 242 226 219"/><circle cx="296" cy="177" r="7" fill="#FFF3C4" stroke="none"/><path d="M318 154 L344 128 M284 154 L270 123"/></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#DFAE2B" stroke="#FFF3C4" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#FFF3C4" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">南門金龍</text>
+<circle cx="256" cy="463" r="9" fill="#FFF3C4"/><path d="M222 463 H180 M290 463 H332" stroke="#FFF3C4" stroke-width="5" stroke-linecap="round"/>
+</svg>

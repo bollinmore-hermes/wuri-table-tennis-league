@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">陽光男孩隊徽</title><desc id="desc">烏日桌協聯賽 A06 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F47B20"/><stop offset="1" stop-color="#118AB2"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#118AB2" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#FFF4C7" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#FFF4C7" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · A06</text>
+<g stroke="#FFF4C7" stroke-width="13" stroke-linecap="round"><circle cx="256" cy="215" r="70" fill="#F47B20"/><g><path d="M256 111 V78"/><path d="M256 352 V319"/><path d="M152 215 H119"/><path d="M393 215 H360"/><path d="M183 142 L160 119"/><path d="M329 142 L352 119"/><path d="M183 288 L160 311"/><path d="M329 288 L352 311"/></g><path d="M223 220 Q256 252 289 220" fill="none"/><circle cx="230" cy="196" r="7" fill="#FFF4C7" stroke="none"/><circle cx="282" cy="196" r="7" fill="#FFF4C7" stroke="none"/></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#118AB2" stroke="#FFF4C7" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#FFF4C7" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">陽光男孩</text>
+<circle cx="256" cy="463" r="9" fill="#FFF4C7"/><path d="M222 463 H180 M290 463 H332" stroke="#FFF4C7" stroke-width="5" stroke-linecap="round"/>
+</svg>

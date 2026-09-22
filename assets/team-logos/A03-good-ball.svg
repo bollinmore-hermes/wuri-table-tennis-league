@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">好球隊隊徽</title><desc id="desc">烏日桌協聯賽 A03 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1261A0"/><stop offset="1" stop-color="#F5B82E"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#F5B82E" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#FFFFFF" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#FFFFFF" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · A03</text>
+<g stroke="#F5B82E" stroke-width="13" stroke-linejoin="round"><path d="M256 116 L283 181 L354 187 L300 233 L316 303 L256 266 L196 303 L212 233 L158 187 L229 181 Z" fill="#F5B82E"/><circle cx="256" cy="218" r="43" fill="#fff" stroke="#1261A0"/><path d="M330 126 Q380 96 399 130" fill="none" stroke="#fff" stroke-linecap="round"/></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#F5B82E" stroke="#FFFFFF" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#FFFFFF" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">好球隊</text>
+<circle cx="256" cy="463" r="9" fill="#FFFFFF"/><path d="M222 463 H180 M290 463 H332" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+</svg>

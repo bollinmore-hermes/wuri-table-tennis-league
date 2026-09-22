@@ -1,0 +1,98 @@
+[
+  {
+    "code": "A01",
+    "slug": "happy-da",
+    "name": "快樂Da桌球",
+    "primary": "#FFC928",
+    "secondary": "#092A4C",
+    "svg": "A01-happy-da.svg"
+  },
+  {
+    "code": "A02",
+    "slug": "dream-wings",
+    "name": "夢幻羽翼",
+    "primary": "#6C4AE2",
+    "secondary": "#19C3D1",
+    "svg": "A02-dream-wings.svg"
+  },
+  {
+    "code": "A03",
+    "slug": "good-ball",
+    "name": "好球隊",
+    "primary": "#1261A0",
+    "secondary": "#F5B82E",
+    "svg": "A03-good-ball.svg"
+  },
+  {
+    "code": "A04",
+    "slug": "sanmei",
+    "name": "小三美日",
+    "primary": "#E94F64",
+    "secondary": "#1D8A8A",
+    "svg": "A04-sanmei.svg"
+  },
+  {
+    "code": "A05",
+    "slug": "uncles",
+    "name": "叔叔沒練球",
+    "primary": "#A92A2A",
+    "secondary": "#242424",
+    "svg": "A05-uncles.svg"
+  },
+  {
+    "code": "A06",
+    "slug": "sunshine-boys",
+    "name": "陽光男孩",
+    "primary": "#F47B20",
+    "secondary": "#118AB2",
+    "svg": "A06-sunshine-boys.svg"
+  },
+  {
+    "code": "B01",
+    "slug": "our-team",
+    "name": "我們這一隊",
+    "primary": "#11875D",
+    "secondary": "#123B55",
+    "svg": "B01-our-team.svg"
+  },
+  {
+    "code": "B02",
+    "slug": "liu-jia-chang",
+    "name": "劉家昌",
+    "primary": "#1B2B4B",
+    "secondary": "#CFA63C",
+    "svg": "B02-liu-jia-chang.svg"
+  },
+  {
+    "code": "B03",
+    "slug": "wuri-youth",
+    "name": "烏日少年",
+    "primary": "#E43D30",
+    "secondary": "#151515",
+    "svg": "B03-wuri-youth.svg"
+  },
+  {
+    "code": "B04",
+    "slug": "all-rivers",
+    "name": "海納百川",
+    "primary": "#075985",
+    "secondary": "#22C1C3",
+    "svg": "B04-all-rivers.svg"
+  },
+  {
+    "code": "B05",
+    "slug": "south-gate-dragon",
+    "name": "南門金龍",
+    "primary": "#B62025",
+    "secondary": "#DFAE2B",
+    "svg": "B05-south-gate-dragon.svg"
+  },
+  {
+    "code": "B06",
+    "slug": "fuji",
+    "name": "富士山",
+    "primary": "#273C75",
+    "secondary": "#E86B8B",
+    "svg": "B06-fuji.svg"
+  }
+]

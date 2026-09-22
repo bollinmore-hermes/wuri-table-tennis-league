@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">海納百川隊徽</title><desc id="desc">烏日桌協聯賽 B04 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#075985"/><stop offset="1" stop-color="#22C1C3"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#22C1C3" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#E9FCFF" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#E9FCFF" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · B04</text>
+<g fill="none" stroke="#E9FCFF" stroke-width="15" stroke-linecap="round"><path d="M103 247 Q168 176 228 241 Q286 304 350 230 Q385 190 418 222 Q365 343 252 314 Q158 337 103 247 Z" fill="#22C1C3"/><path d="M126 274 Q183 235 233 278 Q285 320 344 267"/><circle cx="305" cy="171" r="45" fill="#fff" stroke="#075985"/><path d="M287 151 Q305 170 323 151" stroke="#22C1C3"/></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#22C1C3" stroke="#E9FCFF" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#E9FCFF" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">海納百川</text>
+<circle cx="256" cy="463" r="9" fill="#E9FCFF"/><path d="M222 463 H180 M290 463 H332" stroke="#E9FCFF" stroke-width="5" stroke-linecap="round"/>
+</svg>

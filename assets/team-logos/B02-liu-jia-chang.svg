@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">劉家昌隊徽</title><desc id="desc">烏日桌協聯賽 B02 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1B2B4B"/><stop offset="1" stop-color="#CFA63C"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#CFA63C" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#FFFFFF" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#FFFFFF" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · B02</text>
+<g><circle cx="256" cy="211" r="99" fill="#1B2B4B" stroke="#CFA63C" stroke-width="14"/><text x="256" y="235" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial" font-size="66" font-weight="900">LJC</text><path d="M174 282 Q256 326 338 282" fill="none" stroke="#CFA63C" stroke-width="14"/><circle cx="365" cy="119" r="25" fill="#fff" stroke="#CFA63C" stroke-width="10"/></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#CFA63C" stroke="#FFFFFF" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#FFFFFF" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">劉家昌</text>
+<circle cx="256" cy="463" r="9" fill="#FFFFFF"/><path d="M222 463 H180 M290 463 H332" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">我們這一隊隊徽</title><desc id="desc">烏日桌協聯賽 B01 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#11875D"/><stop offset="1" stop-color="#123B55"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#123B55" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#FFFFFF" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#FFFFFF" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · B01</text>
+<g fill="none" stroke="#fff" stroke-width="15"><circle cx="256" cy="206" r="50" fill="#fff" stroke="#123B55"/><circle cx="170" cy="238" r="38"/><circle cx="342" cy="238" r="38"/><path d="M194 297 Q256 256 318 297" stroke-linecap="round"/><path d="M133 304 Q170 279 205 300 M307 300 Q342 279 379 304" stroke-linecap="round"/><circle cx="256" cy="206" r="13" fill="#11875D" stroke="none"/></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#123B55" stroke="#FFFFFF" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#FFFFFF" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">我們這一隊</text>
+<circle cx="256" cy="463" r="9" fill="#FFFFFF"/><path d="M222 463 H180 M290 463 H332" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+</svg>

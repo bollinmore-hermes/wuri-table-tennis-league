@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">小三美日隊徽</title><desc id="desc">烏日桌協聯賽 A04 隊徽</desc>
+<defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity=".28"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E94F64"/><stop offset="1" stop-color="#1D8A8A"/></linearGradient></defs>
+<circle cx="256" cy="256" r="231" fill="url(#bg)" stroke="#1D8A8A" stroke-width="18" filter="url(#shadow)"/>
+<circle cx="256" cy="256" r="201" fill="none" stroke="#FFF7E8" stroke-width="6" opacity=".9"/>
+<text x="256" y="78" text-anchor="middle" fill="#FFF7E8" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5">WURI TT · A04</text>
+<g stroke="#FFF7E8" stroke-width="12" stroke-linecap="round"><path d="M147 275 Q256 142 365 275" fill="#E94F64"/><path d="M117 283 H395"/><path d="M145 315 Q204 278 256 315 Q308 352 367 315" fill="none"/><circle cx="256" cy="225" r="44" fill="#FFF7E8" stroke="#1D8A8A"/><g stroke="#FFF7E8"><path d="M256 137 V108"/><path d="M190 160 L171 137"/><path d="M322 160 L341 137"/></g></g>
+<path d="M72 349 Q256 314 440 349 L418 424 Q256 455 94 424 Z" fill="#1D8A8A" stroke="#FFF7E8" stroke-width="6"/>
+<text x="256" y="395" text-anchor="middle" dominant-baseline="middle" fill="#FFF7E8" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="33" font-weight="900" letter-spacing="1">小三美日</text>
+<circle cx="256" cy="463" r="9" fill="#FFF7E8"/><path d="M222 463 H180 M290 463 H332" stroke="#FFF7E8" stroke-width="5" stroke-linecap="round"/>
+</svg>
