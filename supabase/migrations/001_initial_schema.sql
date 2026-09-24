@@ -35,7 +35,7 @@ create table if not exists public.match_results (
   home_score int not null check(home_score between 0 and 3), away_score int not null check(away_score between 0 and 3),
   note text not null default '', locked boolean not null default false,
   updated_by uuid references auth.users(id), updated_at timestamptz not null default now(),
-  check((home_score=3 and away_score between 0 and 2) or (away_score=3 and home_score between 0 and 2))
+  check((home_score=3 and away_score=0) or (home_score=0 and away_score=3) or (home_score=2 and away_score=1) or (home_score=1 and away_score=2))
 );
 create table if not exists public.standings_snapshots (
   id uuid primary key default gen_random_uuid(), season_id uuid not null references public.seasons(id) on delete cascade,
@@ -112,7 +112,7 @@ begin
   end loop;
   for row in select * from jsonb_array_elements(coalesce(p_payload->'results','[]'::jsonb)) loop
     select id into mid from matches where match_code=row->>'match_code'; if mid is null then raise exception 'unknown match %',row->>'match_code'; end if;
-    if not ((((row->>'home_score')::int)=3 and (row->>'away_score')::int between 0 and 2) or (((row->>'away_score')::int)=3 and (row->>'home_score')::int between 0 and 2)) then raise exception 'invalid score'; end if;
+    if not ((((row->>'home_score')::int)=3 and (row->>'away_score')::int=0) or (((row->>'home_score')::int)=0 and (row->>'away_score')::int=3) or (((row->>'home_score')::int)=2 and (row->>'away_score')::int=1) or (((row->>'home_score')::int)=1 and (row->>'away_score')::int=2)) then raise exception 'invalid score'; end if;
     insert into match_results(match_id,home_score,away_score,note,updated_by) values(mid,(row->>'home_score')::int,(row->>'away_score')::int,coalesce(row->>'note',''),auth.uid())
     on conflict(match_id) do update set home_score=excluded.home_score,away_score=excluded.away_score,note=excluded.note,updated_by=auth.uid(),updated_at=now();
   end loop;
@@ -130,7 +130,7 @@ create or replace function public.save_match_result(p_match_code text,p_home_sco
 declare mid uuid; old jsonb;
 begin
   if public.current_app_role() not in ('admin','scorer') then raise exception 'permission denied'; end if;
-  if not ((p_home_score=3 and p_away_score between 0 and 2) or (p_away_score=3 and p_home_score between 0 and 2)) then raise exception 'invalid score'; end if;
+  if not ((p_home_score=3 and p_away_score=0) or (p_home_score=0 and p_away_score=3) or (p_home_score=2 and p_away_score=1) or (p_home_score=1 and p_away_score=2)) then raise exception 'invalid score'; end if;
   select m.id,to_jsonb(r) into mid,old from matches m left join match_results r on r.match_id=m.id where m.match_code=p_match_code;
   if mid is null then raise exception 'unknown match'; end if;
   if exists(select 1 from match_results where match_id=mid and locked=true) and public.current_app_role()<>'admin' then raise exception 'result locked'; end if;
