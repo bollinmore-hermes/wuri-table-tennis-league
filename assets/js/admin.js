@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const cfg=window.LEAGUE_CONFIG||{},E=window.LeagueExcel,el=id=>document.getElementById(id),remote=cfg.mode==='supabase'&&/^https:\/\/.+\.supabase\.co$/.test(cfg.supabaseUrl||'')&&(cfg.supabaseAnonKey||'').length>20;
+const cfg=window.LEAGUE_CONFIG||{},E=window.LeagueExcel,el=id=>document.getElementById(id),publishableKey=cfg.supabasePublishableKey||cfg.supabaseAnonKey||'',remote=cfg.mode==='supabase'&&/^https:\/\/.+\.supabase\.co$/.test(cfg.supabaseUrl||'')&&publishableKey.length>20,localAllowed=cfg.mode==='local';
 const dbKey='wuriLeagueAdminData',auditKey='wuriLeagueAudit',scoreKey='wuriLeagueScores';
 let client=null,currentUser=null,currentRole=null,data={teams:[],matches:[],results:[],snapshots:[]},pending=null;
 const titles={dashboard:'總覽',import:'Excel 匯入',results:'賽果管理',audit:'操作紀錄'};
@@ -19,15 +19,15 @@ const localRepo={
  async audits(){return JSON.parse(localStorage.getItem(auditKey)||'[]')}
 };
 const remoteRepo={
- async init(){client=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey)},
- async login(_,email,password){const {data:auth,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;const {data:profile,error:pErr}=await client.from('profiles').select('role,display_name').eq('id',auth.user.id).single();if(pErr)throw pErr;return {user:auth.user,role:profile.role,name:profile.display_name}},
+ async init(){client=window.supabase.createClient(cfg.supabaseUrl,publishableKey)},
+ async login(_,email,password){const {data:auth,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;const {data:profile,error:pErr}=await client.rpc('get_my_profile');if(pErr)throw pErr;return {user:auth.user,role:profile.role,name:profile.display_name}},
  async logout(){await client.auth.signOut()},
  async load(){const {data:payload,error}=await client.rpc('get_admin_dataset');if(error)throw error;return {...emptyData(),...payload}},
  async import(payload){const {data:result,error}=await client.rpc('import_league_data',{p_payload:E.clean(payload)});if(error)throw error;return result},
- async saveResult(result){const {error}=await client.rpc('save_match_result',{p_match_code:result.match_code,p_home_score:result.home_score,p_away_score:result.away_score,p_note:result.note||''});if(error)throw error;return this.load()},
- async audits(){const {data:list,error}=await client.from('audit_logs').select('action,detail,created_at,user_id').order('created_at',{ascending:false}).limit(100);if(error)throw error;return list}
+ async saveResult(result){const current=data.results.find(item=>item.match_code===result.match_code);const {error}=await client.rpc('save_match_result',{p_match_code:result.match_code,p_home_score:result.home_score,p_away_score:result.away_score,p_note:result.note||'',p_expected_version:current?.version||0});if(error)throw error;return this.load()},
+ async audits(){const payload=await this.load();return payload.audits||[]}
 };
-const repo=remote?remoteRepo:localRepo;
+const repo=remote?remoteRepo:(localAllowed?localRepo:null);
 function showApp(){el('loginView').classList.add('hidden');el('appView').classList.remove('hidden');el('modeLabel').textContent=remote?'Supabase 模式':'本機展示模式';el('roleLabel').textContent=currentRole==='admin'?'管理員':'賽務人員';el('userName').textContent=currentUser?.email||'本機使用者';const importBtn=document.querySelector('[data-panel="import"]');importBtn.disabled=currentRole!=='admin';if(currentRole!=='admin')importBtn.title='只有管理員可匯入 Excel';refreshAll()}
 async function refreshAll(){try{data=await repo.load();renderDashboard();renderResults();renderAudit();el('systemStatus').textContent=remote?'已連線 Supabase；資料由 Auth、RLS 與資料庫函式保護。':'本機展示模式：資料保存在 localStorage。可測試 Excel 匯入、比分與公開網站同步。'}catch(err){message(el('systemStatus'),'error',`載入失敗：${err.message}`)}}
 function renderDashboard(){el('metricTeams').textContent=data.teams.length;el('metricMatches').textContent=data.matches.length;el('metricResults').textContent=data.results.filter(r=>E.validScore(r.home_score,r.away_score)).length}
@@ -36,7 +36,7 @@ function renderResults(){const matches=[...data.matches].sort((a,b)=>`${a.date} 
 async function renderAudit(){try{const list=await repo.audits();el('auditList').innerHTML=list.length?list.map(a=>`<li><b>${escape(a.action)}</b>｜${escape(a.detail||'')}<time>${escape(new Date(a.created_at).toLocaleString('zh-TW'))}</time></li>`).join(''):'<li class="empty">尚無操作紀錄</li>'}catch(err){el('auditList').innerHTML=`<li class="empty">無法載入：${escape(err.message)}</li>`}}
 function setPanel(name){if(name==='import'&&currentRole!=='admin')return;document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===`panel-${name}`));document.querySelectorAll('[data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel===name));el('pageTitle').textContent=titles[name]}
 document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>setPanel(b.dataset.panel));
-el('mockLogin').onclick=async()=>{const auth=await repo.login(el('mockRole').value);currentUser=auth.user;currentRole=auth.role;showApp()};
+el('mockLogin').onclick=async()=>{if(!localAllowed)return;const auth=await repo.login(el('mockRole').value);currentUser=auth.user;currentRole=auth.role;showApp()};
 el('remoteLogin').onsubmit=async e=>{e.preventDefault();try{const auth=await repo.login(null,el('email').value,el('password').value);currentUser=auth.user;currentRole=auth.role;showApp()}catch(err){message(el('loginHint'),'error',err.message)}};
 el('logout').onclick=async()=>{await repo.logout();location.reload()};
 async function parseExcel(){const file=el('excelFile').files[0];el('preview').classList.add('hidden');pending=null;if(!file)return message(el('importMessage'),'warn','請先選擇 Excel 檔案。');if(!file.name.toLowerCase().endsWith('.xlsx'))return message(el('importMessage'),'error','只接受 .xlsx 檔案。');if(file.size>5*1024*1024)return message(el('importMessage'),'error','檔案不可超過 5 MB。');try{const buf=await file.arrayBuffer(),wb=XLSX.read(buf,{type:'array',cellDates:true});pending=E.workbookToPayload(XLSX,wb);const check=E.validate(pending,data),delta=E.diff(pending,data);renderPreview(check,delta);message(el('importMessage'),check.valid?'ok':'error',check.valid?`解析完成：${file.name}`:`發現 ${check.errors.length} 個錯誤，無法匯入。`)}catch(err){message(el('importMessage'),'error',`解析失敗：${err.message}`)}}
@@ -44,5 +44,5 @@ function renderPreview(check,delta){const names={teams:'球隊',matches:'賽程'
 el('parseExcel').onclick=parseExcel;el('cancelImport').onclick=()=>{pending=null;el('preview').classList.add('hidden');el('importMessage').innerHTML='';el('excelFile').value=''};
 el('confirmImport').onclick=async()=>{if(!pending||currentRole!=='admin')return;try{el('confirmImport').disabled=true;const clean=E.clean(pending);await repo.import(clean);pending=null;message(el('importMessage'),'ok','匯入完成，公開網站重新整理後即可讀取本機資料。');el('preview').classList.add('hidden');await refreshAll()}catch(err){message(el('importMessage'),'error',`匯入失敗，未寫入資料：${err.message}`);el('confirmImport').disabled=false}};
 el('saveResult').onclick=async()=>{const match_code=el('matchSelect').value,h=Number(el('homeScoreAdmin').value),a=Number(el('awayScoreAdmin').value);if(!match_code)return message(el('resultMessage'),'warn','請先選擇賽事。');if(!E.validScore(h,a))return message(el('resultMessage'),'error','比分必須是 3–0、0–3、2–1 或 1–2。');try{await repo.saveResult({match_code,home_score:h,away_score:a,status:'final',note:'後台登錄'});message(el('resultMessage'),'ok','賽果已儲存。');await refreshAll()}catch(err){message(el('resultMessage'),'error',`儲存失敗：${err.message}`)}};
-(async function init(){if(remote){await repo.init();el('localLogin').classList.add('hidden');el('remoteLogin').classList.remove('hidden');el('loginHint').textContent='請使用 Supabase 管理員或賽務人員帳號登入。'}else{el('loginHint').textContent='目前使用本機展示模式，資料只保存在這個瀏覽器。請選擇角色進行測試。'}})();
+(async function init(){if(remote){await repo.init();el('localLogin').classList.add('hidden');el('remoteLogin').classList.remove('hidden');el('loginHint').textContent='請使用 Supabase 管理員或賽務人員帳號登入。'}else if(localAllowed){el('loginHint').textContent='目前使用本機展示模式，資料只保存在這個瀏覽器。請選擇角色進行測試。'}else{el('localLogin').classList.add('hidden');el('remoteLogin').classList.add('hidden');el('loginHint').textContent='Test backend 尚未設定；管理功能已安全停用。'}})();
 })();

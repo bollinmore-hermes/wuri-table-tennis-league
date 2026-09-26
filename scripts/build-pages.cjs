@@ -3,7 +3,7 @@ const path=require('node:path');
 
 const root=path.resolve(__dirname,'..');
 const out=path.join(root,'pages-dist');
-const publicFiles=['index.html','assets/js/app.js'];
+const publicFiles=['index.html','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js'];
 const publicDirectories=['assets/team-logos'];
 const forbiddenPaths=[
   'admin.html','assets/js/admin.js','assets/js/excel-import.js','assets/js/config.js',
@@ -42,7 +42,7 @@ for(const file of textFiles){
   const content=fs.readFileSync(path.join(out,file),'utf8');
   for(const [pattern,label] of forbiddenContent)if(pattern.test(content))contentLeaks.push(`${file}: ${label}`);
 }
-const required=['index.html','assets/js/app.js','assets/team-logos/A01-happy-da.svg'];
+const required=['index.html','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js','assets/team-logos/A01-happy-da.svg'];
 const missing=required.filter(file=>!builtFiles.includes(file));
 if(missing.length||leakedPaths.length||contentLeaks.length){
   console.error(JSON.stringify({ok:false,missing,leakedPaths,contentLeaks},null,2));

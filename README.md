@@ -2,6 +2,8 @@
 
 本專案包含公開網站、賽務管理後台、Excel 匯入模組，以及 Supabase schema／RLS。
 
+Test build、Supabase backend contract、repository 與 deterministic official seed 的操作及未驗證邊界請見 [`TEST-DEVELOPMENT.md`](TEST-DEVELOPMENT.md)。
+
 ## 本機展示模式
 
 ```bash
@@ -68,8 +70,8 @@ window.LEAGUE_CONFIG = Object.freeze({
 - `scorer`：比分登錄；無法執行 Excel 匯入。
 - 未設定 profile role：無後台權限。
 
-安全規則位於 `supabase/migrations/001_initial_schema.sql`，包括 RLS、比分驗證、交易式匯入及 audit log。
+安全規則位於 `supabase/migrations/`。`004_test_management_backend.sql` 新增 curated public RPC、管理 RPC contract、optimistic version/lock/audit 與 team-logo Storage policy；尚需在專用 Test project 做 runtime RLS 驗證。
 
 ## GitHub Pages
 
-目前為純靜態前端，可在完成正式 Supabase 設定後發布至 GitHub Pages。正式發布前需把公開網站的資料來源由本機 `localStorage` 切換到 Supabase 公開查詢；管理後台已預留 Supabase 模式。
+目前 Production GitHub Pages build 固定使用受版本控制的官方 static dataset，且排除全部管理資產。Test public build 才會依產物內生成的設定使用 Supabase 公開 RPC；不得把 Test 設定或管理後台混入 Production artifact。

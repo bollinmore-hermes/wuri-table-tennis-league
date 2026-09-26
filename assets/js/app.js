@@ -1,38 +1,19 @@
 "use strict";
-const teams = {
-  A:["快樂Da桌球","夢幻羽翼","好球隊","小三美日","叔叔沒練球","陽光男孩"],
-  B:["我們這一隊","劉家昌","烏日少年","海納百川","南門金龍","富士山"]
-};
-const officialStandings = {
-  A:{cutoff:"2026-09-20",rows:{
-    "叔叔沒練球":{pts:15,w:5,l:0,trend:1},"好球隊":{pts:11,w:4,l:1,trend:-1},
-    "小三美日":{pts:8,w:3,l:2,trend:0},"陽光男孩":{pts:6,w:2,l:3,trend:2},
-    "快樂Da桌球":{pts:4,w:1,l:4,trend:-1},"夢幻羽翼":{pts:1,w:0,l:5,trend:-1}
-  }},
-  B:{cutoff:"2026-09-13",rows:{
-    "劉家昌":{pts:9,w:3,l:0,trend:0},"富士山":{pts:8,w:3,l:0,trend:0},
-    "烏日少年":{pts:7,w:2,l:3,trend:0},"海納百川":{pts:4,w:2,l:3,trend:0},
-    "我們這一隊":{pts:4,w:1,l:2,trend:-3},"南門金龍":{pts:1,w:0,l:3,trend:0}
-  }}
-};
-const officialScores={"A-2026-08-23-1":{"home":3,"away":0},"A-2026-08-23-2":{"home":2,"away":1},"A-2026-08-23-3":{"home":0,"away":3},"A-2026-08-23-4":{"home":1,"away":2},"A-2026-08-23-5":{"home":1,"away":2},"A-2026-08-23-6":{"home":0,"away":3},"A-2026-09-06-1":{"home":0,"away":3},"A-2026-09-06-2":{"home":3,"away":0},"A-2026-09-06-3":{"home":3,"away":0},"A-2026-09-06-4":{"home":0,"away":3},"A-2026-09-06-5":{"home":3,"away":0},"A-2026-09-20-1":{"home":0,"away":3},"A-2026-09-20-2":{"home":0,"away":3},"A-2026-09-20-3":{"home":0,"away":3},"A-2026-09-20-4":{"home":0,"away":3},"B-2026-08-30-1":{"home":0,"away":3},"B-2026-08-30-2":{"home":3,"away":0},"B-2026-08-30-3":{"home":3,"away":0},"B-2026-08-30-4":{"home":3,"away":0},"B-2026-08-30-5":{"home":1,"away":2},"B-2026-08-30-6":{"home":3,"away":0},"B-2026-09-13-1":{"home":3,"away":0},"B-2026-09-13-2":{"home":0,"away":3},"B-2026-09-13-3":{"home":1,"away":2},"B-2026-09-13-4":{"home":2,"away":1},"B-2026-09-13-5":{"home":0,"away":3}};
-const rawRounds = [
-  ["A","2026-08-23",[["15:30","快樂Da桌球","夢幻羽翼"],["15:30","好球隊","小三美日"],["16:00","快樂Da桌球","好球隊"],["16:00","夢幻羽翼","小三美日"],["16:30","快樂Da桌球","小三美日"],["16:30","夢幻羽翼","好球隊"]]],
-  ["A","2026-09-06",[["15:30","好球隊","叔叔沒練球"],["15:30","小三美日","陽光男孩"],["16:00","好球隊","陽光男孩"],["16:00","小三美日","叔叔沒練球"],["16:30","叔叔沒練球","陽光男孩"]]],
-  ["A","2026-09-20",[["15:30","快樂Da桌球","叔叔沒練球"],["15:30","夢幻羽翼","陽光男孩"],["16:00","快樂Da桌球","陽光男孩"],["16:00","夢幻羽翼","叔叔沒練球"]]],
-  ["A","2026-10-18",[["15:30","快樂Da桌球","夢幻羽翼"],["15:30","好球隊","小三美日"],["16:00","快樂Da桌球","好球隊"],["16:00","夢幻羽翼","小三美日"],["16:30","快樂Da桌球","小三美日"],["16:30","夢幻羽翼","好球隊"]]],
-  ["A","2026-11-08",[["15:30","好球隊","叔叔沒練球"],["15:30","小三美日","陽光男孩"],["16:00","好球隊","陽光男孩"],["16:00","小三美日","叔叔沒練球"],["16:30","叔叔沒練球","陽光男孩"]]],
-  ["A","2026-11-22",[["15:30","快樂Da桌球","叔叔沒練球"],["15:30","夢幻羽翼","陽光男孩"],["16:00","快樂Da桌球","陽光男孩"],["16:00","夢幻羽翼","叔叔沒練球"]]],
-  ["B","2026-08-30",[["15:30","我們這一隊","劉家昌"],["15:30","烏日少年","海納百川"],["16:00","我們這一隊","烏日少年"],["16:00","劉家昌","海納百川"],["16:30","我們這一隊","海納百川"],["16:30","劉家昌","烏日少年"]]],
-  ["B","2026-09-13",[["15:30","烏日少年","南門金龍"],["15:30","海納百川","富士山"],["16:00","烏日少年","富士山"],["16:00","海納百川","南門金龍"],["16:30","南門金龍","富士山"]]],
-  ["B","2026-10-04",[["15:30","我們這一隊","南門金龍"],["15:30","劉家昌","富士山"],["16:00","我們這一隊","富士山"],["16:00","劉家昌","南門金龍"]]],
-  ["B","2026-11-01",[["15:30","我們這一隊","劉家昌"],["15:30","烏日少年","海納百川"],["16:00","我們這一隊","烏日少年"],["16:00","劉家昌","海納百川"],["16:30","我們這一隊","海納百川"],["16:30","劉家昌","烏日少年"]]],
-  ["B","2026-11-15",[["15:30","烏日少年","南門金龍"],["15:30","海納百川","富士山"],["16:00","烏日少年","富士山"],["16:00","海納百川","南門金龍"],["16:30","南門金龍","富士山"]]],
-  ["B","2026-11-29",[["15:30","我們這一隊","南門金龍"],["15:30","劉家昌","富士山"],["16:00","我們這一隊","富士山"],["16:00","劉家昌","南門金龍"]]]
-];
-const games = rawRounds.flatMap(([group,date,list]) => list.map(([time,home,away],i)=>({id:`${group}-${date}-${i+1}`,group,date,time,home,away})));
-const validScore=(h,a)=>Number.isInteger(h)&&Number.isInteger(a)&&((h===3&&a===0)||(h===0&&a===3)||(h===2&&a===1)||(h===1&&a===2));
-const scores=Object.freeze({...officialScores});
+const config=window.LEAGUE_CONFIG||{mode:"static",seasonCode:"2026-autumn-second-half"};
+const repository=window.WuriLeagueRepository.createConfiguredRepository(config,window.WuriLeagueOfficialData,window.supabase);
+let teams={A:[],B:[]},officialStandings={A:{rows:{}},B:{rows:{}}},officialScores={},games=[],scores={},dates=[];
+const validScore=window.WuriLeagueRepository.scoreIsValid;
+function applyDataset(dataset){
+  teams={A:dataset.teams.filter(team=>team.group==="A"&&team.active).sort((a,b)=>a.display_order-b.display_order).map(team=>team.name),B:dataset.teams.filter(team=>team.group==="B"&&team.active).sort((a,b)=>a.display_order-b.display_order).map(team=>team.name)};
+  games=dataset.matches.map(match=>({id:match.match_code,group:match.group,date:match.date,time:match.time,home:match.home,away:match.away}));
+  dates=[...new Set(games.map(game=>game.date))].sort();
+  officialScores=Object.fromEntries(dataset.results.map(result=>[result.match_code,{home:result.home_score,away:result.away_score}]));
+  scores=Object.freeze({...officialScores});
+  const nameByCode=Object.fromEntries(dataset.teams.map(team=>[team.team_code,team.name]));
+  officialStandings={A:{rows:{}},B:{rows:{}}};
+  for(const row of dataset.snapshots||[]){if(officialStandings[row.group]&&nameByCode[row.team_code])officialStandings[row.group].rows[nameByCode[row.team_code]]={pts:row.points,w:row.wins,l:row.losses,trend:row.rank_change||0}}
+}
+if(typeof repository.getPublicLeagueSync==="function")applyDataset(repository.getPublicLeagueSync());
 let groupFilter="ALL", selectedDate="ALL", teamGroup="ALL", activeTeamDetail=null;
 const standingsSort={A:{key:"pts",dir:"desc"},B:{key:"pts",dir:"desc"}};
 const el=id=>document.getElementById(id);
@@ -108,7 +89,6 @@ function gameCardHTML(game,{perspective=null}={}){
 }
 const gameHTML=game=>gameCardHTML(game);
 const homeGameHTML=game=>gameCardHTML(game);
-const dates=[...new Set(games.map(game=>game.date))].sort();
 function renderSchedule(){
   const list=games.filter(game=>(groupFilter==="ALL"||game.group===groupFilter)&&(selectedDate==="ALL"||game.date===selectedDate)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)||a.group.localeCompare(b.group));
   replace(el("dateFilter"),dom("option",{text:t("allMatchdays"),attrs:{value:"ALL"}}),dates.map(date=>dom("option",{text:fmtDate(date),attrs:{value:date}})));
@@ -164,4 +144,8 @@ document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventLi
 function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));
 window.WuriLeagueApp=Object.freeze({gameCardHTML,teamLogoHTML,renderSchedule,renderTeams,showTeam,getSummary:()=>Object.freeze({teams:teams.A.length+teams.B.length,matches:games.length,results:Object.keys(officialScores).length})});
-applyLocale(locale);
+if(typeof repository.getPublicLeagueSync==="function")applyLocale(locale);
+else repository.getPublicLeague().then(dataset=>{applyDataset(dataset);applyLocale(locale)}).catch(()=>{
+  const notice=dom("div",{className:"notice",text:"聯賽資料目前無法載入，請稍後再試。",attrs:{role:"alert"}});
+  document.querySelector("main")?.prepend(notice);
+});

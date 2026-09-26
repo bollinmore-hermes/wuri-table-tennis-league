@@ -8,6 +8,8 @@ const test=require('node:test');
 const root=path.resolve(__dirname,'..');
 const appPath=path.join(root,'assets/js/app.js');
 const appSource=fs.readFileSync(appPath,'utf8');
+const officialSource=fs.readFileSync(path.join(root,'assets/js/official-data.js'),'utf8');
+const repositorySource=fs.readFileSync(path.join(root,'assets/js/league-repository.js'),'utf8');
 
 class FakeNode{
   constructor(tag='#fragment',text=''){this.tagName=tag.toUpperCase();this.textContent=String(text);this.children=[];this.attributes={};this.dataset={};this.style={};this.className='';this.value='';this.hidden=false;this.classList={toggle(){},add(){},remove(){}}}
@@ -30,6 +32,8 @@ function loadPublicApp(){
   const storage=new Map();
   const sandbox={console,Intl,Date,Object,Array,Number,String,Math,JSON,Node:FakeNode,document,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))},scrollTo(){}};
   sandbox.window=sandbox;
+  vm.runInNewContext(officialSource,sandbox,{filename:'assets/js/official-data.js'});
+  vm.runInNewContext(repositorySource,sandbox,{filename:'assets/js/league-repository.js'});
   vm.runInNewContext(appSource,sandbox,{filename:'assets/js/app.js'});
   return sandbox;
 }
