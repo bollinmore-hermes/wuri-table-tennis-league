@@ -43,7 +43,6 @@
     .ranking-guide{margin-bottom:24px;background:var(--surface);border:1px solid var(--line);border-radius:12px}.ranking-guide summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:900;display:flex;justify-content:space-between;align-items:center}.ranking-guide summary::-webkit-details-marker{display:none}.ranking-guide summary:after{content:"＋";color:var(--accent);font-size:19px}.ranking-guide[open] summary:after{content:"−"}.ranking-guide p{margin:0;padding:0 16px 16px;color:var(--muted);line-height:1.7}.sort-button{border:0;background:transparent;color:inherit;font:inherit;font-weight:900;padding:3px 5px;border-radius:6px;white-space:nowrap}.sort-button:hover,.sort-button.active{background:var(--accent);color:#171717}.sort-arrow{display:inline-block;min-width:12px}
     .team-detail{padding:25px;margin-bottom:20px;display:flex;gap:22px;align-items:center}.team-detail-logo{width:112px;height:112px}.team-detail h2{margin:0 0 7px}.team-detail p{margin:0;color:var(--muted)}.opponent-section{margin:24px 0 34px}.opponent-section h2{margin:0 0 6px}.opponent-section>p{margin:0 0 15px;color:var(--muted)}.opponent-table{min-width:560px}.opponent-table th:first-child{width:44%}.opponent-table td,.opponent-table th{padding:11px 14px}.opponent-team{display:inline-flex;align-items:center;gap:9px;font-weight:850;white-space:nowrap}.opponent-logo{width:36px;height:36px}.opponent-pct{font-weight:950;color:var(--accent)}.group-section{padding:18px;border-radius:18px}.group-section.group-a{background:var(--group-a-bg);border:1px solid var(--group-a-line)}.group-section.group-b{background:var(--group-b-bg);border:1px solid var(--group-b-line)}
     footer{background:var(--navy);color:#b9cada;padding:30px 20px;text-align:center;font-size:13px}footer strong{color:#fff}.notice{background:#fff8dc;border:1px solid #f3d674;color:#735d0b;padding:13px 15px;border-radius:11px;font-size:13px;margin-bottom:18px}
-    dialog{border:0;border-radius:18px;padding:0;max-width:440px;width:calc(100% - 30px);box-shadow:0 30px 80px rgba(0,0,0,.3);background:var(--surface);color:var(--text)}dialog::backdrop{background:rgba(3,15,29,.72)}.modal-head{background:var(--navy);color:#fff;padding:20px 22px}.modal-head h3{margin:0}.modal-body{padding:22px}.score-entry{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}.score-entry label{text-align:center;font-weight:800}.score-entry input{width:100%;font-size:28px;text-align:center;padding:10px;border:1px solid var(--line);border-radius:10px;margin-top:9px;background:var(--bg);color:var(--text)}.modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:22px}.danger{color:#b42318;border-color:#f5b7b1}
     @media(max-width:1050px) and (min-width:821px){.nav{gap:12px}.nav-btn{padding:0 11px;font-size:14px}.brand b{font-size:15px}.brand small{font-size:10px}}
     @media(max-width:820px){.nav{flex-wrap:wrap;gap:8px;padding-bottom:8px}.brand{flex:1;min-width:0}.brand>div:last-child{min-width:0}.brand b,.brand small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.language-switch{margin-left:0;flex:0 0 auto}nav{order:3;width:100%;overflow:hidden;height:45px}.nav-btn{flex:1;padding:0 8px;font-size:14px}.hero-inner{grid-template-columns:1fr;padding-top:44px;gap:24px}.hero-card{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.hero-card p{display:none}.hero-card h3{font-size:16px;margin:3px 0}.date-badge{margin:0;white-space:nowrap}.cards,.team-grid{grid-template-columns:repeat(2,1fr)}.games{grid-template-columns:1fr}.home-standings-grid{grid-template-columns:1fr}}
     @media(max-width:540px){.container{padding:20px 14px 45px}.cards,.team-grid{grid-template-columns:1fr}.hero-inner{padding:38px 15px 30px}.hero h1{font-size:43px}.hero p{font-size:16px}.section-head{align-items:flex-start;flex-direction:column}.overview-title{display:block}.overview-summary{display:block;margin-top:3px;font-size:12px}.league-overview .cards{padding:0 12px 12px}.stat-card{padding:10px 13px}.game{padding:14px 10px}.team{font-size:13px}.game-team-logo{width:54px;height:54px}.team-detail{align-items:flex-start}.team-detail-logo{width:88px;height:88px}.table-team-logo{width:30px;height:30px}.brand small{display:none}.compact-table .table-team-logo{display:none}.compact-table th:first-child{width:72%}.compact-table th:not(:first-child){width:14%}}
@@ -77,7 +76,7 @@
         <div class="hero-inner">
           <div>
             <div class="eyebrow">2026 WURI AUTUMN LEAGUE</div>
-            <h1 data-i18n-html="heroTitle">每一球，<br>都是關鍵一擊。</h1>
+            <h1 data-i18n-lines="heroTitle">每一球，<br>都是關鍵一擊。</h1>
             <p data-i18n="heroCopy">烏日桌球聯賽下半季，A、B 兩組共 12 支球隊，從例行賽一路競逐至季後賽。</p>
             <div class="hero-actions"><button class="btn btn-primary" data-jump="schedule" data-i18n="viewSchedule">查看完整賽程</button><button class="btn btn-light" data-jump="standings" data-i18n="liveStandings">即時戰績</button></div>
           </div>
@@ -123,137 +122,9 @@
     </section>
   </main>
 
-  <dialog id="scoreDialog">
-    <form method="dialog" id="scoreForm">
-      <div class="modal-head"><h3>登錄比賽結果</h3></div>
-      <div class="modal-body"><div id="modalMeta" style="color:var(--muted);font-size:13px;margin-bottom:18px"></div><div class="score-entry"><label><span id="homeLabel"></span><input id="homeScore" type="number" min="0" max="3" inputmode="numeric"></label><b>：</b><label><span id="awayLabel"></span><input id="awayScore" type="number" min="0" max="3" inputmode="numeric"></label></div><p style="color:var(--muted);font-size:12px;margin:14px 0 0">請輸入 3–0 或 2–1（可主客對調）；積分分別為 3–0、2–1。</p><div class="modal-actions"><button type="button" class="btn btn-ghost danger" id="clearScore">清除結果</button><button type="button" class="btn btn-ghost" id="cancelScore">取消</button><button type="submit" class="btn btn-primary">儲存結果</button></div></div>
-    </form>
-  </dialog>
 
   <footer><strong data-i18n="brand">烏日桌球聯賽</strong><br><span data-i18n="footer">2026 秋季聯賽・賽程、戰績與球隊資訊</span></footer>
 
-<script>
-let teams = {
-  A:["快樂Da桌球","夢幻羽翼","好球隊","小三美日","叔叔沒練球","陽光男孩"],
-  B:["我們這一隊","劉家昌","烏日少年","海納百川","南門金龍","富士山"]
-};
-let officialStandings = {
-  A:{cutoff:"2026-09-20",rows:{
-    "叔叔沒練球":{pts:15,w:5,l:0,trend:1},"好球隊":{pts:11,w:4,l:1,trend:-1},
-    "小三美日":{pts:8,w:3,l:2,trend:0},"陽光男孩":{pts:6,w:2,l:3,trend:2},
-    "快樂Da桌球":{pts:4,w:1,l:4,trend:-1},"夢幻羽翼":{pts:1,w:0,l:5,trend:-1}
-  }},
-  B:{cutoff:"2026-09-13",rows:{
-    "劉家昌":{pts:9,w:3,l:0,trend:0},"富士山":{pts:8,w:3,l:0,trend:0},
-    "烏日少年":{pts:7,w:2,l:3,trend:0},"海納百川":{pts:4,w:2,l:3,trend:0},
-    "我們這一隊":{pts:4,w:1,l:2,trend:-3},"南門金龍":{pts:1,w:0,l:3,trend:0}
-  }}
-};
-let officialScores={"A-2026-08-23-1":{"home":3,"away":0},"A-2026-08-23-2":{"home":2,"away":1},"A-2026-08-23-3":{"home":0,"away":3},"A-2026-08-23-4":{"home":1,"away":2},"A-2026-08-23-5":{"home":1,"away":2},"A-2026-08-23-6":{"home":0,"away":3},"A-2026-09-06-1":{"home":0,"away":3},"A-2026-09-06-2":{"home":3,"away":0},"A-2026-09-06-3":{"home":3,"away":0},"A-2026-09-06-4":{"home":0,"away":3},"A-2026-09-06-5":{"home":3,"away":0},"A-2026-09-20-1":{"home":0,"away":3},"A-2026-09-20-2":{"home":0,"away":3},"A-2026-09-20-3":{"home":0,"away":3},"A-2026-09-20-4":{"home":0,"away":3},"B-2026-08-30-1":{"home":0,"away":3},"B-2026-08-30-2":{"home":3,"away":0},"B-2026-08-30-3":{"home":3,"away":0},"B-2026-08-30-4":{"home":3,"away":0},"B-2026-08-30-5":{"home":1,"away":2},"B-2026-08-30-6":{"home":3,"away":0},"B-2026-09-13-1":{"home":3,"away":0},"B-2026-09-13-2":{"home":0,"away":3},"B-2026-09-13-3":{"home":1,"away":2},"B-2026-09-13-4":{"home":2,"away":1},"B-2026-09-13-5":{"home":0,"away":3}};
-let rawRounds = [
-  ["A","2026-08-23",[["15:30","快樂Da桌球","夢幻羽翼"],["15:30","好球隊","小三美日"],["16:00","快樂Da桌球","好球隊"],["16:00","夢幻羽翼","小三美日"],["16:30","快樂Da桌球","小三美日"],["16:30","夢幻羽翼","好球隊"]]],
-  ["A","2026-09-06",[["15:30","好球隊","叔叔沒練球"],["15:30","小三美日","陽光男孩"],["16:00","好球隊","陽光男孩"],["16:00","小三美日","叔叔沒練球"],["16:30","叔叔沒練球","陽光男孩"]]],
-  ["A","2026-09-20",[["15:30","快樂Da桌球","叔叔沒練球"],["15:30","夢幻羽翼","陽光男孩"],["16:00","快樂Da桌球","陽光男孩"],["16:00","夢幻羽翼","叔叔沒練球"]]],
-  ["A","2026-10-18",[["15:30","快樂Da桌球","夢幻羽翼"],["15:30","好球隊","小三美日"],["16:00","快樂Da桌球","好球隊"],["16:00","夢幻羽翼","小三美日"],["16:30","快樂Da桌球","小三美日"],["16:30","夢幻羽翼","好球隊"]]],
-  ["A","2026-11-08",[["15:30","好球隊","叔叔沒練球"],["15:30","小三美日","陽光男孩"],["16:00","好球隊","陽光男孩"],["16:00","小三美日","叔叔沒練球"],["16:30","叔叔沒練球","陽光男孩"]]],
-  ["A","2026-11-22",[["15:30","快樂Da桌球","叔叔沒練球"],["15:30","夢幻羽翼","陽光男孩"],["16:00","快樂Da桌球","陽光男孩"],["16:00","夢幻羽翼","叔叔沒練球"]]],
-  ["B","2026-08-30",[["15:30","我們這一隊","劉家昌"],["15:30","烏日少年","海納百川"],["16:00","我們這一隊","烏日少年"],["16:00","劉家昌","海納百川"],["16:30","我們這一隊","海納百川"],["16:30","劉家昌","烏日少年"]]],
-  ["B","2026-09-13",[["15:30","烏日少年","南門金龍"],["15:30","海納百川","富士山"],["16:00","烏日少年","富士山"],["16:00","海納百川","南門金龍"],["16:30","南門金龍","富士山"]]],
-  ["B","2026-10-04",[["15:30","我們這一隊","南門金龍"],["15:30","劉家昌","富士山"],["16:00","我們這一隊","富士山"],["16:00","劉家昌","南門金龍"]]],
-  ["B","2026-11-01",[["15:30","我們這一隊","劉家昌"],["15:30","烏日少年","海納百川"],["16:00","我們這一隊","烏日少年"],["16:00","劉家昌","海納百川"],["16:30","我們這一隊","海納百川"],["16:30","劉家昌","烏日少年"]]],
-  ["B","2026-11-15",[["15:30","烏日少年","南門金龍"],["15:30","海納百川","富士山"],["16:00","烏日少年","富士山"],["16:00","海納百川","南門金龍"],["16:30","南門金龍","富士山"]]],
-  ["B","2026-11-29",[["15:30","我們這一隊","南門金龍"],["15:30","劉家昌","富士山"],["16:00","我們這一隊","富士山"],["16:00","劉家昌","南門金龍"]]]
-];
-let games = rawRounds.flatMap(([group,date,list]) => list.map(([time,home,away],i)=>({id:`${group}-${date}-${i+1}`,group,date,time,home,away})));
-try {
-  const imported=JSON.parse(localStorage.getItem("wuriLeagueAdminData")||"null");
-  if(imported?.teams?.length&&imported?.matches?.length){
-    const teamByCode=Object.fromEntries(imported.teams.map(t=>[t.team_code,t.name]));
-    teams={A:imported.teams.filter(t=>t.group==="A"&&t.active!==false).sort((a,b)=>a.team_code.localeCompare(b.team_code)).map(t=>t.name),B:imported.teams.filter(t=>t.group==="B"&&t.active!==false).sort((a,b)=>a.team_code.localeCompare(b.team_code)).map(t=>t.name)};
-    games=imported.matches.map(m=>({id:m.match_code,group:m.group,date:m.date,time:m.time,home:teamByCode[m.home_team_code]||m.home_team_code,away:teamByCode[m.away_team_code]||m.away_team_code}));
-    if(imported.results?.length)officialScores=Object.fromEntries(imported.results.filter(r=>Number.isInteger(r.home_score)&&Number.isInteger(r.away_score)).map(r=>[r.match_code,{home:r.home_score,away:r.away_score}]));
-    if(imported.snapshots?.length){
-      officialStandings={};
-      for(const group of ["A","B"]){
-        const rows=imported.snapshots.filter(s=>s.group===group),cutoff=rows.map(s=>s.snapshot_date).sort().at(-1);
-        officialStandings[group]={cutoff,rows:{}};
-        rows.filter(s=>s.snapshot_date===cutoff).forEach(s=>{const name=teamByCode[s.team_code]||s.team_code;officialStandings[group].rows[name]={pts:s.points,w:s.wins,l:s.losses,trend:s.rank_change||0}});
-      }
-    }
-  }
-} catch(err){ console.warn("無法讀取後台匯入資料，使用內建資料。",err); }
-const validScore=(h,a)=>Number.isInteger(h)&&Number.isInteger(a)&&((h===3&&a===0)||(h===0&&a===3)||(h===2&&a===1)||(h===1&&a===2));
-let storedScores={};try{storedScores=JSON.parse(localStorage.getItem("wuriLeagueScores")||"{}")}catch{}
-let scores={...Object.fromEntries(Object.entries(storedScores).filter(([,s])=>validScore(s?.home,s?.away))),...officialScores};
-const canEnterScores=window.LEAGUE_SESSION?.authenticated===true&&['admin','scorer'].includes(window.LEAGUE_SESSION.role);
-let activeGame=null, groupFilter="ALL", selectedDate="ALL", teamGroup="ALL";
-const standingsSort={A:{key:"pts",dir:"desc"},B:{key:"pts",dir:"desc"}};
-const el=id=>document.getElementById(id);
-const copy={
-  zh:{brand:"烏日桌球聯賽",season:"2026 秋季聯賽・下半季",navHome:"首頁",navSchedule:"賽程",navStandings:"戰績",navTeams:"球隊",navAdmin:"管理後台",heroTitle:"每一球，<br>都是關鍵一擊。",heroCopy:"烏日桌球聯賽下半季，A、B 兩組共 12 支球隊，從例行賽一路競逐至季後賽。",viewSchedule:"查看完整賽程",liveStandings:"即時戰績",postseasonTitle:"季後賽・拚獎金",postseasonCopy:"例行賽排名將決定最終季後賽席次。",postseasonDate:"12 月 6 日",overview:"聯賽概況",nextMatchday:"下一比賽日",allSchedule:"所有賽程 →",groupStandings:"分組戰績",standingsHint:"首頁顯示精簡排名，完整資訊請前往戰績頁。",fullStandings:"完整戰績 →",group:"組",scheduleCopy:"依日期與分組瀏覽完整賽程與正式比分。",scheduleNotice:"原始圖片僅含對戰安排，未提供場地、球員與實際賽果；本頁不虛構相關資訊。",all:"全部",standingsTitle:"戰績排名",standingsCopy:"A、B 組依正式逐場賽果計算的即時排名。",rankingGuide:"排名與積分說明",rankingGuideText:"依聯賽積分排序；同分時依勝場數與勝率排序。3–0 的積分為 3–0，2–1 的積分為 2–1。",standingsNotice:"排名由正式成績表的逐場比分計算；A 組截至 2026/9/20，B 組截至 2026/9/13。",aCutoff:"正式賽果截至 2026/9/20",bCutoff:"正式賽果截至 2026/9/13",teamsCopy:"A、B 兩組參賽隊伍與各隊賽程。",footer:"2026 秋季聯賽・賽程、戰績與球隊資訊",teamsCount:"參賽球隊",matchesCount:"例行賽場次",completedCount:"已完成賽事",twoGroups:"A、B 兩組",matchdays:"個比賽日",officialBase:"正式賽果",matchesUnit:"場",overviewLine:(teams,matches,done)=>`${teams} 支球隊・${matches} 場例行賽・${done} 場已完成`,allMatchdays:"所有比賽日",noMatches:"沒有符合條件的賽事。",official:"正式賽果",finalEdit:"比賽結束・修改賽果",scoreEntry:"尚未登錄・點擊輸入",scheduled:"尚未開賽",team:"球隊",points:"積分",record:"勝–敗",rankTeam:"排名／球隊",trend:"升降",wins:"勝",losses:"敗",played:"已賽",winPct:"勝率",teamMeta:(group,w,l)=>`${group} 組・${w} 勝 ${l} 敗`,teamSchedule:"賽程",close:"關閉",teamDetail:(w,l,p,m)=>`${w} 勝 ${l} 敗・${p} 積分・共安排 ${m} 場例行賽`},
-  en:{brand:"Wuri Table Tennis League",season:"2026 Autumn League · Second Half",navHome:"Home",navSchedule:"Schedule",navStandings:"Standings",navTeams:"Teams",navAdmin:"Admin",heroTitle:"Every point.<br>Every moment matters.",heroCopy:"Twelve teams across Groups A and B compete through the regular season for a place in the postseason.",viewSchedule:"View Schedule",liveStandings:"Live Standings",postseasonTitle:"Postseason · Prize Round",postseasonCopy:"Regular-season standings determine the postseason field.",postseasonDate:"December 6",overview:"League Overview",nextMatchday:"Next Matchday",allSchedule:"Full Schedule →",groupStandings:"Group Standings",standingsHint:"A compact ranking is shown here. Open Standings for full details.",fullStandings:"Full Standings →",group:"Group",scheduleCopy:"Browse the full schedule and official results by date and group.",scheduleNotice:"The source only contains match pairings. Venue, player and unreported result data are not fabricated.",all:"All",standingsTitle:"Standings",standingsCopy:"Current rankings calculated from official match results.",rankingGuide:"Ranking and points guide",rankingGuideText:"Teams are ranked by league points, then wins and winning percentage. A 3–0 result awards 3–0 points; 2–1 awards 2–1 points.",standingsNotice:"Rankings are calculated from official match results: Group A through Sep 20 and Group B through Sep 13, 2026.",aCutoff:"Official results through Sep 20, 2026",bCutoff:"Official results through Sep 13, 2026",teamsCopy:"Teams and schedules across Groups A and B.",footer:"2026 Autumn League · Schedule, standings and teams",teamsCount:"Teams",matchesCount:"Regular-season Matches",completedCount:"Completed",twoGroups:"Groups A and B",matchdays:"matchdays",officialBase:"Official results",matchesUnit:"matches",overviewLine:(teams,matches,done)=>`${teams} teams · ${matches} matches · ${done} completed`,allMatchdays:"All matchdays",noMatches:"No matches found.",official:"Official result",finalEdit:"Final · Edit result",scoreEntry:"Not recorded · Enter result",scheduled:"Scheduled",team:"Team",points:"Pts",record:"W–L",rankTeam:"Rank / Team",trend:"Move",wins:"W",losses:"L",played:"GP",winPct:"Win%",teamMeta:(group,w,l)=>`Group ${group} · ${w} W ${l} L`,teamSchedule:"Schedule",close:"Close",teamDetail:(w,l,p,m)=>`${w} W ${l} L · ${p} pts · ${m} regular-season matches`}
-};
-const uiText={
-  zh:{finished:"完賽",win:"勝利",loss:"敗北",opponentStats:"對戰勝率",opponentStatsHint:"依目前已完成賽事，統計對戰各隊的勝敗與勝率。",noGames:"尚未交手",gamesPlayed:n=>`${n} 場・`,scheduleByDate:"球隊賽程（依日期）"},
-  en:{finished:"Final",win:"Win",loss:"Loss",opponentStats:"Head-to-head win rate",opponentStatsHint:"Win-loss record and win rate against each opponent, based on completed matches.",noGames:"No meetings",gamesPlayed:n=>`${n} game${n===1?'':'s'} · `,scheduleByDate:"Team schedule by date"}
-};
-let locale=localStorage.getItem("wuriLeagueLocale")==="en"?"en":"zh";
-const t=key=>copy[locale][key];
-const u=key=>uiText[locale][key];
-const initials=n=>n.replace(/[a-z]/gi,"").slice(0,2);
-const teamLogoFiles={
-  "快樂Da桌球":"A01-happy-da.svg","夢幻羽翼":"A02-dream-wings.svg","好球隊":"A03-good-ball.svg",
-  "小三美日":"A04-sanmei.svg","叔叔沒練球":"A05-uncles.svg","陽光男孩":"A06-sunshine-boys.svg",
-  "我們這一隊":"B01-our-team.svg","劉家昌":"B02-liu-jia-chang.svg","烏日少年":"B03-wuri-youth.svg",
-  "海納百川":"B04-all-rivers.svg","南門金龍":"B05-south-gate-dragon.svg","富士山":"B06-fuji.svg"
-};
-function teamLogoHTML(name,sizeClass){const file=teamLogoFiles[name];if(!file)return `<span class="logo-frame ${sizeClass} no-logo" aria-hidden="true"><span class="logo-fallback">${initials(name)}</span></span>`;return `<span class="logo-frame ${sizeClass}" aria-hidden="true"><img src="assets/team-logos/${file}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="logo-fallback">${initials(name)}</span></span>`}
-const fmtDate=d=>new Intl.DateTimeFormat(locale==="zh"?"zh-TW":"en-US",{month:"long",day:"numeric",weekday:"short"}).format(new Date(d+"T12:00:00"));
-function switchPage(page){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===page));document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));scrollTo({top:0,behavior:"smooth"});}
-document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>switchPage(b.dataset.page));document.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>switchPage(b.dataset.jump));
-const isOfficialGame=g=>Object.prototype.hasOwnProperty.call(officialScores,g.id);
-function gameCardHTML(g,{readOnly=false,perspective=null}={}){const s=scores[g.id],done=s&&validScore(s.home,s.away),editable=canEnterScores&&!readOnly&&!isOfficialGame(g),attrs=editable?`data-game="${g.id}" tabindex="0" role="button"`:'';let outcome='';if(done&&perspective){const won=g.home===perspective?s.home>s.away:s.away>s.home;outcome=`<span class="result-mark ${won?'win':'loss'}" aria-label="${won?u('win'):u('loss')}">${won?'🏆':'✕'} ${won?u('win'):u('loss')}</span>`}return `<article class="game ${done?'done':''} ${perspective?'team-perspective':''}" ${attrs} aria-label="${g.home} vs ${g.away}">${done?`<span class="completion-mark" aria-label="${u('finished')}" title="${u('finished')}">✓</span>`:''}<div class="game-top"><span class="group-tag group-${g.group.toLowerCase()}">${locale==='zh'?`${g.group} ${t('group')}`:`${t('group')} ${g.group}`}</span></div><div class="teams"><div class="team">${teamLogoHTML(g.home,'game-team-logo')}<span>${g.home}</span></div><div class="versus ${done?'score':''}">${done?`${s.home}：${s.away}`:'VS'}</div><div class="team">${teamLogoHTML(g.away,'game-team-logo')}<span>${g.away}</span></div></div>${editable?`<div class="game-action"><span class="status">${done?t('finalEdit'):t('scoreEntry')}</span></div>`:''}${outcome}</article>`}
-const gameHTML=g=>gameCardHTML(g);
-const homeGameHTML=g=>gameCardHTML(g,{readOnly:true});
-function bindGames(){document.querySelectorAll("[data-game]").forEach(c=>{c.onclick=()=>openScore(c.dataset.game);c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openScore(c.dataset.game)}}})}
-function renderSchedule(){
-  const list=games.filter(g=>(groupFilter==="ALL"||g.group===groupFilter)&&(selectedDate==="ALL"||g.date===selectedDate)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)||a.group.localeCompare(b.group));
-  el("dateFilter").innerHTML=`<option value="ALL">${t('allMatchdays')}</option>`+dates.map(d=>`<option value="${d}">${fmtDate(d)}</option>`).join("");
-  el("dateFilter").value=selectedDate;
-  const grouped=list.reduce((result,game)=>{(result[game.date]??=[]).push(game);return result},{});
-  el("allGames").innerHTML=Object.entries(grouped).map(([date,daily])=>`<section class="date-section group-${daily[0].group.toLowerCase()}"><h2 class="date-heading"><time datetime="${date}">${fmtDate(date)}</time><span>${daily.length} ${t('matchesUnit')}</span></h2><div class="games">${daily.map(gameHTML).join("")}</div></section>`).join("")||`<p>${t('noMatches')}</p>`;
-  bindGames();
-}
-const dates=[...new Set(games.map(g=>g.date))].sort();el("dateFilter").onchange=e=>{selectedDate=e.target.value;renderSchedule()};document.querySelectorAll("[data-group]").forEach(b=>b.onclick=()=>{groupFilter=b.dataset.group;document.querySelectorAll("[data-group]").forEach(x=>x.classList.toggle("active",x===b));renderSchedule()});
-function leaguePoints(winnerScore){return winnerScore===3?[3,0]:[2,1]}
-function standings(group,sort=standingsSort[group]){const stats=Object.fromEntries(teams[group].map(name=>{const trend=officialStandings[group]?.rows?.[name]?.trend||0;return [name,{name,pts:0,w:0,l:0,trend}]}));games.filter(g=>g.group===group).forEach(g=>{const s=scores[g.id];if(!s||!validScore(s.home,s.away))return;const h=stats[g.home],a=stats[g.away],homeWon=s.home>s.away,[wp,lp]=leaguePoints(Math.max(s.home,s.away));if(homeWon){h.w++;a.l++;h.pts+=wp;a.pts+=lp}else{a.w++;h.l++;a.pts+=wp;h.pts+=lp}});const value=(row,key)=>key==="pct"?row.w/(row.w+row.l||1):row[key];const direction=sort.dir==="asc"?1:-1;return Object.values(stats).sort((a,b)=>direction*(value(a,sort.key)-value(b,sort.key))||b.pts-a.pts||b.w-a.w||((b.w/(b.w+b.l||1))-(a.w/(a.w+a.l||1)))||a.name.localeCompare(b.name,"zh-Hant"));}
-function trendHTML(n){return n>0?`<span style="color:#12b76a;font-weight:900">▲ ${n}</span>`:n<0?`<span style="color:#e21d2e;font-weight:900">▼ ${Math.abs(n)}</span>`:'<span style="color:var(--muted)">—</span>'}
-function sortHeader(group,key,label){const active=standingsSort[group].key===key,arrow=active?(standingsSort[group].dir==="desc"?"↓":"↑"):"";return `<button class="sort-button ${active?'active':''}" data-sort-group="${group}" data-sort-key="${key}" type="button">${label} <span class="sort-arrow">${arrow}</span></button>`}
-function tableHTML(group,compact=false){const rows=compact?standings(group,{key:"pts",dir:"desc"}):standings(group),teamCell=(s,i)=>`<span class="team-cell"><span class="rank">${i+1}</span><button type="button" class="team-link" data-team-link="${s.name}" data-link-group="${group}">${teamLogoHTML(s.name,'table-team-logo')}<span class="record-team">${s.name}</span></button></span>`;if(compact){return `<thead><tr><th>${t('team')}</th><th>${t('wins')}</th><th>${t('losses')}</th></tr></thead><tbody>${rows.slice(0,4).map((s,i)=>`<tr><td>${teamCell(s,i)}</td><td class="pct">${s.w}</td><td>${s.l}</td></tr>`).join("")}</tbody>`}return `<thead><tr><th>${t('rankTeam')}</th><th>${t('trend')}</th><th>${sortHeader(group,'pts',t('points'))}</th><th>${sortHeader(group,'w',t('wins'))}</th><th>${sortHeader(group,'l',t('losses'))}</th><th>${t('played')}</th><th>${sortHeader(group,'pct',t('winPct'))}</th></tr></thead><tbody>${rows.map((s,i)=>{const gp=s.w+s.l;return `<tr><td>${teamCell(s,i)}</td><td>${trendHTML(s.trend)}</td><td class="pct">${s.pts}</td><td>${s.w}</td><td>${s.l}</td><td>${gp}</td><td>${(s.w/gp).toFixed(3).replace(/^0/,"")}</td></tr>`}).join("")}</tbody>`}
-function bindStandingsSort(){document.querySelectorAll("[data-sort-group]").forEach(button=>button.onclick=()=>{const state=standingsSort[button.dataset.sortGroup],key=button.dataset.sortKey;if(state.key===key)state.dir=state.dir==="desc"?"asc":"desc";else{state.key=key;state.dir="desc"}renderStandings()});document.querySelectorAll("[data-team-link]").forEach(button=>button.onclick=()=>goToTeam(button.dataset.teamLink,button.dataset.linkGroup))}
-function renderStandings(){el("standingsA").innerHTML=tableHTML("A");el("standingsB").innerHTML=tableHTML("B");el("homeA").innerHTML=tableHTML("A",true);el("homeB").innerHTML=tableHTML("B",true);bindStandingsSort()}
-function renderHome(){const officialCount=games.filter(isOfficialGame).length,completed=games.filter(g=>scores[g.id]&&validScore(scores[g.id].home,scores[g.id].away)).length,totalTeams=teams.A.length+teams.B.length;el("overviewSummary").textContent=t('overviewLine')(totalTeams,games.length,completed);el("homeStats").innerHTML=`<div class="card stat-card"><span>${t('teamsCount')}</span><strong>${totalTeams}</strong><small>${t('twoGroups')}</small></div><div class="card stat-card"><span>${t('matchesCount')}</span><strong>${games.length}</strong><small>${dates.length} ${t('matchdays')}</small></div><div class="card stat-card"><span>${t('completedCount')}</span><strong>${completed}</strong><small>${t('officialBase')} ${officialCount} ${t('matchesUnit')}</small></div>`;const today=new Date().toISOString().slice(0,10);let next=dates.find(d=>d>=today)||dates[dates.length-1];el("nextDateText").textContent=fmtDate(next);el("nextGames").innerHTML=games.filter(g=>g.date===next).map(homeGameHTML).join("")}
-function renderTeams(){const visibleGroups=teamGroup==="ALL"?["A","B"]:[teamGroup];el("teamGrid").innerHTML=visibleGroups.map(group=>`<section class="team-group-section group-${group.toLowerCase()}" data-team-section="${group}"><div class="team-group-heading"><span>${group}</span><h2>${locale==='zh'?`${group} ${t('group')}`:`${t('group')} ${group}`}</h2></div><div class="team-grid">${teams[group].map(name=>{const s=standings(group).find(row=>row.name===name);return `<article class="card team-card group-${group.toLowerCase()}" data-team="${name}" data-tgroup="${group}">${teamLogoHTML(name,'team-card-logo')}<div class="team-meta"><h3>${name}</h3><span><b>${t('teamMeta')(group,s.w,s.l)}</b></span></div></article>`}).join("")}</div></section>`).join("");document.querySelectorAll("[data-team]").forEach(c=>c.onclick=()=>showTeam(c.dataset.team,c.dataset.tgroup))}
-let activeTeamDetail=null;
-function opponentStats(name,group){return teams[group].filter(opponent=>opponent!==name).map(opponent=>{const meetings=games.filter(g=>(g.home===name&&g.away===opponent)||(g.away===name&&g.home===opponent)).filter(g=>{const s=scores[g.id];return s&&validScore(s.home,s.away)}),wins=meetings.filter(g=>{const s=scores[g.id];return g.home===name?s.home>s.away:s.away>s.home}).length;return {opponent,played:meetings.length,wins,losses:meetings.length-wins,pct:meetings.length?Math.round(wins/meetings.length*100):null}})}
-function goToTeam(name,group){teamGroup=group;document.querySelectorAll("[data-team-group]").forEach(x=>x.classList.toggle("active",x.dataset.teamGroup===group));switchPage("teams");renderTeams();showTeam(name,group)}
-function showTeam(name,group,shouldScroll=true){activeTeamDetail={name,group};const s=standings(group).find(x=>x.name===name),list=games.filter(g=>g.home===name||g.away===name).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)),grouped=list.reduce((out,g)=>{(out[g.date]??=[]).push(g);return out},{}),opponents=opponentStats(name,group);const statsHTML=`<div class="table-wrap"><table class="opponent-table"><thead><tr><th>${t('team')}</th><th>${t('played')}</th><th>${t('wins')}</th><th>${t('losses')}</th><th>${t('winPct')}</th></tr></thead><tbody>${opponents.map(x=>`<tr><td><span class="opponent-team">${teamLogoHTML(x.opponent,'opponent-logo')}<span>${x.opponent}</span></span></td><td>${x.played}</td><td>${x.wins}</td><td>${x.losses}</td><td class="opponent-pct">${x.pct===null?'—':`${x.pct}%`}</td></tr>`).join('')}</tbody></table></div>`,scheduleHTML=Object.entries(grouped).map(([date,daily])=>`<section class="date-section group-${group.toLowerCase()}"><h3 class="date-heading"><time datetime="${date}">${fmtDate(date)}</time><span>${daily.length} ${t('matchesUnit')}</span></h3><div class="games">${daily.map(g=>gameCardHTML(g,{perspective:name})).join('')}</div></section>`).join('');el("teamDetail").innerHTML=`<div class="card team-detail">${teamLogoHTML(name,'team-detail-logo')}<div><div class="eyebrow">${group} GROUP TEAM</div><h2>${name}</h2><p>${t('teamDetail')(s.w,s.l,s.pts,list.length)}</p></div></div><section class="opponent-section"><h2>${u('opponentStats')}</h2><p>${u('opponentStatsHint')}</p>${statsHTML}</section><div class="section-head"><div><h2>${name}・${u('scheduleByDate')}</h2></div><button class="btn btn-ghost" id="closeTeam">${t('close')}</button></div>${scheduleHTML}`;el("closeTeam").onclick=()=>{activeTeamDetail=null;el("teamDetail").innerHTML=""};bindGames();if(shouldScroll)scrollTo({top:180,behavior:"smooth"})}
-document.querySelectorAll("[data-team-group]").forEach(b=>b.onclick=()=>{teamGroup=b.dataset.teamGroup;document.querySelectorAll("[data-team-group]").forEach(x=>x.classList.toggle("active",x===b));renderTeams()});
-function openScore(id){activeGame=games.find(g=>g.id===id);const s=scores[id]||{};el("modalMeta").textContent=`${fmtDate(activeGame.date)}・${activeGame.time}・${activeGame.group} 組`;el("homeLabel").textContent=activeGame.home;el("awayLabel").textContent=activeGame.away;el("homeScore").value=Number.isFinite(s.home)?s.home:"";el("awayScore").value=Number.isFinite(s.away)?s.away:"";el("scoreDialog").showModal()}
-el("cancelScore").onclick=()=>el("scoreDialog").close();el("clearScore").onclick=()=>{if(activeGame){delete scores[activeGame.id];saveAndRender();el("scoreDialog").close()}};el("scoreForm").onsubmit=e=>{e.preventDefault();const h=Number(el("homeScore").value),a=Number(el("awayScore").value);if(!validScore(h,a)){alert("請輸入合法比分：3–0、0–3、2–1 或 1–2。");return}scores[activeGame.id]={home:h,away:a};saveAndRender();el("scoreDialog").close()};
-function saveAndRender(){localStorage.setItem("wuriLeagueScores",JSON.stringify(scores));renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
-function applyLocale(next){
-  locale=next;
-  localStorage.setItem("wuriLeagueLocale",locale);
-  document.documentElement.lang=locale==="zh"?"zh-Hant":"en";
-  document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";
-  document.querySelectorAll("[data-i18n]").forEach(node=>node.textContent=t(node.dataset.i18n));
-  document.querySelectorAll("[data-i18n-html]").forEach(node=>node.innerHTML=t(node.dataset.i18nHtml));
-  document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));
-  renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false);
-}
-document.querySelectorAll("[data-locale]").forEach(button=>button.onclick=()=>applyLocale(button.dataset.locale));
-applyLocale(locale);
-</script>
+<script src="assets/js/app.js"></script>
 </body>
 </html>
