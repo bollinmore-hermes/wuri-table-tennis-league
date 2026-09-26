@@ -1,6 +1,7 @@
 "use strict";
 const config=window.LEAGUE_CONFIG||{mode:"static",seasonCode:"2026-autumn-second-half"};
-const repository=window.WuriLeagueRepository.createConfiguredRepository(config,window.WuriLeagueOfficialData,window.supabase);
+let repository=null,repositoryError=null;
+try{repository=window.WuriLeagueRepository.createConfiguredRepository(config,window.WuriLeagueOfficialData,window.supabase)}catch(error){repositoryError=error}
 let teams={A:[],B:[]},officialStandings={A:{rows:{}},B:{rows:{}}},officialScores={},games=[],scores={},dates=[];
 const validScore=window.WuriLeagueRepository.scoreIsValid;
 function applyDataset(dataset){
@@ -13,7 +14,7 @@ function applyDataset(dataset){
   officialStandings={A:{rows:{}},B:{rows:{}}};
   for(const row of dataset.snapshots||[]){if(officialStandings[row.group]&&nameByCode[row.team_code])officialStandings[row.group].rows[nameByCode[row.team_code]]={pts:row.points,w:row.wins,l:row.losses,trend:row.rank_change||0}}
 }
-if(typeof repository.getPublicLeagueSync==="function")applyDataset(repository.getPublicLeagueSync());
+if(repository&&typeof repository.getPublicLeagueSync==="function")applyDataset(repository.getPublicLeagueSync());
 let groupFilter="ALL", selectedDate="ALL", teamGroup="ALL", activeTeamDetail=null;
 const standingsSort={A:{key:"pts",dir:"desc"},B:{key:"pts",dir:"desc"}};
 const el=id=>document.getElementById(id);
@@ -125,7 +126,7 @@ function tableHTML(group,compact=false){
 function bindStandings(){document.querySelectorAll("[data-sort-group]").forEach(button=>button.addEventListener("click",()=>{const state=standingsSort[button.dataset.sortGroup],key=button.dataset.sortKey;if(state.key===key)state.dir=state.dir==="desc"?"asc":"desc";else{state.key=key;state.dir="desc"}renderStandings()}));document.querySelectorAll("[data-team-link]").forEach(button=>button.addEventListener("click",()=>goToTeam(button.dataset.teamLink,button.dataset.linkGroup)))}
 function renderStandings(){replace(el("standingsA"),tableHTML("A"));replace(el("standingsB"),tableHTML("B"));replace(el("homeA"),tableHTML("A",true));replace(el("homeB"),tableHTML("B",true));bindStandings()}
 function statCard(label,value,detail){return dom("div",{className:"card stat-card"},dom("span",{text:label}),dom("strong",{text:value}),dom("small",{text:detail}))}
-function renderHome(){const officialCount=games.filter(isOfficialGame).length,completed=games.filter(game=>scores[game.id]&&validScore(scores[game.id].home,scores[game.id].away)).length,totalTeams=teams.A.length+teams.B.length;el("overviewSummary").textContent=t("overviewLine")(totalTeams,games.length,completed);replace(el("homeStats"),statCard(t("teamsCount"),totalTeams,t("twoGroups")),statCard(t("matchesCount"),games.length,`${dates.length} ${t("matchdays")}`),statCard(t("completedCount"),completed,`${t("officialBase")} ${officialCount} ${t("matchesUnit")}`));const today=new Date().toISOString().slice(0,10),next=dates.find(date=>date>=today)||dates[dates.length-1];el("nextDateText").textContent=fmtDate(next);replace(el("nextGames"),games.filter(game=>game.date===next).map(homeGameHTML))}
+function renderHome(){const officialCount=games.filter(isOfficialGame).length,completed=games.filter(game=>scores[game.id]&&validScore(scores[game.id].home,scores[game.id].away)).length,totalTeams=teams.A.length+teams.B.length;el("overviewSummary").textContent=t("overviewLine")(totalTeams,games.length,completed);replace(el("homeStats"),statCard(t("teamsCount"),totalTeams,t("twoGroups")),statCard(t("matchesCount"),games.length,`${dates.length} ${t("matchdays")}`),statCard(t("completedCount"),completed,`${t("officialBase")} ${officialCount} ${t("matchesUnit")}`));const today=new Date().toISOString().slice(0,10),next=dates.find(date=>date>=today)||dates[dates.length-1];el("nextDateText").textContent=next?fmtDate(next):t("noMatches");replace(el("nextGames"),next?games.filter(game=>game.date===next).map(homeGameHTML):[])}
 function renderTeams(){const visibleGroups=teamGroup==="ALL"?["A","B"]:[teamGroup],sections=visibleGroups.map(group=>{const grid=dom("div",{className:"team-grid"});teams[group].forEach(name=>{const stats=standings(group).find(row=>row.name===name),card=dom("article",{className:`card team-card group-${group.toLowerCase()}`,attrs:{tabindex:"0",role:"button"},dataset:{team:name,tgroup:group}},teamLogoHTML(name,"team-card-logo"),dom("div",{className:"team-meta"},dom("h3",{text:name}),dom("span",{},dom("b",{text:t("teamMeta")(group,stats.w,stats.l)}))));const open=()=>showTeam(name,group);card.addEventListener("click",open);card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();open()}});grid.append(card)});return dom("section",{className:`team-group-section group-${group.toLowerCase()}`,dataset:{teamSection:group}},dom("div",{className:"team-group-heading"},dom("span",{text:group}),dom("h2",{text:locale==="zh"?`${group} ${t("group")}`:`${t("group")} ${group}`})),grid)});replace(el("teamGrid"),sections)}
 function opponentStats(name,group){return teams[group].filter(opponent=>opponent!==name).map(opponent=>{const meetings=games.filter(game=>(game.home===name&&game.away===opponent)||(game.away===name&&game.home===opponent)).filter(game=>{const score=scores[game.id];return score&&validScore(score.home,score.away)}),wins=meetings.filter(game=>{const score=scores[game.id];return game.home===name?score.home>score.away:score.away>score.home}).length;return {opponent,played:meetings.length,wins,losses:meetings.length-wins,pct:meetings.length?Math.round(wins/meetings.length*100):null}})}
 function goToTeam(name,group){teamGroup=group;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node.dataset.teamGroup===group));switchPage("teams");renderTeams();showTeam(name,group)}
@@ -144,8 +145,12 @@ document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventLi
 function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));
 window.WuriLeagueApp=Object.freeze({gameCardHTML,teamLogoHTML,renderSchedule,renderTeams,showTeam,getSummary:()=>Object.freeze({teams:teams.A.length+teams.B.length,matches:games.length,results:Object.keys(officialScores).length})});
-if(typeof repository.getPublicLeagueSync==="function")applyLocale(locale);
-else repository.getPublicLeague().then(dataset=>{applyDataset(dataset);applyLocale(locale)}).catch(()=>{
-  const notice=dom("div",{className:"notice",text:"聯賽資料目前無法載入，請稍後再試。",attrs:{role:"alert"}});
-  document.querySelector("main")?.prepend(notice);
-});
+function showRepositoryError(disabled=false){
+  applyLocale(locale);
+  const message=disabled?"測試環境資料來源尚未設定，聯賽資料已安全停用。":"聯賽資料目前無法載入，請稍後再試。";
+  const notice=dom("div",{className:"notice",text:message,attrs:{role:"alert"}});
+  document.querySelector?.("main")?.prepend(notice);
+}
+if(repositoryError)showRepositoryError(config&&config.mode==='disabled');
+else if(typeof repository.getPublicLeagueSync==="function")applyLocale(locale);
+else repository.getPublicLeague().then(dataset=>{applyDataset(dataset);applyLocale(locale)}).catch(()=>showRepositoryError(false));

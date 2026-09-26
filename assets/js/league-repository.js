@@ -8,6 +8,9 @@
   const GROUP=/^[AB]$/;
   const DATE=/^\d{4}-\d{2}-\d{2}$/;
   const TIME=/^\d{2}:\d{2}(?::\d{2})?$/;
+  const STATUS=new Set(['scheduled','postponed','cancelled','final']);
+  const dateIsValid=value=>{if(!DATE.test(value))return false;const date=new Date(`${value}T00:00:00Z`);return !Number.isNaN(date.getTime())&&date.toISOString().slice(0,10)===value};
+  const timeIsValid=value=>TIME.test(value)&&value.split(':').every((part,index)=>Number(part)<(index?60:24));
   const scoreIsValid=(home,away)=>Number.isInteger(home)&&Number.isInteger(away)&&((home===3&&away===0)||(home===0&&away===3)||(home===2&&away===1)||(home===1&&away===2));
   const text=(value,max,label)=>{if(typeof value!=='string'||value.length>max||/[\u0000-\u001f\u007f]/.test(value))throw new Error(`Invalid ${label}`);return value};
   const requiredText=(value,max,label)=>{const out=text(value,max,label);if(!out.trim())throw new Error(`Invalid ${label}`);return out};
@@ -16,24 +19,41 @@
     if(!payload||typeof payload!=='object'||Array.isArray(payload))throw new Error('Invalid public league response');
     for(const key of ['teams','matches','results'])if(!Array.isArray(payload[key]))throw new Error(`Invalid public league ${key}`);
     if(payload.teams.length>100||payload.matches.length>500||payload.results.length>500)throw new Error('Public league response exceeds limits');
+    const teamCodes=new Set();
     const teams=payload.teams.map(row=>{
       if(!row||!IDENTIFIER.test(row.team_code||'')||!GROUP.test(row.group||''))throw new Error('Invalid public team');
+      if(teamCodes.has(row.team_code))throw new Error(`Duplicate public team_code: ${row.team_code}`);
+      teamCodes.add(row.team_code);
       return {team_code:row.team_code,name:requiredText(row.name,100,'team name'),short_name:requiredText(row.short_name||row.name,30,'team short name'),group:row.group,display_order:Number.isInteger(row.display_order)?row.display_order:0,description:text(row.description||'',1000,'team description'),logo_path:text(row.logo_path||'',300,'logo path'),active:row.active!==false};
     });
     const names=new Map(teams.map(team=>[team.team_code,team.name]));
+    const groups=new Map(teams.map(team=>[team.team_code,team.group]));
+    const matchCodes=new Set();
     const matches=payload.matches.map(row=>{
-      if(!row||!IDENTIFIER.test(row.match_code||'')||!GROUP.test(row.group||'')||!DATE.test(row.date||'')||!TIME.test(row.time||'')||!names.has(row.home_team_code)||!names.has(row.away_team_code)||row.home_team_code===row.away_team_code)throw new Error('Invalid public match');
+      if(!row||!IDENTIFIER.test(row.match_code||'')||!GROUP.test(row.group||'')||!dateIsValid(row.date||'')||!timeIsValid(row.time||'')||!STATUS.has(row.status||'scheduled'))throw new Error('Invalid public match');
+      if(matchCodes.has(row.match_code))throw new Error(`Duplicate public match_code: ${row.match_code}`);
+      if(!names.has(row.home_team_code)||!names.has(row.away_team_code))throw new Error(`Invalid public match team reference: ${row.match_code}`);
+      if(row.home_team_code===row.away_team_code)throw new Error(`Public match teams must differ: ${row.match_code}`);
+      if(groups.get(row.home_team_code)!==row.group||groups.get(row.away_team_code)!==row.group)throw new Error(`Public match group mismatch: ${row.match_code}`);
+      matchCodes.add(row.match_code);
       return {match_code:row.match_code,id:row.match_code,group:row.group,date:row.date,time:row.time.slice(0,5),home_team_code:row.home_team_code,away_team_code:row.away_team_code,home:names.get(row.home_team_code),away:names.get(row.away_team_code),venue:text(row.venue||'',200,'venue'),status:text(row.status||'scheduled',20,'match status'),published:true};
     });
-    const matchCodes=new Set(matches.map(match=>match.match_code));
+    const resultCodes=new Set();
     const results=payload.results.map(row=>{
       if(!row||!matchCodes.has(row.match_code)||!scoreIsValid(row.home_score,row.away_score))throw new Error('Invalid public result');
+      if(resultCodes.has(row.match_code))throw new Error(`Duplicate public result match_code: ${row.match_code}`);
+      resultCodes.add(row.match_code);
       return {match_code:row.match_code,home_score:row.home_score,away_score:row.away_score,status:'final',published:true};
     });
     if(payload.snapshots!==undefined&&!Array.isArray(payload.snapshots))throw new Error('Invalid public league snapshots');
     if((payload.snapshots||[]).length>500)throw new Error('Public league response exceeds limits');
+    const snapshotKeys=new Set();
     const snapshots=(payload.snapshots||[]).map(row=>{
-      if(!row||!GROUP.test(row.group||'')||!DATE.test(row.snapshot_date||'')||!names.has(row.team_code)||![row.points,row.wins,row.losses,row.rank,row.rank_change].every(Number.isInteger))throw new Error('Invalid public snapshot');
+      if(!row||!GROUP.test(row.group||'')||!dateIsValid(row.snapshot_date||'')||!names.has(row.team_code)||![row.points,row.wins,row.losses,row.rank,row.rank_change].every(Number.isInteger)||row.points<0||row.wins<0||row.losses<0||row.rank<1)throw new Error('Invalid public snapshot');
+      if(groups.get(row.team_code)!==row.group)throw new Error(`Public snapshot group mismatch: ${row.team_code}`);
+      const key=`${row.group}\u0000${row.snapshot_date}\u0000${row.team_code}`;
+      if(snapshotKeys.has(key))throw new Error(`Duplicate public snapshot: ${row.group}/${row.snapshot_date}/${row.team_code}`);
+      snapshotKeys.add(key);
       return Object.freeze({group:row.group,snapshot_date:row.snapshot_date,team_code:row.team_code,points:row.points,wins:row.wins,losses:row.losses,rank:row.rank,rank_change:row.rank_change});
     });
     return Object.freeze({season:payload.season?Object.freeze({...payload.season}):null,teams:freezeRows(teams),matches:freezeRows(matches),results:freezeRows(results),snapshots:Object.freeze(snapshots)});

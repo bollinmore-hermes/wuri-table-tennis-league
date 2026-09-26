@@ -195,7 +195,7 @@ language plpgsql security definer set search_path=pg_catalog,public,pg_temp as $
 declare app_role text; before_row jsonb;
 begin
   select public.current_app_role() into app_role; if app_role is distinct from 'admin' then raise exception 'admin role required' using errcode='42501'; end if;
-  if p_role not in ('admin','scorer') or char_length(coalesce(p_display_name,''))>100 then raise exception 'invalid profile input'; end if;
+  if p_role is null or p_role not in ('admin','scorer') or char_length(coalesce(p_display_name,''))>100 then raise exception 'invalid profile input'; end if;
   select to_jsonb(p) into before_row from public.profiles p where p.id=p_user_id;
   insert into public.profiles(id,display_name,role,active) values(p_user_id,coalesce(p_display_name,''),p_role,p_active) on conflict(id) do update set display_name=excluded.display_name,role=excluded.role,active=excluded.active;
   insert into public.audit_logs(user_id,action,detail,before_data,after_data) values(auth.uid(),'set_profile_role',p_user_id::text,before_row,jsonb_build_object('id',p_user_id,'role',p_role,'active',p_active));
@@ -207,7 +207,7 @@ end $$;
 create or replace function public.import_league_data(p_payload jsonb) returns jsonb
 language plpgsql security definer set search_path=pg_catalog,public,pg_temp as $$
 declare
-  app_role text; season_code text; row jsonb; sid uuid; gid uuid; tid uuid; mid uuid; hid uuid; aid uuid;
+  app_role text; season_code text; row jsonb; sid uuid; gid uuid; tid uuid; mid uuid; hid uuid; aid uuid; existing_sid uuid;
   team_count int; match_count int; result_count int; snapshot_count int;
 begin
   select public.current_app_role() into app_role;
@@ -254,11 +254,18 @@ begin
     select st.team_id into aid from public.season_teams st join public.teams t on t.id=st.team_id where st.season_id=sid and st.group_id=gid and st.active and t.active and t.team_code=row->>'away_team_code';
     if gid is null or hid is null or aid is null then raise exception 'invalid match reference'; end if;
     mid=null;
+    existing_sid=null;
+    select m.season_id into existing_sid from public.matches m where m.match_code=row->>'match_code';
+    if existing_sid is not null and existing_sid<>sid then raise exception 'match code belongs to another season: %',row->>'match_code'; end if;
     insert into public.matches(season_id,group_id,match_code,match_date,match_time,home_team_id,away_team_id,venue,status,published,updated_by)
     values(sid,gid,row->>'match_code',(row->>'date')::date,(row->>'time')::time,hid,aid,coalesce(row->>'venue',''),coalesce(row->>'status','scheduled'),coalesce((row->>'published')::boolean,false),auth.uid())
-    on conflict(match_code) do update set season_id=excluded.season_id,group_id=excluded.group_id,match_date=excluded.match_date,match_time=excluded.match_time,home_team_id=excluded.home_team_id,away_team_id=excluded.away_team_id,venue=excluded.venue,status=excluded.status,published=excluded.published,version=public.matches.version+1,updated_by=auth.uid(),updated_at=now()
-    where not public.matches.locked returning id into mid;
-    if mid is null then raise exception 'match locked'; end if;
+    on conflict(match_code) do update set group_id=excluded.group_id,match_date=excluded.match_date,match_time=excluded.match_time,home_team_id=excluded.home_team_id,away_team_id=excluded.away_team_id,venue=excluded.venue,status=excluded.status,published=excluded.published,version=public.matches.version+1,updated_by=auth.uid(),updated_at=now()
+    where public.matches.season_id=excluded.season_id and not public.matches.locked returning id into mid;
+    if mid is null then
+      select m.season_id into existing_sid from public.matches m where m.match_code=row->>'match_code';
+      if existing_sid is distinct from sid then raise exception 'match code belongs to another season: %',row->>'match_code'; end if;
+      raise exception 'match locked';
+    end if;
   end loop;
 
   for row in select value from jsonb_array_elements(coalesce(p_payload->'results','[]'::jsonb)) loop

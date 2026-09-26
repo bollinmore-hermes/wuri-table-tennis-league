@@ -14,27 +14,32 @@ const repositorySource=fs.readFileSync(path.join(root,'assets/js/league-reposito
 class FakeNode{
   constructor(tag='#fragment',text=''){this.tagName=tag.toUpperCase();this.textContent=String(text);this.children=[];this.attributes={};this.dataset={};this.style={};this.className='';this.value='';this.hidden=false;this.classList={toggle(){},add(){},remove(){}}}
   append(...items){for(const item of items.flat(Infinity)){if(item!==null&&item!==undefined)this.children.push(item instanceof FakeNode?item:new FakeNode('#text',item))}}
+  prepend(...items){this.children.unshift(...items.flat(Infinity).filter(item=>item!==null&&item!==undefined).map(item=>item instanceof FakeNode?item:new FakeNode('#text',item)))}
   replaceChildren(...items){this.children=[];this.textContent='';this.append(...items)}
   setAttribute(name,value){this.attributes[name]=String(value)}
   addEventListener(){}
 }
 function walk(node){return [node,...node.children.flatMap(walk)]}
-function loadPublicApp(){
+function loadPublicApp(config){
   const ids=new Map();
+  const main=new FakeNode('main');
   const document={
     documentElement:new FakeNode('html'),
     createElement:tag=>new FakeNode(tag),
     createTextNode:text=>new FakeNode('#text',text),
     createDocumentFragment:()=>new FakeNode('#fragment'),
     getElementById:id=>{if(!ids.has(id))ids.set(id,new FakeNode('div'));return ids.get(id)},
-    querySelectorAll:()=>[]
+    querySelectorAll:()=>[],
+    querySelector:selector=>selector==='main'?main:null
   };
   const storage=new Map();
   const sandbox={console,Intl,Date,Object,Array,Number,String,Math,JSON,Node:FakeNode,document,localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,String(value))},scrollTo(){}};
   sandbox.window=sandbox;
+  if(config)sandbox.LEAGUE_CONFIG=config;
   vm.runInNewContext(officialSource,sandbox,{filename:'assets/js/official-data.js'});
   vm.runInNewContext(repositorySource,sandbox,{filename:'assets/js/league-repository.js'});
   vm.runInNewContext(appSource,sandbox,{filename:'assets/js/app.js'});
+  sandbox.__ids=ids;sandbox.__main=main;
   return sandbox;
 }
 
@@ -60,6 +65,15 @@ test('public renderer avoids HTML string sinks and score mutation hooks',()=>{
 test('official public data remains 12 teams, 60 matches, 26 results',()=>{
   const summary=loadPublicApp().WuriLeagueApp.getSummary();
   assert.deepEqual(JSON.parse(JSON.stringify(summary)),{teams:12,matches:60,results:26});
+});
+
+test('disabled public config renders a safe in-page zero state without throwing',()=>{
+  const browser=loadPublicApp({mode:'disabled',supabaseUrl:'',supabasePublishableKey:'',seasonCode:'2026-autumn-second-half'});
+  assert.deepEqual(JSON.parse(JSON.stringify(browser.WuriLeagueApp.getSummary())),{teams:0,matches:0,results:0});
+  assert.match(browser.__ids.get('overviewSummary').textContent,/0.*0.*0/);
+  const alerts=walk(browser.__main).filter(node=>node.attributes.role==='alert');
+  assert.equal(alerts.length,1);
+  assert.match(alerts[0].textContent,/資料來源尚未設定.*安全停用/);
 });
 
 test('production artifact is fail-closed and contains no management surface',()=>{

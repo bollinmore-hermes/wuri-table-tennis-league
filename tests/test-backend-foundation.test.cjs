@@ -5,7 +5,8 @@ const {execFileSync}=require('node:child_process');
 const test=require('node:test');
 const root=path.resolve(__dirname,'..');
 const official=require('../assets/js/official-data.js');
-const {StaticLeagueRepository,SupabaseLeagueRepository}=require('../assets/js/league-repository.js');
+const {StaticLeagueRepository,SupabaseLeagueRepository,normalizeDataset}=require('../assets/js/league-repository.js');
+const cloneOfficial=()=>JSON.parse(JSON.stringify(official));
 
 const standings=group=>{
   const rows=Object.fromEntries(official.teams.filter(team=>team.group===group).map(team=>[team.team_code,{code:team.team_code,points:0,wins:0,losses:0}]));
@@ -37,6 +38,20 @@ test('Supabase repository fails closed on RPC and malformed data',async()=>{
   await assert.rejects(()=>malformed.getPublicLeague(),/Invalid public result/);
 });
 
+for(const [name,mutate,message] of [
+  ['duplicate team_code',data=>data.teams.push({...data.teams[0]}),/Duplicate public team_code/],
+  ['duplicate match_code',data=>data.matches.push({...data.matches[0]}),/Duplicate public match_code/],
+  ['match referencing another group team',data=>{data.matches[0].away_team_code=data.teams.find(team=>team.group!==data.matches[0].group).team_code},/Public match group mismatch/],
+  ['match referencing unknown team',data=>{data.matches[0].away_team_code='UNKNOWN'},/Invalid public match team reference/],
+  ['match using the same team twice',data=>{data.matches[0].away_team_code=data.matches[0].home_team_code},/Public match teams must differ/],
+  ['duplicate result match_code',data=>data.results.push({...data.results[0]}),/Duplicate public result match_code/],
+  ['snapshot group differing from team group',data=>{data.snapshots[0].group=data.snapshots[0].group==='A'?'B':'A'},/Public snapshot group mismatch/],
+  ['duplicate snapshot key',data=>data.snapshots.push({...data.snapshots[0]}),/Duplicate public snapshot/]
+])test(`repository rejects ${name}`,()=>{
+  const data=cloneOfficial();mutate(data);
+  assert.throws(()=>normalizeDataset(data),message);
+});
+
 test('test build contains public/admin and only generated publishable config',()=>{
   const env={...process.env,SUPABASE_TEST_URL:'https://wuri-test.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'test-publishable-browser-key-000001'};
   execFileSync(process.execPath,['scripts/build-test.cjs'],{cwd:root,env,stdio:'pipe'});
@@ -65,10 +80,17 @@ test('official seed generation is deterministic and carries canonical counts',()
   execFileSync(process.execPath,['scripts/generate-official-seed.cjs'],{cwd:root,stdio:'pipe'});
   const second=fs.readFileSync(path.join(root,'supabase/seed-official.sql'),'utf8');
   assert.equal(first,second);
-  assert.match(first,/12 teams, 60 matches, 26 results/);
+  assert.match(first,/12 teams, 60 matches, 26 results; 26 final, 34 scheduled/);
   assert.match(first,/on conflict\(team_code\) do update/i);
   assert.match(first,/on conflict\(match_code\) do update/i);
   assert.match(first,/on conflict\(match_id\) do update/i);
+  const matchSeed=first.match(/with v\(match_code,group_code[^]*?with v\(match_code,home_score/)[0];
+  assert.equal((matchSeed.match(/,'final'\)/g)||[]).length,26);
+  assert.equal((matchSeed.match(/,'scheduled'\)/g)||[]).length,34);
+  assert.doesNotMatch(matchSeed,/do update set\s+season_id\s*=/i);
+  assert.match(matchSeed,/where public\.matches\.season_id=excluded\.season_id/i);
+  assert.match(first,/official seed match_code belongs to another season/i);
+  assert.match(first,/join public\.seasons s on s\.id=m\.season_id and s\.code=/i);
 });
 
 test('004 backend contract exposes one public RPC and fail-closed audited writes',()=>{
@@ -85,9 +107,14 @@ test('004 backend contract exposes one public RPC and fail-closed audited writes
   assert.match(sql,/audit_logs/);
   assert.match(sql,/batch limit exceeded/);
   assert.match(sql,/snapshot_count>500/);
-  assert.match(sql,/where not public\.matches\.locked returning id into mid/i);
+  assert.match(sql,/where public\.matches\.season_id=excluded\.season_id and not public\.matches\.locked returning id into mid/i);
   assert.match(sql,/where not public\.match_results\.locked returning match_id into tid/i);
   assert.match(sql,/allowed_mime_types[^;]+image\/png[^;]+image\/webp/is);
   assert.match(sql,/team logos admin insert[^;]+to authenticated[^;]+current_app_role\(\)[^;]+admin/is);
   assert.match(sql,/Pixel dimensions must be validated/);
+  assert.match(sql,/p_role is null or p_role not in \('admin','scorer'\)/i);
+  assert.match(sql,/match code belongs to another season/i);
+  const importBody=sql.match(/create or replace function public\.import_league_data[^]*?end \$\$;/i)[0];
+  assert.doesNotMatch(importBody,/on conflict\(match_code\) do update set\s+season_id\s*=/i);
+  assert.match(importBody,/where public\.matches\.season_id=excluded\.season_id and not public\.matches\.locked/i);
 });
