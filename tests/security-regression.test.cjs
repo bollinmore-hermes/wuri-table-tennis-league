@@ -80,3 +80,26 @@ test('security migration revokes anonymous RPC access and enforces input limits'
   assert.match(migration,/pg_column_size\(p_payload\)>2097152/);
   assert.match(migration,/char_length\(coalesce\(p_note,''\)\)>500/);
 });
+
+test('security migration authorizes RPCs fail-closed with one role lookup per call',()=>{
+  const migration=fs.readFileSync(path.join(root,'supabase/migrations/003_security_hardening.sql'),'utf8');
+  const functionBody=name=>{
+    const match=migration.match(new RegExp(`create or replace function public\\.${name}\\([^]*?as \\$\\$([^]*?)\\$\\$;`,'i'));
+    assert.ok(match,`missing ${name} function`);
+    return match[1];
+  };
+  const adminDataset=functionBody('get_admin_dataset');
+  const importData=functionBody('import_league_data');
+  const saveResult=functionBody('save_match_result');
+
+  assert.doesNotMatch(migration,/current_app_role\(\)\s*(?:not\s+in|<>|!=)/i);
+  for(const [name,body] of [['get_admin_dataset',adminDataset],['import_league_data',importData],['save_match_result',saveResult]]){
+    assert.match(body,/app_role\s+text\s*;/i,`${name} must declare a local role`);
+    assert.equal((body.match(/select\s+public\.current_app_role\(\)\s+into\s+app_role/gi)||[]).length,1,`${name} must read the role exactly once`);
+    assert.equal((body.match(/current_app_role\(\)/gi)||[]).length,1,`${name} must reuse the local role`);
+  }
+  assert.match(adminDataset,/app_role\s+is\s+null\s+or\s+app_role\s+not\s+in\s*\(\s*'admin'\s*,\s*'scorer'\s*\)/i);
+  assert.match(importData,/app_role\s+is\s+distinct\s+from\s+'admin'/i);
+  assert.match(saveResult,/app_role\s+is\s+null\s+or\s+app_role\s+not\s+in\s*\(\s*'admin'\s*,\s*'scorer'\s*\)/i);
+  assert.match(saveResult,/locked\s*=\s*true\)[^;]*app_role\s+is\s+distinct\s+from\s+'admin'/i);
+});

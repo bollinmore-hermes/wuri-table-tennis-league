@@ -11,9 +11,10 @@ create or replace function public.get_admin_dataset() returns jsonb
 language plpgsql security definer
 set search_path=public,pg_temp
 as $$
-declare sid uuid; result jsonb;
+declare sid uuid; result jsonb; app_role text;
 begin
-  if public.current_app_role() not in ('admin','scorer') then raise exception 'permission denied' using errcode='42501'; end if;
+  select public.current_app_role() into app_role;
+  if app_role is null or app_role not in ('admin','scorer') then raise exception 'permission denied' using errcode='42501'; end if;
   select id into sid from public.seasons where code='2026-autumn-second-half';
   if sid is null then raise exception 'season not initialized'; end if;
   select jsonb_build_object(
@@ -32,8 +33,10 @@ as $$
 declare
   sid uuid; row jsonb; tid uuid; gid uuid; mid uuid; htid uuid; atid uuid;
   team_count int; match_count int; result_count int; snapshot_count int;
+  app_role text;
 begin
-  if public.current_app_role()<>'admin' then raise exception 'admin role required' using errcode='42501'; end if;
+  select public.current_app_role() into app_role;
+  if app_role is distinct from 'admin' then raise exception 'admin role required' using errcode='42501'; end if;
   if p_payload is null or jsonb_typeof(p_payload)<>'object' or pg_column_size(p_payload)>2097152 then raise exception 'invalid payload'; end if;
   if jsonb_typeof(coalesce(p_payload->'teams','[]'::jsonb))<>'array'
      or jsonb_typeof(coalesce(p_payload->'matches','[]'::jsonb))<>'array'
@@ -120,15 +123,16 @@ create or replace function public.save_match_result(p_match_code text,p_home_sco
 language plpgsql security definer
 set search_path=public,pg_temp
 as $$
-declare mid uuid; old jsonb;
+declare mid uuid; old jsonb; app_role text;
 begin
-  if public.current_app_role() not in ('admin','scorer') then raise exception 'permission denied' using errcode='42501'; end if;
+  select public.current_app_role() into app_role;
+  if app_role is null or app_role not in ('admin','scorer') then raise exception 'permission denied' using errcode='42501'; end if;
   if p_match_code is null or p_match_code!~'^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$' then raise exception 'invalid match code'; end if;
   if char_length(coalesce(p_note,''))>500 or coalesce(p_note,'')~'[[:cntrl:]]' then raise exception 'invalid note'; end if;
   if not ((p_home_score=3 and p_away_score=0) or (p_home_score=0 and p_away_score=3) or (p_home_score=2 and p_away_score=1) or (p_home_score=1 and p_away_score=2)) then raise exception 'invalid score'; end if;
   select m.id,to_jsonb(r) into mid,old from matches m left join match_results r on r.match_id=m.id where m.match_code=p_match_code;
   if mid is null then raise exception 'unknown match'; end if;
-  if exists(select 1 from match_results where match_id=mid and locked=true) and public.current_app_role()<>'admin' then raise exception 'result locked' using errcode='42501'; end if;
+  if exists(select 1 from match_results where match_id=mid and locked=true) and app_role is distinct from 'admin' then raise exception 'result locked' using errcode='42501'; end if;
   insert into match_results(match_id,home_score,away_score,note,updated_by) values(mid,p_home_score,p_away_score,coalesce(p_note,''),auth.uid())
   on conflict(match_id) do update set home_score=excluded.home_score,away_score=excluded.away_score,note=excluded.note,updated_by=auth.uid(),updated_at=now();
   update matches set status='final',updated_at=now() where id=mid;
