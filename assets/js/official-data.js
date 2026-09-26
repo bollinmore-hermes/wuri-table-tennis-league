@@ -25,7 +25,6 @@
     ['B','2026-11-29',[['15:30','我們這一隊','南門金龍'],['15:30','劉家昌','富士山'],['16:00','我們這一隊','富士山'],['16:00','劉家昌','南門金龍']]]
   ];
   const codeByName=Object.fromEntries(teams.map(team=>[team.name,team.team_code]));
-  const matches=rounds.flatMap(([group,date,list])=>list.map(([time,home,away],index)=>Object.freeze({match_code:`${group}-${date}-${index+1}`,group,date,time,home_team_code:codeByName[home],away_team_code:codeByName[away],home,away,venue:'',status:'scheduled',published:true})));
   const scoreRows=[
     ['A-2026-08-23-1',3,0],['A-2026-08-23-2',2,1],['A-2026-08-23-3',0,3],['A-2026-08-23-4',1,2],['A-2026-08-23-5',1,2],['A-2026-08-23-6',0,3],
     ['A-2026-09-06-1',0,3],['A-2026-09-06-2',3,0],['A-2026-09-06-3',3,0],['A-2026-09-06-4',0,3],['A-2026-09-06-5',3,0],
@@ -33,6 +32,8 @@
     ['B-2026-08-30-1',0,3],['B-2026-08-30-2',3,0],['B-2026-08-30-3',3,0],['B-2026-08-30-4',3,0],['B-2026-08-30-5',1,2],['B-2026-08-30-6',3,0],
     ['B-2026-09-13-1',3,0],['B-2026-09-13-2',0,3],['B-2026-09-13-3',1,2],['B-2026-09-13-4',2,1],['B-2026-09-13-5',0,3]
   ];
+  const resultCodes=new Set(scoreRows.map(([match_code])=>match_code));
+  const matches=rounds.flatMap(([group,date,list])=>list.map(([time,home,away],index)=>{const match_code=`${group}-${date}-${index+1}`;return Object.freeze({match_code,group,date,time,home_team_code:codeByName[home],away_team_code:codeByName[away],home,away,venue:'',status:resultCodes.has(match_code)?'final':'scheduled',published:true})}));
   const results=scoreRows.map(([match_code,home_score,away_score])=>Object.freeze({match_code,home_score,away_score,status:'final',note:'正式賽果',published:true,locked:true}));
   const snapshotRows={
     A:[['A05',15,5,0,1,1],['A03',11,4,1,2,-1],['A04',8,3,2,3,0],['A06',6,2,3,4,2],['A01',4,1,4,5,-1],['A02',1,0,5,6,-1]],

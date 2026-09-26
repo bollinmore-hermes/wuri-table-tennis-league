@@ -18,9 +18,47 @@ const standings=group=>{
 test('static repository exposes canonical immutable 12/60/26 dataset',async()=>{
   const repo=new StaticLeagueRepository(official),data=await repo.getPublicLeague();
   assert.deepEqual([data.teams.length,data.matches.length,data.results.length],[12,60,26]);
+  assert.deepEqual(data.matches.reduce((counts,match)=>({...counts,[match.status]:(counts[match.status]||0)+1}),{}),{final:26,scheduled:34});
   assert.equal(Object.isFrozen(data),true);
   assert.deepEqual(standings('A').map(row=>row.points),[15,11,8,6,4,1]);
   assert.deepEqual(standings('B').map(row=>row.points),[9,8,7,4,4,1]);
+});
+
+test('repository accepts numeric contract maxima through the real normalizer',()=>{
+  const data=cloneOfficial();
+  data.teams[0].display_order=100;
+  Object.assign(data.snapshots[0],{points:10000,wins:1000,losses:1000,rank:100,rank_change:100});
+  const normalized=normalizeDataset(data);
+  assert.equal(normalized.teams[0].display_order,100);
+  assert.deepEqual(
+    ['points','wins','losses','rank','rank_change'].map(key=>normalized.snapshots[0][key]),
+    [10000,1000,1000,100,100]
+  );
+});
+
+for(const [name,mutate] of [
+  ['team display_order below zero',data=>{data.teams[0].display_order=-1}],
+  ['team display_order above 100',data=>{data.teams[0].display_order=101}],
+  ['team display_order non-safe integer',data=>{data.teams[0].display_order=Number.MAX_SAFE_INTEGER+1}],
+  ['snapshot points above 10000',data=>{data.snapshots[0].points=10001}],
+  ['snapshot wins above 1000',data=>{data.snapshots[0].wins=1001}],
+  ['snapshot losses above 1000',data=>{data.snapshots[0].losses=1001}],
+  ['snapshot rank above 100',data=>{data.snapshots[0].rank=101}],
+  ['snapshot rank_change below -100',data=>{data.snapshots[0].rank_change=-101}],
+  ['snapshot rank_change above 100',data=>{data.snapshots[0].rank_change=101}],
+  ['snapshot non-safe integer',data=>{data.snapshots[0].points=1e100}],
+  ['result non-safe score',data=>{data.results[0].home_score=1e100}]
+])test(`repository rejects ${name}`,()=>{
+  const data=cloneOfficial();mutate(data);
+  assert.throws(()=>normalizeDataset(data),/Invalid public (?:team|snapshot|result)/);
+});
+
+for(const [name,mutate] of [
+  ['scheduled match with a result',data=>{data.matches.find(match=>match.match_code===data.results[0].match_code).status='scheduled'}],
+  ['final match without a result',data=>{data.matches.find(match=>!data.results.some(result=>result.match_code===match.match_code)).status='final'}]
+])test(`repository rejects ${name}`,()=>{
+  const data=cloneOfficial();mutate(data);
+  assert.throws(()=>normalizeDataset(data),/Public match\/result status mismatch/);
 });
 
 test('Supabase repository calls only public RPC and validates response',async()=>{
@@ -107,6 +145,7 @@ test('004 backend contract exposes one public RPC and fail-closed audited writes
   assert.match(sql,/audit_logs/);
   assert.match(sql,/batch limit exceeded/);
   assert.match(sql,/snapshot_count>500/);
+  assert.match(sql,/'status',case when exists\(select 1 from public\.match_results pr where pr\.match_id=m\.id and pr\.published\) then 'final' when m\.status='final' then 'scheduled' else m\.status end/i);
   assert.match(sql,/where public\.matches\.season_id=excluded\.season_id and not public\.matches\.locked returning id into mid/i);
   assert.match(sql,/where not public\.match_results\.locked returning match_id into tid/i);
   assert.match(sql,/allowed_mime_types[^;]+image\/png[^;]+image\/webp/is);
