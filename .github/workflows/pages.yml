@@ -16,6 +16,8 @@ concurrency:
 
 jobs:
   deploy:
+    env:
+      DEPLOYMENT_TARGET: test
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -32,14 +34,17 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
-      - name: Build Pages artifact
-        run: npm run build:pages
+      - name: Build fail-closed Test Pages artifact
+        env:
+          SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
+          SUPABASE_TEST_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_TEST_PUBLISHABLE_KEY }}
+        run: npm run build:test-pages
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: pages-dist
+          path: test-pages-dist
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -6,8 +6,8 @@ const out=path.join(root,'pages-dist');
 const publicFiles=['index.html','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js'];
 const publicDirectories=['assets/team-logos'];
 const forbiddenPaths=[
-  'admin.html','assets/js/admin.js','assets/js/excel-import.js','assets/js/config.js',
-  'assets/css/admin.css','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates'
+  'admin.html','assets/js/admin.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/js/config.js',
+  'assets/css/admin.css','assets/css/admin-v2.css','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates'
 ];
 const forbiddenContent=[
   [/Mock Login/i,'Mock Login'],[/LEAGUE_SESSION/,'LEAGUE_SESSION'],

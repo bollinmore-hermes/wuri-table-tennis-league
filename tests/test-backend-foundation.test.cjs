@@ -112,6 +112,42 @@ test('test build without secrets is structurally testable but disabled, deployme
   assert.throws(()=>execFileSync(process.execPath,['scripts/build-test.cjs'],{cwd:root,env:{...env,SUPABASE_TEST_URL:'https://wuri-test.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'sb_secret_not-for-browser-000001'},stdio:'pipe'}),/Privileged secret material is forbidden/);
 });
 
+test('hosted Test Pages build serves public root and authenticated admin from the exact Test project',()=>{
+  const env={...process.env,SUPABASE_TEST_URL:'https://vppjcjfbcoxzofcuxmzz.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'test-publishable-browser-key-000001'};
+  execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','test'],{cwd:root,env,stdio:'pipe'});
+  const out=path.join(root,'test-pages-dist');
+  for(const file of ['index.html','assets/js/config.js','assets/vendor/supabase.js','admin/index.html','admin/assets/js/config.js','admin/assets/js/admin.js'])assert.equal(fs.existsSync(path.join(out,file)),true,file);
+  const publicHtml=fs.readFileSync(path.join(out,'index.html'),'utf8');
+  const adminHtml=fs.readFileSync(path.join(out,'admin/index.html'),'utf8');
+  const configs=['assets/js/config.js','admin/assets/js/config.js'].map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
+  assert.match(publicHtml,/assets\/js\/config\.js/);
+  assert.match(publicHtml,/assets\/vendor\/supabase\.js/);
+  assert.match(adminHtml,/href="\.\.\/index\.html"/);
+  assert.match(configs,/"environment": "test"/);
+  assert.match(configs,/"projectRef": "vppjcjfbcoxzofcuxmzz"/);
+  assert.doesNotMatch(configs,/zofiiibgnjuodgrzhkpn|service[_-]?role|database[_-]?password|jwt[_-]?secret|postgres(?:ql)?:/i);
+});
+
+test('hosted Supabase Pages builds fail closed on missing, privileged or cross-environment configuration',()=>{
+  const clean={...process.env};
+  for(const name of ['SUPABASE_TEST_URL','SUPABASE_TEST_PUBLISHABLE_KEY','SUPABASE_PRODUCTION_URL','SUPABASE_PRODUCTION_PUBLISHABLE_KEY'])delete clean[name];
+  assert.throws(()=>execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','test'],{cwd:root,env:clean,stdio:'pipe'}),/requires SUPABASE_TEST_URL and SUPABASE_TEST_PUBLISHABLE_KEY/);
+  assert.throws(()=>execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','test'],{cwd:root,env:{...clean,SUPABASE_TEST_URL:'https://zofiiibgnjuodgrzhkpn.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'test-publishable-browser-key-000001'},stdio:'pipe'}),/Test build must target vppjcjfbcoxzofcuxmzz/);
+  assert.throws(()=>execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','production'],{cwd:root,env:{...clean,SUPABASE_PRODUCTION_URL:'https://vppjcjfbcoxzofcuxmzz.supabase.co',SUPABASE_PRODUCTION_PUBLISHABLE_KEY:'production-publishable-browser-key-000001'},stdio:'pipe'}),/Production build must target zofiiibgnjuodgrzhkpn/);
+  assert.throws(()=>execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','production'],{cwd:root,env:{...clean,SUPABASE_PRODUCTION_URL:'https://zofiiibgnjuodgrzhkpn.supabase.co',SUPABASE_PRODUCTION_PUBLISHABLE_KEY:'sb_secret_not-for-browser-000001'},stdio:'pipe'}),/Privileged secret material is forbidden/);
+});
+
+test('GitHub Pages workflow deploys the fail-closed Test artifact without embedding configuration',()=>{
+  const workflow=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
+  assert.match(workflow,/DEPLOYMENT_TARGET:\s*test/i);
+  assert.match(workflow,/name:\s*github-pages/i);
+  assert.match(workflow,/SUPABASE_TEST_URL:\s*\$\{\{\s*secrets\.SUPABASE_TEST_URL\s*\}\}/);
+  assert.match(workflow,/SUPABASE_TEST_PUBLISHABLE_KEY:\s*\$\{\{\s*secrets\.SUPABASE_TEST_PUBLISHABLE_KEY\s*\}\}/);
+  assert.match(workflow,/npm run build:test-pages/);
+  assert.match(workflow,/path:\s*test-pages-dist/);
+  assert.doesNotMatch(workflow,/vppjcjfbcoxzofcuxmzz|zofiiibgnjuodgrzhkpn|sb_secret_|service_role/i);
+});
+
 test('official seed generation is deterministic and carries canonical counts',()=>{
   execFileSync(process.execPath,['scripts/generate-official-seed.cjs'],{cwd:root,stdio:'pipe'});
   const first=fs.readFileSync(path.join(root,'supabase/seed-official.sql'),'utf8');
@@ -119,6 +155,8 @@ test('official seed generation is deterministic and carries canonical counts',()
   const second=fs.readFileSync(path.join(root,'supabase/seed-official.sql'),'utf8');
   assert.equal(first,second);
   assert.match(first,/12 teams, 60 matches, 26 results; 26 final, 34 scheduled/);
+  assert.match(first,/insert into public\.teams\(team_code,name,short_name,description,logo_path\) values/i);
+  assert.doesNotMatch(first,/insert into public\.teams\([^)]*logo_path,active\) values/i);
   assert.match(first,/on conflict\(team_code\) do update/i);
   assert.match(first,/on conflict\(match_code\) do update/i);
   assert.match(first,/on conflict\(match_id\) do update/i);

@@ -81,7 +81,7 @@ test('production artifact is fail-closed and contains no management surface',()=
   const out=path.join(root,'pages-dist');
   const walkFiles=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walkFiles(path.join(dir,entry.name)):[path.join(dir,entry.name)]);
   const files=walkFiles(out).map(file=>path.relative(out,file).split(path.sep).join('/'));
-  for(const forbidden of ['admin.html','assets/js/admin.js','assets/js/excel-import.js','assets/css/admin.css','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates'])assert.equal(files.some(file=>file===forbidden||file.startsWith(`${forbidden}/`)),false,forbidden);
+  for(const forbidden of ['admin.html','assets/js/admin.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/css/admin.css','assets/css/admin-v2.css','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates'])assert.equal(files.some(file=>file===forbidden||file.startsWith(`${forbidden}/`)),false,forbidden);
   const text=files.filter(file=>/\.(?:html|js|css|json|svg|txt)$/i.test(file)).map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
   assert.doesNotMatch(text,/Mock Login|LEAGUE_SESSION|wuriLeagueScores|scoreDialog|scoreForm|clearScore|\/Users\/[A-Za-z0-9._-]+\//i);
   assert.match(text,/WuriLeagueApp/);
