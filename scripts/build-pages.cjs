@@ -2,7 +2,9 @@ const fs=require('node:fs');
 const path=require('node:path');
 
 const root=path.resolve(__dirname,'..');
-const out=path.join(root,'pages-dist');
+const outputSuffix=(process.env.PAGES_OUTPUT_SUFFIX||'').trim();
+if(outputSuffix&&!/^[a-z0-9-]{1,32}$/.test(outputSuffix))throw new Error('PAGES_OUTPUT_SUFFIX must contain only lowercase letters, digits and hyphens');
+const out=path.join(root,`pages-dist${outputSuffix?`-${outputSuffix}`:''}`);
 const publicFiles=['index.html','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js'];
 const publicDirectories=['assets/team-logos'];
 const forbiddenPaths=[

@@ -4,7 +4,7 @@ node_modules/
 !.env.example
 .DS_Store
 supabase/.temp/
-pages-dist/
+pages-dist*/
 test-dist/
 test-pages-dist/
 production-pages-dist/

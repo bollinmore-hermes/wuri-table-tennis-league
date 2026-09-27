@@ -113,6 +113,6 @@ test('local admin demo build includes management assets while Pages remains read
   for(const file of ['index.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/admin-repository.js','assets/js/config.js','assets/team-logos/A01-happy-da.svg'])assert.equal(fs.existsSync(path.join(demo,file)),true,file);
   const config=fs.readFileSync(path.join(demo,'assets/js/config.js'),'utf8');
   assert.match(config,/"mode": "local"/);
-  execFileSync(process.execPath,['scripts/build-pages.cjs'],{cwd:root,stdio:'pipe'});
-  for(const file of ['assets/js/admin.js','assets/js/admin-repository.js','assets/css/admin-v2.css'])assert.equal(fs.existsSync(path.join(root,'pages-dist',file)),false,file);
+  execFileSync(process.execPath,['scripts/build-pages.cjs'],{cwd:root,env:{...process.env,PAGES_OUTPUT_SUFFIX:'admin-test'},stdio:'pipe'});
+  for(const file of ['assets/js/admin.js','assets/js/admin-repository.js','assets/css/admin-v2.css'])assert.equal(fs.existsSync(path.join(root,'pages-dist-admin-test',file)),false,file);
 });

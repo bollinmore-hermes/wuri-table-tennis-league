@@ -77,8 +77,8 @@ test('disabled public config renders a safe in-page zero state without throwing'
 });
 
 test('production artifact is fail-closed and contains no management surface',()=>{
-  execFileSync(process.execPath,['scripts/build-pages.cjs'],{cwd:root,stdio:'pipe'});
-  const out=path.join(root,'pages-dist');
+  execFileSync(process.execPath,['scripts/build-pages.cjs'],{cwd:root,env:{...process.env,PAGES_OUTPUT_SUFFIX:'security-test'},stdio:'pipe'});
+  const out=path.join(root,'pages-dist-security-test');
   const walkFiles=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walkFiles(path.join(dir,entry.name)):[path.join(dir,entry.name)]);
   const files=walkFiles(out).map(file=>path.relative(out,file).split(path.sep).join('/'));
   for(const forbidden of ['admin.html','assets/js/admin.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/css/admin.css','assets/css/admin-v2.css','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates'])assert.equal(files.some(file=>file===forbidden||file.startsWith(`${forbidden}/`)),false,forbidden);

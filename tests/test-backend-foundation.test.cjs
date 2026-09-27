@@ -98,8 +98,6 @@ test('test build contains public/admin and only generated publishable config',()
   assert.match(configs,/"mode": "supabase"/);
   assert.match(configs,/test-publishable-browser-key-000001/);
   assert.doesNotMatch(configs,/service[_-]?role|database[_-]?password|jwt[_-]?secret|postgres(?:ql)?:/i);
-  const productionFiles=fs.readdirSync(path.join(root,'pages-dist'),{recursive:true}).map(String);
-  assert.equal(productionFiles.some(file=>file.includes('admin')),false);
 });
 
 test('test build without secrets is structurally testable but disabled, deployment fails closed',()=>{
