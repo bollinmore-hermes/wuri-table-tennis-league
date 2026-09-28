@@ -72,6 +72,16 @@ test('admin lock prevents later scorer override in local adapter',async()=>{
   await assert.rejects(()=>scorer.saveResult({match_code:pending.match_code,home_score:0,away_score:3}),/已鎖定/);
 });
 
+test('editing a match preserves its original group',async()=>{
+  const repo=await local();
+  const data=await repo.load();
+  const original=data.matches[0];
+  await repo.saveMatch({...original,group:original.group==='A'?'B':'A',venue:'更新場地',expected_version:original.version});
+  const updated=(await repo.load()).matches.find(match=>match.match_code===original.match_code);
+  assert.equal(updated.group,original.group);
+  assert.equal(updated.venue,'更新場地');
+});
+
 test('admin UI contract uses numeric score selects, safe DOM rendering and role controls',()=>{
   const html=fs.readFileSync(path.join(root,'admin.html'),'utf8');
   const js=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');
@@ -85,6 +95,14 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   assert.match(css,/\.score-box::after/);
   assert.match(js,/cfg\.environment/);
   assert.doesNotMatch(js,/remoteEnabled\?'Supabase Test'/);
+  assert.match(html,/id="sidebarBackdrop"/);
+  assert.match(js,/function lockBackground\(/);
+  assert.match(js,/editingMatch\?\.group\|\|el\('matchGroupInput'\)\.value/);
+  assert.match(js,/matchGroupInput'\)\.disabled=Boolean\(match\)/);
+  assert.match(css,/body\.scroll-locked/);
+  assert.match(css,/\.sidebar-backdrop\.open/);
+  assert.match(css,/@media\(max-width:760px\)[\s\S]*?\.stats\{grid-template-columns:1fr 1fr/);
+  assert.doesNotMatch(css,/@media\(max-width:390px\)\{\.stats\{grid-template-columns:1fr\}/);
 });
 
 test('player migration is fail-closed, soft-deleting and audited',()=>{
