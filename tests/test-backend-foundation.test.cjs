@@ -135,15 +135,16 @@ test('hosted Supabase Pages builds fail closed on missing, privileged or cross-e
   assert.throws(()=>execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','production'],{cwd:root,env:{...clean,SUPABASE_PRODUCTION_URL:'https://zofiiibgnjuodgrzhkpn.supabase.co',SUPABASE_PRODUCTION_PUBLISHABLE_KEY:'sb_secret_not-for-browser-000001'},stdio:'pipe'}),/Privileged secret material is forbidden/);
 });
 
-test('GitHub Pages workflow deploys the fail-closed Test artifact without embedding configuration',()=>{
+test('GitHub Pages workflow deploys the fail-closed Production artifact without embedding configuration',()=>{
   const workflow=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
-  assert.match(workflow,/DEPLOYMENT_TARGET:\s*test/i);
+  assert.match(workflow,/DEPLOYMENT_TARGET:\s*production/i);
   assert.match(workflow,/name:\s*github-pages/i);
-  assert.match(workflow,/SUPABASE_TEST_URL:\s*\$\{\{\s*secrets\.SUPABASE_TEST_URL\s*\}\}/);
-  assert.match(workflow,/SUPABASE_TEST_PUBLISHABLE_KEY:\s*\$\{\{\s*secrets\.SUPABASE_TEST_PUBLISHABLE_KEY\s*\}\}/);
-  assert.match(workflow,/npm run build:test-pages/);
-  assert.match(workflow,/path:\s*test-pages-dist/);
-  assert.doesNotMatch(workflow,/vppjcjfbcoxzofcuxmzz|zofiiibgnjuodgrzhkpn|sb_secret_|service_role/i);
+  assert.match(workflow,/SUPABASE_PRODUCTION_URL:\s*\$\{\{\s*secrets\.SUPABASE_PRODUCTION_URL\s*\}\}/);
+  assert.match(workflow,/SUPABASE_PRODUCTION_PUBLISHABLE_KEY:\s*\$\{\{\s*secrets\.SUPABASE_PRODUCTION_PUBLISHABLE_KEY\s*\}\}/);
+  assert.match(workflow,/npm run build:production-pages/);
+  assert.match(workflow,/path:\s*production-pages-dist/);
+  assert.match(workflow,/Verify Production artifact identity/);
+  assert.doesNotMatch(workflow,/SUPABASE_TEST_URL|SUPABASE_TEST_PUBLISHABLE_KEY|sb_secret_|service_role/i);
 });
 
 test('official seed generation is deterministic and carries canonical counts',()=>{

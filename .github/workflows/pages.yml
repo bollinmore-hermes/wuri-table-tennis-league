@@ -17,7 +17,7 @@ concurrency:
 jobs:
   deploy:
     env:
-      DEPLOYMENT_TARGET: test
+      DEPLOYMENT_TARGET: production
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -34,17 +34,26 @@ jobs:
         run: npm ci
       - name: Run tests
         run: npm test
-      - name: Build fail-closed Test Pages artifact
+      - name: Build fail-closed Production Pages artifact
         env:
-          SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
-          SUPABASE_TEST_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_TEST_PUBLISHABLE_KEY }}
-        run: npm run build:test-pages
+          SUPABASE_PRODUCTION_URL: ${{ secrets.SUPABASE_PRODUCTION_URL }}
+          SUPABASE_PRODUCTION_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PRODUCTION_PUBLISHABLE_KEY }}
+        run: npm run build:production-pages
+      - name: Verify Production artifact identity
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const config=fs.readFileSync('production-pages-dist/assets/js/config.js','utf8');
+          if(!config.includes('"environment": "production"'))throw new Error('Production environment marker missing');
+          if(!config.includes('"projectRef": "zofiiibgnjuodgrzhkpn"'))throw new Error('Unexpected Production project ref');
+          if(config.includes('vppjcjfbcoxzofcuxmzz'))throw new Error('Test project leaked into Production artifact');
+          NODE
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: test-pages-dist
+          path: production-pages-dist
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@v4
