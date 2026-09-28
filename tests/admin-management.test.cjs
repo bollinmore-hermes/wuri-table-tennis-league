@@ -82,6 +82,32 @@ test('editing a match preserves its original group',async()=>{
   assert.equal(updated.venue,'更新場地');
 });
 
+test('Supabase repository supports session resume and password recovery without exposing credentials',async()=>{
+  const calls=[];
+  const user={id:'user-1',email:'admin@example.com'};
+  const client={
+    auth:{
+      async getSession(){calls.push(['getSession']);return {data:{session:{user}},error:null}},
+      async resetPasswordForEmail(email,options){calls.push(['resetPasswordForEmail',email,options]);return {data:{},error:null}},
+      async updateUser(input){calls.push(['updateUser',input]);return {data:{user},error:null}},
+      async signOut(){calls.push(['signOut']);return {error:null}}
+    },
+    async rpc(name){calls.push(['rpc',name]);return {data:{role:'admin',display_name:'管理員'},error:null}}
+  };
+  const repo=new Repository.SupabaseRepository(client,{},official.season.code);
+  assert.deepEqual(await repo.resume(),{user,role:'admin',name:'管理員'});
+  await repo.requestPasswordReset('admin@example.com','https://example.com/admin/');
+  await repo.updatePassword('long-secure-password');
+  await repo.logout();
+  assert.deepEqual(calls,[
+    ['getSession'],
+    ['rpc','get_my_profile'],
+    ['resetPasswordForEmail','admin@example.com',{redirectTo:'https://example.com/admin/'}],
+    ['updateUser',{password:'long-secure-password'}],
+    ['signOut']
+  ]);
+});
+
 test('admin UI contract uses numeric score selects, safe DOM rendering and role controls',()=>{
   const html=fs.readFileSync(path.join(root,'admin.html'),'utf8');
   const js=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');
@@ -96,6 +122,12 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   assert.match(js,/cfg\.environment/);
   assert.doesNotMatch(js,/remoteEnabled\?'Supabase Test'/);
   assert.match(html,/id="sidebarBackdrop"/);
+  assert.match(html,/id="forgotPassword"/);
+  assert.match(html,/id="passwordRecovery"/);
+  assert.match(html,/id="newPassword"[^>]*autocomplete="new-password"/);
+  assert.match(js,/resetPasswordForEmail|requestPasswordReset/);
+  assert.match(js,/PASSWORD_RECOVERY/);
+  assert.match(js,/updatePassword/);
   assert.match(js,/function lockBackground\(/);
   assert.match(js,/editingMatch\?\.group\|\|el\('matchGroupInput'\)\.value/);
   assert.match(js,/matchGroupInput'\)\.disabled=Boolean\(match\)/);

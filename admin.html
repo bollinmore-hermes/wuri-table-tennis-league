@@ -13,7 +13,8 @@
     <div class="login-brand"><span>🏓</span><div><strong>烏日桌球聯賽</strong><small>LEAGUE CONTROL CENTER</small></div></div>
     <h1>管理後台</h1><p id="loginHint">正在確認資料來源與登入方式。</p>
     <div id="localLogin" class="hidden"><label class="field"><span>展示角色</span><select id="mockRole"><option value="admin">管理員</option><option value="scorer">賽務人員</option></select></label><button class="primary full" id="mockLogin" type="button">進入本機管理後台</button></div>
-    <form id="remoteLogin" class="hidden"><label class="field"><span>Email</span><input id="email" type="email" autocomplete="username" required></label><label class="field"><span>密碼</span><input id="password" type="password" autocomplete="current-password" required></label><button class="primary full" type="submit">登入</button></form>
+    <form id="remoteLogin" class="hidden"><label class="field"><span>Email</span><input id="email" type="email" autocomplete="username" required></label><label class="field"><span>密碼</span><input id="password" type="password" autocomplete="current-password" required></label><button class="primary full" type="submit">登入</button><button class="mini-link full" id="forgotPassword" type="button">忘記密碼／設定新密碼</button></form>
+    <form id="passwordRecovery" class="hidden"><p>請設定至少 12 個字元的新密碼。密碼只會直接送至 Supabase，不會寫入網站或操作紀錄。</p><label class="field"><span>新密碼</span><input id="newPassword" type="password" autocomplete="new-password" minlength="12" required></label><label class="field"><span>再次輸入新密碼</span><input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" required></label><button class="primary full" id="saveNewPassword" type="submit">設定新密碼</button></form>
     <div id="loginMessage" aria-live="polite"></div><a class="back-link" href="index.html">← 返回公開網站</a>
   </div></section>
 

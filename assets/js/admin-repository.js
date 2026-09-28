@@ -33,8 +33,12 @@ class LocalRepository{
 }
 class SupabaseRepository{
   constructor(client,excel,seasonCode='2026-autumn-second-half'){this.client=client;this.excel=excel;this.seasonCode=seasonCode;this.role=null;}
-  async login(_,email,password){const {data:auth,error}=await this.client.auth.signInWithPassword({email,password});if(error)throw error;const {data:profile,error:profileError}=await this.client.rpc('get_my_profile');if(profileError)throw profileError;this.role=profile.role;return {user:auth.user,role:profile.role,name:profile.display_name};}
-  async logout(){await this.client.auth.signOut()}
+  async _authenticatedUser(user){if(!user)return null;const {data:profile,error}=await this.client.rpc('get_my_profile');if(error)throw error;this.role=profile.role;return {user,role:profile.role,name:profile.display_name};}
+  async login(_,email,password){const {data:auth,error}=await this.client.auth.signInWithPassword({email,password});if(error)throw error;return this._authenticatedUser(auth.user);}
+  async resume(){const {data,error}=await this.client.auth.getSession();if(error)throw error;return this._authenticatedUser(data.session?.user||null);}
+  async requestPasswordReset(email,redirectTo){const {error}=await this.client.auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error;return true;}
+  async updatePassword(password){if(typeof password!=='string'||password.length<12)throw new Error('密碼至少需要 12 個字元');const {data,error}=await this.client.auth.updateUser({password});if(error)throw error;return data.user;}
+  async logout(){const {error}=await this.client.auth.signOut();if(error)throw error;this.role=null;}
   async rpc(name,args={}){const {data,error}=await this.client.rpc(name,args);if(error)throw error;return data}
   async load(){return {...blank(),...(await this.rpc('get_admin_dataset',{p_season_code:this.seasonCode}))}}
   async import(payload){await this.rpc('import_league_data',{p_payload:this.excel.clean(payload)});return this.load()}
