@@ -23,6 +23,15 @@ A push to `main` deploys Production only after tests and artifact identity check
 
 The Test repository does not contain an application copy. Its workflow checks out a selected branch, tag, or commit from this repository, runs tests, and builds the Test artifact with Test-only secrets.
 
+## Invitation Edge Function
+
+Each Supabase environment deploys `invite-league-user` separately. Keep `SUPABASE_SERVICE_ROLE_KEY` in the managed Edge Function environment only and set these environment-specific function secrets:
+
+- `INVITE_REDIRECT_URL`: the exact environment admin URL ending in `/admin/`.
+- `INVITE_ALLOWED_ORIGINS`: the comma-separated browser origins allowed to invoke the function.
+
+Apply `006_user_invitations.sql` before deploying the function. Verify CORS preflight, unauthenticated denial, non-admin denial, invalid-payload denial, one successful invitation, profile creation, and the `invite_user` audit entry in Test before Production promotion.
+
 ## Promotion procedure
 
 1. Deploy the candidate source ref to Test.

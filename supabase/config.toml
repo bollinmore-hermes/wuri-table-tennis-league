@@ -19,3 +19,6 @@ enabled = true
 site_url = "http://127.0.0.1:8765"
 additional_redirect_urls = ["http://localhost:8765"]
 enable_signup = false
+
+[functions.invite-league-user]
+verify_jwt = true

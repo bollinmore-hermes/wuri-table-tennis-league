@@ -64,6 +64,17 @@ window.LEAGUE_CONFIG = Object.freeze({
 
 `supabaseUrl` 與 anon/publishable key 可公開；**絕不可**把 service-role key、資料庫密碼或管理員密碼放進 GitHub Repository。
 
+### 邀請後台使用者
+
+Supabase 模式下，啟用中的 `admin` 可在「使用者與角色」頁面寄送邀請。瀏覽器只呼叫 `invite-league-user` Edge Function；Auth Admin API 與 service-role 權限只存在於伺服器端。函式會再次驗證登入者的 `profiles` 角色、限制每位管理員十分鐘最多五次邀請，並以 `complete_user_invitation` 原子寫入 profile 與 audit log。
+
+部署 Edge Function 前需為各環境設定：
+
+- `INVITE_REDIRECT_URL`：該環境管理後台的完整 `/admin/` URL。
+- `INVITE_ALLOWED_ORIGINS`：允許呼叫的網站 origin，以逗號分隔。
+
+受邀者由 Email 連結回到管理後台後自行設定至少 12 個字元的密碼；前端不建立、保存或顯示密碼。
+
 ## 權限
 
 - `admin`：Excel 匯入、比分登錄、操作紀錄。
