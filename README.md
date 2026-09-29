@@ -1,10 +1,23 @@
-# 烏日桌球聯賽網站
+# 烏日桌球聯賽
 
-本專案包含公開網站、賽務管理後台、Excel 匯入模組，以及 Supabase schema／RLS。
+烏日桌球聯賽的公開賽程、比賽結果與排名網站。
 
-Test build、Supabase backend contract、repository 與 deterministic official seed 的操作及未驗證邊界請見 [`TEST-DEVELOPMENT.md`](TEST-DEVELOPMENT.md)。
+- 正式網站：<https://bollinmore-hermes.github.io/wuri-table-tennis-league/>
+- 本 Repository 為公開原始碼；請勿提交個人資料、密碼、私密金鑰或正式環境憑證。
 
-## 本機展示模式
+## 環境說明
+
+本專案區分三種用途：
+
+- **Production**：正式公開網站，只發布已有 Git Tag 的版本。
+- **Test**：功能驗證環境，內容可能隨時更新或重設，不代表正式資料。
+- **Local**：開發者本機展示模式，資料只保存在瀏覽器，不等同正式管理後台。
+
+正式管理功能使用身分驗證與伺服器端權限控管；本機展示模式不需要帳密的行為不適用於正式網站。
+
+## 本機開發
+
+需求：Node.js 20 或相容版本。
 
 ```bash
 npm install
@@ -13,65 +26,27 @@ npm test
 npm run serve
 ```
 
-開啟：
+啟動後可在本機開啟：
 
-- 公開網站：http://127.0.0.1:8765/
-- 管理後台：http://127.0.0.1:8765/admin.html
+- 公開頁面：<http://127.0.0.1:8765/>
+- 本機管理展示：<http://127.0.0.1:8765/admin.html>
 
-後台預設為 `local` 模式，不需要帳密。資料保存在瀏覽器 `localStorage`。請下載或使用：
+範例資料僅供開發與測試，不應用於正式賽務紀錄。
 
-`templates/wuri-league-demo-import.xlsx`
+## 建置與發布
 
-此檔的 `Results` 工作表有兩筆明確標示的假賽果，只供測試。合法團體比分為 `3–0`、`0–3`、`2–1`、`1–2`。
+正式版本必須先建立 Git Tag，才能發布至 Production GitHub Pages。Test 環境可使用分支、Tag 或指定 Commit 進行驗證。
 
-## Excel 工作表
+發布前應完成：
 
-後台會自動辨識兩種格式：
-
-1. 標準匯入範本：
-
-- `Teams`：球隊代碼、名稱、組別
-- `Schedule`：賽事代碼、日期、時間、主客隊
-- `Results`：比分與備註
-- `StandingsSnapshot`：缺少歷史逐場比分時的官方基準戰績
-
-2. 正式成績表：
-
-- `A組成績`：A 組日期、對戰與比分
-- `B組成績`：B 組日期、對戰與比分
-- `即時排名`：A、B 組最新排名
-
-正式成績表中的 `-`、`:`、`：` 與空白視為未完成；匯入時會以逐場比分重新計算排名並核對「即時排名」。
-
-匯入採 upsert，不會因 Excel 缺少某一筆資料就刪除資料庫既有紀錄。檔案上限為 5 MB；非法比分、未知隊伍與未知賽事會阻止整批匯入。
-
-## Supabase 模式
-
-1. 啟動 Docker Desktop（Supabase CLI 已包含在專案 devDependencies，不需全域安裝）。
-2. 執行 `npx supabase start` 與 `npx supabase db reset`。
-3. 在 Supabase Auth 建立使用者。
-4. 在 `profiles` 為使用者設定 `admin` 或 `scorer`；新帳號不會自動取得權限。
-5. 編輯 `assets/js/config.js`：
-
-```js
-window.LEAGUE_CONFIG = Object.freeze({
-  mode: "supabase",
-  supabaseUrl: "https://YOUR_PROJECT.supabase.co",
-  supabaseAnonKey: "YOUR_PUBLISHABLE_ANON_KEY",
-  seasonCode: "2026-autumn-second-half"
-});
+```bash
+npm test
+npm audit
+git diff --check
 ```
 
-`supabaseUrl` 與 anon/publishable key 可公開；**絕不可**把 service-role key、資料庫密碼或管理員密碼放進 GitHub Repository。
+## 安全與隱私
 
-## 權限
-
-- `admin`：Excel 匯入、比分登錄、操作紀錄。
-- `scorer`：比分登錄；無法執行 Excel 匯入。
-- 未設定 profile role：無後台權限。
-
-安全規則位於 `supabase/migrations/`。`004_test_management_backend.sql` 新增 curated public RPC、管理 RPC contract、optimistic version/lock/audit 與 team-logo Storage policy；尚需在專用 Test project 做 runtime RLS 驗證。
-
-## GitHub Pages
-
-目前 Production GitHub Pages build 固定使用受版本控制的官方 static dataset，且排除全部管理資產。Test public build 才會依產物內生成的設定使用 Supabase 公開 RPC；不得把 Test 設定或管理後台混入 Production artifact。
+- Browser 端只允許使用可公開的設定，不得包含管理憑證或私密金鑰。
+- 不應在 Issue、Pull Request、Commit 或測試資料中提交個人資料。
+- 發現安全問題時，請使用 GitHub 的私密安全回報機制，不要公開揭露可被利用的細節。
