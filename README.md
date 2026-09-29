@@ -75,6 +75,17 @@ Supabase 模式下，啟用中的 `admin` 可在「使用者與角色」頁面�
 
 受邀者由 Email 連結回到管理後台後自行設定至少 12 個字元的密碼；前端不建立、保存或顯示密碼。
 
+### 編輯、停用與重設密碼
+
+啟用中的 `admin` 可修改後台使用者的暱稱、角色與啟用狀態。停用會透過 `manage-league-user` Edge Function 同步將 profile 設為停用並封鎖 Auth 登入，但不刪除使用者或歷史紀錄；重新啟用時會解除封鎖。系統禁止管理員停用或降級目前登入的本人。
+
+管理員也可寄送密碼重設信，由使用者從 Email 連結回到該環境管理後台自行設定新密碼。部署前需套用 `007_user_management.sql`，並設定：
+
+- `PASSWORD_RESET_REDIRECT_URL`：該環境管理後台的完整 `/admin/` URL。
+- `USER_MANAGEMENT_ALLOWED_ORIGINS`：允許管理使用者的網站 origin，以逗號分隔。
+
+所有編輯、停用／恢復及密碼重設請求都會留下 audit log；service-role 權限只存在於 Edge Function。
+
 ## 權限
 
 - `admin`：Excel 匯入、比分登錄、操作紀錄。

@@ -32,6 +32,15 @@ Each Supabase environment deploys `invite-league-user` separately. Keep `SUPABAS
 
 Apply `006_user_invitations.sql` before deploying the function. Verify CORS preflight, unauthenticated denial, non-admin denial, invalid-payload denial, one successful invitation, profile creation, and the `invite_user` audit entry in Test before Production promotion.
 
+## User Management Edge Function
+
+Deploy `manage-league-user` separately to each environment after applying `007_user_management.sql`. Set:
+
+- `PASSWORD_RESET_REDIRECT_URL`: the exact environment admin URL ending in `/admin/`.
+- `USER_MANAGEMENT_ALLOWED_ORIGINS`: the comma-separated browser origins allowed to invoke the function.
+
+The function verifies an active `admin`, prevents self-demotion/self-disable, synchronizes profile state with Auth ban/unban state, sends password recovery email without exposing or assigning passwords, rate-limits operations, and records `update_user` / `reset_user_password` audits. In Test, verify nickname update, role update, disable, blocked self-lockout, restore, recovery-email receipt and final profile state before Production promotion.
+
 ## Promotion procedure
 
 1. Deploy the candidate source ref to Test.

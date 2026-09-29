@@ -22,3 +22,6 @@ enable_signup = false
 
 [functions.invite-league-user]
 verify_jwt = true
+
+[functions.manage-league-user]
+verify_jwt = true
