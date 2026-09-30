@@ -12,7 +12,7 @@ The application has one canonical source repository and two isolated GitHub Page
   - `SUPABASE_PRODUCTION_URL`
   - `SUPABASE_PRODUCTION_PUBLISHABLE_KEY`
 
-A push to `main` deploys Production only after tests and artifact identity checks pass.
+A pushed version tag matching `v*` deploys Production only after tests and artifact identity checks pass. Merging to `main` alone must not publish the formal site.
 
 ## Test
 
@@ -54,5 +54,5 @@ Promote code and migrations, not Test data.
 ## Rollback
 
 - Test: rerun the Test Pages workflow with a previously verified commit SHA.
-- Production: revert the source commit or dispatch the Production Pages workflow from a previously verified commit after confirming schema compatibility.
+- Production: after confirming schema compatibility, create a new rollback version tag on a previously verified commit. Production must still be deployed from a Git tag rather than directly from a branch or commit.
 - Never point a Production artifact at the Test project, or a Test artifact at the Production project. Both build scripts fail closed when the configured URL does not match the expected project ref.
