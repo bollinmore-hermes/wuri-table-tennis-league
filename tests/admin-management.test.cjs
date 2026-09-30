@@ -50,6 +50,17 @@ test('admin can add, update and soft-delete a player with audit records',async()
   assert.deepEqual(data.audits.slice(0,3).map(item=>item.action),['delete_player','update_player','create_player']);
 });
 
+test('local admin can edit, disable and restore another user but cannot lock out self',async()=>{
+  const repo=await local();
+  let user=(await repo.load()).users.find(item=>item.id==='local-scorer');
+  await repo.manageUser({...user,display_name:'賽務暱稱',role:'admin',active:false});
+  user=(await repo.load()).users.find(item=>item.id==='local-scorer');
+  assert.deepEqual({display_name:user.display_name,role:user.role,active:user.active},{display_name:'賽務暱稱',role:'admin',active:false});
+  await repo.manageUser({...user,active:true});
+  assert.equal((await repo.load()).users.find(item=>item.id==='local-scorer').active,true);
+  await assert.rejects(()=>repo.manageUser({id:'local-admin',display_name:'本人',role:'scorer',active:true}),/本人/);
+});
+
 test('scorer is read-only outside legal unlocked score entry',async()=>{
   const repo=await local('scorer');
   const data=await repo.load();
@@ -108,6 +119,28 @@ test('Supabase repository supports session resume and password recovery without 
   ]);
 });
 
+test('Supabase admin repository manages invitations, profile edits and password reset requests',async()=>{
+  const calls=[];
+  const invited={id:'user-2',email:'score@example.com',display_name:'賽務人員',role:'scorer',active:true,invitation_status:'invited'};
+  const client={
+    async rpc(name,args){calls.push(['rpc',name,args]);if(name==='get_admin_dataset')return {data:{teams:[],matches:[],results:[],snapshots:[],players:[],audits:[]},error:null};if(name==='get_admin_users')return {data:[invited],error:null};throw new Error(name)},
+    functions:{async invoke(name,options){calls.push(['invoke',name,options]);if(name==='invite-league-user')return {data:{invitation:invited},error:null};if(options.body.action==='update')return {data:{user:invited},error:null};return {data:{password_reset:{id:'user-2',email:'score@example.com',delivery:'requested'}},error:null}}}
+  };
+  const repo=new Repository.SupabaseRepository(client,{},official.season.code);
+  repo.role='admin';
+  assert.deepEqual((await repo.load()).users,[invited]);
+  assert.deepEqual(await repo.inviteUser({email:'score@example.com',display_name:'賽務人員',role:'scorer'}),invited);
+  assert.deepEqual(await repo.manageUser({id:'user-2',display_name:'新暱稱',role:'admin',active:false}),invited);
+  assert.deepEqual(await repo.requestUserPasswordReset('user-2'),{id:'user-2',email:'score@example.com',delivery:'requested'});
+  assert.deepEqual(calls,[
+    ['rpc','get_admin_dataset',{p_season_code:'2026-autumn-second-half'}],
+    ['rpc','get_admin_users',{}],
+    ['invoke','invite-league-user',{body:{email:'score@example.com',display_name:'賽務人員',role:'scorer'}}],
+    ['invoke','manage-league-user',{body:{action:'update',user_id:'user-2',display_name:'新暱稱',role:'admin',active:false}}],
+    ['invoke','manage-league-user',{body:{action:'reset_password',user_id:'user-2'}}]
+  ]);
+});
+
 test('admin UI contract uses numeric score selects, safe DOM rendering and role controls',()=>{
   const html=fs.readFileSync(path.join(root,'admin.html'),'utf8');
   const js=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');
@@ -124,10 +157,24 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   assert.match(html,/id="sidebarBackdrop"/);
   assert.match(html,/id="forgotPassword"/);
   assert.match(html,/id="passwordRecovery"/);
+  assert.match(html,/id="openInviteUser"[^>]*data-admin-only[^>]*data-remote-only/);
+  assert.match(html,/id="inviteUserDialog"/);
+  assert.match(html,/id="editUserDialog"/);
+  assert.match(html,/id="editUserDisplayName"/);
+  assert.match(html,/id="editUserRole"[\s\S]*?value="scorer"[\s\S]*?value="admin"/);
+  assert.match(html,/id="editUserActive"/);
+  assert.match(html,/id="inviteEmail"[^>]*type="email"/);
+  assert.match(html,/id="inviteRole"[\s\S]*?value="scorer"[\s\S]*?value="admin"/);
   assert.match(html,/id="newPassword"[^>]*autocomplete="new-password"/);
   assert.match(js,/resetPasswordForEmail|requestPasswordReset/);
   assert.match(js,/PASSWORD_RECOVERY/);
   assert.match(js,/updatePassword/);
+  assert.match(js,/type==='recovery'\|\|type==='invite'/);
+  assert.match(js,/repo\.inviteUser/);
+  assert.match(js,/repo\.manageUser/);
+  assert.match(js,/repo\.requestUserPasswordReset/);
+  assert.match(js,/self|本人/);
+  assert.match(js,/data-remote-only/);
   assert.match(js,/function lockBackground\(/);
   assert.match(js,/editingMatch\?\.group\|\|el\('matchGroupInput'\)\.value/);
   assert.match(js,/matchGroupInput'\)\.disabled=Boolean\(match\)/);
