@@ -187,6 +187,7 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
 test('score entry is the only score-writing surface and schedule remains read-only',()=>{
   const html=fs.readFileSync(path.join(root,'admin.html'),'utf8');
   const js=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');
+  const css=fs.readFileSync(path.join(root,'assets/css/admin-v2.css'),'utf8');
   const functionBody=(name,nextName)=>{
     const start=js.indexOf(`function ${name}(`);
     const end=js.indexOf(`function ${nextName}(`,start);
@@ -207,7 +208,10 @@ test('score entry is the only score-writing surface and schedule remains read-on
   assert.match(schedule,/result\?\.locked/);
   assert.match(schedule,/已鎖定/);
   assert.match(resultActionsBody,/openScoreDialog\(match\)/);
-  assert.match(html,/id="scoreNote"[^>]*maxlength="500"/);
+  assert.match(html,/<span>備註（最多 500 字）<\/span><textarea id="scoreNote" rows="4" maxlength="500"><\/textarea>/);
+  assert.match(css,/button,input,select,textarea\{font:inherit\}/);
+  assert.match(css,/\.field textarea\{[^}]*width:100%[^}]*min-height:110px[^}]*resize:vertical/);
+  assert.match(css,/@media\(max-width:760px\)\{[\s\S]*?\.field textarea\{min-height:130px\}/);
 });
 
 test('player migration is fail-closed, soft-deleting and audited',()=>{
