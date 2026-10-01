@@ -1,0 +1,171 @@
+{
+  "ok": true,
+  "environment": "test",
+  "projectRef": "vppjcjfbcoxzofcuxmzz",
+  "performedAt": "2026-10-01T01:38:36.621Z",
+  "results": [
+    {
+      "name": "anon direct table denied: seasons",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon direct table denied: matches",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon direct table denied: profiles",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon direct table denied: audit_logs",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon public RPC allowed",
+      "status": 200,
+      "ok": true,
+      "summary": {
+        "teams": 12,
+        "matches": 60,
+        "results": 26,
+        "exposesInternalIds": false
+      }
+    },
+    {
+      "name": "anon RPC denied: get_admin_dataset",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon RPC denied: get_my_profile",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon RPC denied: get_admin_users",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon RPC denied: import_league_data",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon RPC denied: consume_user_invite_quota",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "anon RPC denied: consume_user_management_quota",
+      "status": 401,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "allowed-origin preflight: invite-league-user",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "name": "disallowed origin denied: invite-league-user",
+      "status": 403,
+      "ok": true,
+      "error": "origin_not_allowed"
+    },
+    {
+      "name": "anonymous function call denied: invite-league-user",
+      "status": 401,
+      "ok": true,
+      "error": "authentication_required"
+    },
+    {
+      "name": "allowed-origin preflight: manage-league-user",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "name": "disallowed origin denied: manage-league-user",
+      "status": 403,
+      "ok": true,
+      "error": "origin_not_allowed"
+    },
+    {
+      "name": "anonymous function call denied: manage-league-user",
+      "status": 401,
+      "ok": true,
+      "error": "authentication_required"
+    },
+    {
+      "name": "Test admin password sign-in",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "name": "admin profile allowed",
+      "status": 200,
+      "ok": true,
+      "profile": {
+        "role": "admin",
+        "active": true
+      }
+    },
+    {
+      "name": "admin dataset allowed",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "name": "admin user listing allowed",
+      "status": 200,
+      "ok": true
+    },
+    {
+      "name": "authenticated direct table denied: seasons",
+      "status": 403,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "authenticated direct table denied: profiles",
+      "status": 403,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "authenticated direct table denied: audit_logs",
+      "status": 403,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "browser admin cannot call service-only invitation quota RPC",
+      "status": 403,
+      "ok": true,
+      "code": "42501"
+    },
+    {
+      "name": "browser admin cannot call service-only management quota RPC",
+      "status": 403,
+      "ok": true,
+      "code": "42501"
+    }
+  ],
+  "limitations": [
+    "No scorer, inactive-user, unprofiled-user, or write-path mutation was performed.",
+    "Email delivery, invite completion, and password-reset delivery are outside this read-only verifier."
+  ]
+}

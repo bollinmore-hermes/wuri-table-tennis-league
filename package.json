@@ -12,6 +12,7 @@
     "build:admin-demo": "node scripts/build-admin-demo.cjs",
     "generate:seed": "node scripts/generate-official-seed.cjs",
     "test": "node --test tests/*.test.cjs",
+    "verify:security:test": "node scripts/verify-test-security.cjs",
     "serve": "python3 -m http.server 8765 --bind 127.0.0.1"
   },
   "dependencies": {
