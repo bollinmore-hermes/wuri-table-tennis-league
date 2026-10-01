@@ -184,6 +184,32 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   assert.doesNotMatch(css,/@media\(max-width:390px\)\{\.stats\{grid-template-columns:1fr\}/);
 });
 
+test('score entry is the only score-writing surface and schedule remains read-only',()=>{
+  const html=fs.readFileSync(path.join(root,'admin.html'),'utf8');
+  const js=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');
+  const functionBody=(name,nextName)=>{
+    const start=js.indexOf(`function ${name}(`);
+    const end=js.indexOf(`function ${nextName}(`,start);
+    assert.notEqual(start,-1,`missing ${name}`);
+    assert.notEqual(end,-1,`missing ${nextName}`);
+    return js.slice(start,end);
+  };
+  const schedule=functionBody('renderSchedule','resultActions');
+  const resultActionsBody=functionBody('resultActions','renderResults');
+
+  assert.match(html,/data-page="results"[^>]*>[\s\S]*?比分登錄/);
+  assert.match(html,/id="page-results"[\s\S]*?<h2>比分登錄<\/h2>/);
+  assert.doesNotMatch(html,/賽果管理/);
+  assert.match(js,/results:'比分登錄'/);
+  assert.doesNotMatch(schedule,/openScoreDialog/);
+  assert.doesNotMatch(schedule,/>登錄<|['"]登錄['"]|['"]賽果['"]/);
+  assert.ok(schedule.includes("text:result?`${result.home_score}–${result.away_score}`:'—'"));
+  assert.match(schedule,/result\?\.locked/);
+  assert.match(schedule,/已鎖定/);
+  assert.match(resultActionsBody,/openScoreDialog\(match\)/);
+  assert.match(html,/id="scoreNote"[^>]*maxlength="500"/);
+});
+
 test('player migration is fail-closed, soft-deleting and audited',()=>{
   const sql=fs.readFileSync(path.join(root,'supabase/migrations/005_player_roster_management.sql'),'utf8');
   assert.match(sql,/create table if not exists public\.players/i);
