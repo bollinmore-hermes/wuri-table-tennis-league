@@ -1,0 +1,72 @@
+{
+  "environment": "test-and-production-verification",
+  "recordedAt": "2026-10-01T02:47:48Z",
+  "testIdentityValidation": {
+    "invitations": {
+      "requested": 3,
+      "acceptedByAuth": 3,
+      "delivered": 3,
+      "distinctRecipientAliases": true,
+      "deliveryEvidence": "operator-confirmed mailbox receipt"
+    },
+    "redirect": {
+      "expectedPath": "/wuri-table-tennis-league-test/admin/",
+      "verified": true,
+      "note": "A later scorer-link revisit returned otp_expired after the account had already been confirmed and used successfully."
+    },
+    "scorer": {
+      "authConfirmed": true,
+      "hasSignedIn": true,
+      "hasProfile": true,
+      "role": "scorer",
+      "active": true,
+      "authBanned": false,
+      "roleBehaviorConfirmed": true
+    },
+    "inactive": {
+      "authConfirmed": false,
+      "hasSignedIn": false,
+      "hasProfile": true,
+      "role": "scorer",
+      "active": false,
+      "authBanned": true
+    },
+    "unprofiled": {
+      "authConfirmed": true,
+      "hasSignedIn": true,
+      "hasProfile": false,
+      "managementAccessDenied": true
+    },
+    "auditReadback": {
+      "inviteUserEvents": 3,
+      "updateUserEvents": 1
+    },
+    "limitations": [
+      "Inactive-user denial with a token issued before deactivation was not tested.",
+      "Password-reset email delivery and completion were not tested.",
+      "Write-path mutation coverage remains separate from the operator-confirmed role behavior."
+    ]
+  },
+  "productionDeployment": {
+    "release": "v0.4.1",
+    "commit": "1ce1b9503d6ed562a0a6ac6a127b9bea39386261",
+    "githubActionsRun": 36806671669,
+    "deploymentId": 6774812705,
+    "workflowConclusion": "success",
+    "pages": {
+      "rootStatus": 200,
+      "adminStatus": 200
+    },
+    "runtimeIdentity": {
+      "environment": "production",
+      "projectRef": "zofiiibgnjuodgrzhkpn",
+      "seasonCode": "2026-autumn-second-half"
+    },
+    "publicRpc": {
+      "status": 200,
+      "teams": 12,
+      "matches": 60,
+      "results": 26
+    }
+  }
+}

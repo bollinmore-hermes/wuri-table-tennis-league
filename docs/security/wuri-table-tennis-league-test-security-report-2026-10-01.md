@@ -24,9 +24,9 @@
 目前尚未降為低風險，主要原因如下：
 
 1. 管理後台仍位於不支援自訂安全標頭的 GitHub Pages，缺少可由 HTTP response header 強制執行的 `frame-ancestors`。
-2. 2026-09-30 新增的邀請、使用者管理與密碼重設流程雖已完成靜態及唯讀權限驗證，但尚未執行 scorer、inactive、unprofiled 使用者的完整遠端角色矩陣。
-3. 本次刻意未執行會變更 Test 資料或寄送 Email 的操作，因此尚未完成邀請、角色變更、密碼重設及 Email redirect 的端到端驗證。
-4. 尚未保存可將原始碼 commit、GitHub Actions run 與實際部署 artifact 一對一連結的證據。
+2. Scorer 與 unprofiled 使用者已完成實際登入／拒絕驗證，inactive 身分也已確認為 profile inactive 加 Auth banned；但尚未測試「先取得 JWT、再停用帳號」的既有 token 情境。
+3. 邀請 Email 送達、Test admin redirect、scorer 首次登入、角色限制及 unprofiled 拒絕均已驗證；密碼重設與完整寫入型 RPC mutation 測試仍未完成。
+4. 已保存 `v0.4.1` commit、GitHub Actions run 與 GitHub deployment record；但 live artifact 本身仍沒有可供頁面自我識別 commit 的 deployment manifest。
 
 ### 已確認的主要安全成果
 
@@ -64,10 +64,9 @@
 
 ### 本次未執行
 
-- scorer 帳號的遠端實際操作矩陣。
-- inactive 或無 profile 帳號的遠端實際操作矩陣。
-- 寫入型 RPC 的 mutation 測試。
-- 真實邀請 Email、密碼重設 Email 與 redirect 完整流程。
+- inactive 帳號在停用前取得 JWT、停用後繼續呼叫 RPC 的既有 token 情境。
+- 寫入型 RPC 的完整 mutation 測試。
+- 密碼重設 Email 與 reset redirect 完整流程。
 - 暴力登入、SMTP 配額及 CAPTCHA 實測。
 - OWASP ZAP 或其他完整 DAST。
 - 第三方雲端設定面的完整審查，例如 Supabase Auth password policy、MFA policy、redirect allowlist 實際值及 SMTP 設定。
@@ -181,7 +180,18 @@ Test admin 實際驗證：
 - lookalike 惡意來源：HTTP `403`、`origin_not_allowed`
 - 無 Authorization 的允許來源請求：HTTP `401`、`authentication_required`
 
-本次未送出真實 invitation 或 password-reset Email。
+### 6. Test identities 與邀請流程
+
+本次透過既有 Edge Functions 建立三個去識別化用途的專用 Test identities，並完成資料庫 readback 與人工操作驗證：
+
+- 三封 invitation 均由 Auth 接受，且操作者確認三封信均實際送達不同的 `+` recipient alias。
+- Invitation redirect 正確回到 Test `/admin/`；scorer 後續重複開啟已使用連結時收到 `otp_expired`，但其 Auth 狀態已是 confirmed 且有成功登入紀錄，故判定原始邀請流程已成功完成。
+- Scorer：confirmed、已登入、profile 存在、`role=scorer`、`active=true`，操作者確認權限表現正確。
+- Inactive：profile 存在、`role=scorer`、`active=false`，且 Auth banned；尚未測試停用前取得的 JWT。
+- Unprofiled：confirmed、已登入、Auth user 存在但無 application profile，管理存取已被拒絕。
+- Audit readback：`invite_user` 3 筆、`update_user` 1 筆。
+
+Password-reset Email 尚未執行。
 
 ---
 
@@ -198,13 +208,13 @@ Test admin 實際驗證：
 |---|---|---|---|---|---|
 | `get_public_league` | 允許 | 允許 | 允許 | 允許 | 允許 |
 | 直接讀取 base tables | 拒絕（已實測） | 拒絕 | 拒絕 | 拒絕（已實測） | 後端維運用途 |
-| `get_my_profile` | 拒絕（已實測） | 拒絕／未遠端實測 | 允許／未遠端實測 | 允許（已實測） | 非瀏覽器用途 |
-| `get_admin_dataset` | 拒絕（已實測） | 拒絕／未遠端實測 | 限制／未遠端實測 | 允許（已實測） | 非瀏覽器用途 |
-| 儲存未鎖定合法比分 | 拒絕 | 拒絕 | 允許／未遠端實測 | 允許／未執行寫入 | 非瀏覽器用途 |
-| 覆寫鎖定比分 | 拒絕 | 拒絕 | 拒絕／未遠端實測 | 允許／未執行寫入 | 非瀏覽器用途 |
-| 球隊／球員／賽程／匯入 | 拒絕 | 拒絕 | 拒絕／未遠端實測 | 允許／未執行寫入 | 非瀏覽器用途 |
-| `get_admin_users` | 拒絕（已實測） | 拒絕 | 拒絕／未遠端實測 | 允許（已實測） | 非瀏覽器用途 |
-| 邀請／使用者管理 Edge Function | 拒絕（已實測） | 拒絕／未遠端實測 | 拒絕／未遠端實測 | 允許／尚未執行成功路徑 | 內部使用 |
+| `get_my_profile` | 拒絕（已實測） | unprofiled 拒絕（已實測）；inactive 舊 JWT 未測 | scorer 允許（已實測） | 允許（已實測） | 非瀏覽器用途 |
+| `get_admin_dataset` | 拒絕（已實測） | unprofiled 拒絕（已實測）；inactive 舊 JWT 未測 | 角色限制已人工確認 | 允許（已實測） | 非瀏覽器用途 |
+| 儲存未鎖定合法比分 | 拒絕 | 拒絕 | 角色行為已人工確認；RPC mutation 未獨立測試 | 允許／未執行寫入 | 非瀏覽器用途 |
+| 覆寫鎖定比分 | 拒絕 | 拒絕 | 角色行為已人工確認；RPC mutation 未獨立測試 | 允許／未執行寫入 | 非瀏覽器用途 |
+| 球隊／球員／賽程／匯入 | 拒絕 | 拒絕 | 管理功能限制已人工確認 | 允許／未執行寫入 | 非瀏覽器用途 |
+| `get_admin_users` | 拒絕（已實測） | 拒絕 | 管理功能限制已人工確認 | 允許（已實測） | 非瀏覽器用途 |
+| 邀請／使用者管理 Edge Function | 拒絕（已實測） | unprofiled 拒絕（已實測） | 管理功能限制已人工確認 | 成功路徑已實測 | 內部使用 |
 | completion／quota RPC | 拒絕（已實測） | 拒絕 | 拒絕 | 拒絕（已實測） | 允許 |
 
 ---
@@ -231,12 +241,12 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 若繼續使用 GitHub Pages，必須在風險文件中接受此限制，不得宣稱已完成 Clickjacking 防護。
 
-### F-02：安全報告與部署 artifact 尚未建立不可否認的版本連結
+### F-02：已保存部署紀錄，但 artifact 尚無自我識別 manifest
 
 - **等級**：低至中
-- **狀態**：未修復
+- **狀態**：部分完成
 
-目前頁面可驗證 Test project identity，但不能由頁面反推出部署 commit。
+已保存 `v0.4.1` tag、commit、GitHub Actions run、GitHub deployment ID 與部署後 Production runtime identity；但仍不能只由 live 頁面內容反推出其部署 commit。
 
 #### 建議
 
@@ -258,23 +268,22 @@ CI 產生不含秘密的 deployment manifest：
 - **等級**：中
 - **狀態**：部分完成
 
-已有 fail-closed SQL guards 與自動化測試，但尚缺 scorer、inactive、unprofiled 的實際 Test API 驗證。
+已有 fail-closed SQL guards、自動化測試及專用 Test identities。Scorer 已完成登入與角色行為驗證；unprofiled 使用者已完成登入並確認管理存取遭拒；inactive 使用者已確認為 profile inactive 與 Auth banned。
 
 #### 建議
 
-建立專用 Test identities，測試後保留或明確清理測試資料；不得使用 Production 帳號或資料。
+尚待補測 inactive 使用者在停用前取得 JWT、停用後以既有 token 呼叫 RPC 的情境，以及寫入型 RPC 的逐項 mutation matrix。測試資料僅存在 Test project，不得推廣至 Production。
 
-### F-04：邀請與密碼重設尚未完成端到端驗收
+### F-04：邀請已完成驗收，密碼重設尚未完成端到端驗收
 
 - **等級**：中
 - **狀態**：部分完成
 
-已確認 CORS、anonymous denial、admin read-only RPC 與 service-role 隔離，但尚未確認：
+邀請流程已確認 CORS、anonymous denial、admin authorization、service-role 隔離、三封 Email 實際送達、Test admin redirect、profile／audit 寫入、scorer 首次登入及 unprofiled 拒絕。
 
-- Email 實際送達
-- redirect 精確指向 Test admin route
-- profile 與 audit 寫入
-- 邀請完成後首次登入
+尚未確認：
+
+- 密碼重設 Email 實際送達與 reset redirect
 - 密碼重設後登入
 - downstream Email quota 錯誤處理
 
@@ -302,6 +311,7 @@ CI 產生不含秘密的 deployment manifest：
 - `scripts/verify-test-security.cjs`
 - npm script：`verify:security:test`
 - 唯讀 Test 驗證證據：`docs/security/evidence/test-security-verification-2026-10-01.json`
+- Test identity 與 Production deployment 證據：`docs/security/evidence/test-identity-and-production-validation-2026-10-01.json`
 
 本次完整測試結果：
 
@@ -340,9 +350,9 @@ npm run verify:security:test
 
 ### P0
 
-1. 建立 scorer、inactive、unprofiled 專用 Test identities。
-2. 補完遠端角色矩陣。
-3. 完成 invitation、password reset、profile、audit、redirect 的端到端 Test 驗收。
+1. 補測 inactive 使用者在停用前取得 JWT、停用後使用既有 token 的情境。
+2. 補完寫入型 RPC mutation matrix。
+3. 完成 password reset、reset redirect 與 downstream Email quota 的端到端 Test 驗收。
 
 ### P1
 
@@ -362,6 +372,6 @@ npm run verify:security:test
 
 現有系統已修復前次報告中的核心高風險問題，資料庫 RPC 隔離、Test／Production build guard、Edge Function admin authorization 與 service-role 隔離皆具備良好基礎。
 
-但管理後台 Clickjacking 防護、完整角色矩陣與 Email/Auth 寫入流程仍未完成端到端驗證。因此本版將風險維持為：
+Scorer、unprofiled 與 invitation 流程的主要端到端情境已通過；但管理後台 Clickjacking 防護、inactive 舊 JWT、寫入型 RPC matrix 與 password-reset 流程仍未完成驗證。因此本版將風險維持為：
 
 > **中度殘餘風險；核心高風險漏洞已修復，但尚未達成完整低風險驗收。**
