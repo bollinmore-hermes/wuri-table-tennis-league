@@ -61,6 +61,16 @@ test('local admin can edit, disable and restore another user but cannot lock out
   await assert.rejects(()=>repo.manageUser({id:'local-admin',display_name:'本人',role:'scorer',active:true}),/本人/);
 });
 
+test('local admin can permanently delete another user with an audit record but not self',async()=>{
+  const repo=await local();
+  await repo.deleteUser('local-scorer');
+  const data=await repo.load();
+  assert.equal(data.users.some(item=>item.id==='local-scorer'),false);
+  assert.equal(data.audits[0].action,'delete_user');
+  assert.equal(data.audits[0].before_data.id,'local-scorer');
+  await assert.rejects(()=>repo.deleteUser('local-admin'),/本人/);
+});
+
 test('scorer is read-only outside legal unlocked score entry',async()=>{
   const repo=await local('scorer');
   const data=await repo.load();
@@ -119,12 +129,12 @@ test('Supabase repository supports session resume and password recovery without 
   ]);
 });
 
-test('Supabase admin repository manages invitations, profile edits and password reset requests',async()=>{
+test('Supabase admin repository manages invitations, profile edits, password resets and permanent deletion',async()=>{
   const calls=[];
   const invited={id:'user-2',email:'score@example.com',display_name:'賽務人員',role:'scorer',active:true,invitation_status:'invited'};
   const client={
     async rpc(name,args){calls.push(['rpc',name,args]);if(name==='get_admin_dataset')return {data:{teams:[],matches:[],results:[],snapshots:[],players:[],audits:[]},error:null};if(name==='get_admin_users')return {data:[invited],error:null};throw new Error(name)},
-    functions:{async invoke(name,options){calls.push(['invoke',name,options]);if(name==='invite-league-user')return {data:{invitation:invited},error:null};if(options.body.action==='update')return {data:{user:invited},error:null};return {data:{password_reset:{id:'user-2',email:'score@example.com',delivery:'requested'}},error:null}}}
+    functions:{async invoke(name,options){calls.push(['invoke',name,options]);if(name==='invite-league-user')return {data:{invitation:invited},error:null};if(options.body.action==='update')return {data:{user:invited},error:null};if(options.body.action==='delete')return {data:{deleted_user:{id:'user-2'}},error:null};return {data:{password_reset:{id:'user-2',email:'score@example.com',delivery:'requested'}},error:null}}}
   };
   const repo=new Repository.SupabaseRepository(client,{},official.season.code);
   repo.role='admin';
@@ -132,12 +142,14 @@ test('Supabase admin repository manages invitations, profile edits and password 
   assert.deepEqual(await repo.inviteUser({email:'score@example.com',display_name:'賽務人員',role:'scorer'}),invited);
   assert.deepEqual(await repo.manageUser({id:'user-2',display_name:'新暱稱',role:'admin',active:false}),invited);
   assert.deepEqual(await repo.requestUserPasswordReset('user-2'),{id:'user-2',email:'score@example.com',delivery:'requested'});
+  assert.deepEqual(await repo.deleteUser('user-2'),{id:'user-2'});
   assert.deepEqual(calls,[
     ['rpc','get_admin_dataset',{p_season_code:'2026-autumn-second-half'}],
     ['rpc','get_admin_users',{}],
     ['invoke','invite-league-user',{body:{email:'score@example.com',display_name:'賽務人員',role:'scorer'}}],
     ['invoke','manage-league-user',{body:{action:'update',user_id:'user-2',display_name:'新暱稱',role:'admin',active:false}}],
-    ['invoke','manage-league-user',{body:{action:'reset_password',user_id:'user-2'}}]
+    ['invoke','manage-league-user',{body:{action:'reset_password',user_id:'user-2'}}],
+    ['invoke','manage-league-user',{body:{action:'delete',user_id:'user-2'}}]
   ]);
 });
 
@@ -159,6 +171,9 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   assert.match(html,/id="passwordRecovery"/);
   assert.match(html,/id="openInviteUser"[^>]*data-admin-only[^>]*data-remote-only/);
   assert.match(html,/id="inviteUserDialog"/);
+  assert.match(html,/id="publicSiteLink"[^>]*href="index\.html"[^>]*target="_blank"[^>]*rel="noopener noreferrer"/);
+  assert.equal((html.match(/data-close-dialog="inviteUserDialog"/g)||[]).length,2);
+  assert.match(html,/data-close-dialog="inviteUserDialog"[^>]*type="button"|type="button"[^>]*data-close-dialog="inviteUserDialog"/);
   assert.match(html,/id="editUserDialog"/);
   assert.match(html,/id="editUserDisplayName"/);
   assert.match(html,/id="editUserRole"[\s\S]*?value="scorer"[\s\S]*?value="admin"/);
@@ -173,6 +188,10 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   assert.match(js,/repo\.inviteUser/);
   assert.match(js,/repo\.manageUser/);
   assert.match(js,/repo\.requestUserPasswordReset/);
+  assert.match(js,/repo\.deleteUser/);
+  assert.match(js,/function resetInviteUserDialog\(/);
+  assert.match(js,/data-close-dialog/);
+  assert.match(js,/永久移除/);
   assert.match(js,/self|本人/);
   assert.match(js,/data-remote-only/);
   assert.match(js,/function lockBackground\(/);

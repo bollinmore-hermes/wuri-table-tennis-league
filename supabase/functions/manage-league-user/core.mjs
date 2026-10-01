@@ -7,7 +7,7 @@ export function normalizeUserManagementRequest(input){
   if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('invalid user management request');
   const action=String(input.action??'');
   const id=userId(input.user_id??input.userId);
-  if(action==='reset_password'){
+  if(action==='reset_password'||action==='delete'){
     if(Object.keys(input).some(key=>!['action','user_id','userId'].includes(key)))throw new Error('invalid user management request');
     return {action,userId:id};
   }

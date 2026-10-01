@@ -43,6 +43,7 @@ Deno.serve(async request=>{
   let command;
   try{command=normalizeUserManagementRequest(await request.json())}catch{return response(origin,400,{error:'invalid_user_management_request'});}
   if(command.action==='update'&&command.userId===actorId&&(!command.active||command.role!=='admin'))return response(origin,409,{error:'self_lockout_forbidden'});
+  if(command.action==='delete'&&command.userId===actorId)return response(origin,409,{error:'self_delete_forbidden'});
 
   const {data:targetProfile,error:targetProfileError}=await serviceClient.from('profiles').select('id,email,display_name,role,active').eq('id',command.userId).maybeSingle();
   if(targetProfileError)return response(origin,500,{error:'target_lookup_failed'});
@@ -63,6 +64,32 @@ Deno.serve(async request=>{
     const {data:recorded,error:recordError}=await serviceClient.rpc('record_user_password_reset',{p_actor_id:actorId,p_user_id:command.userId});
     if(recordError)return response(origin,500,{error:'password_reset_audit_failed'});
     return response(origin,200,{password_reset:recorded});
+  }
+
+  if(command.action==='delete'){
+    const snapshot={
+      id:targetProfile.id,
+      email:String(targetProfile.email||targetAuth.user.email||'').trim().toLowerCase(),
+      display_name:targetProfile.display_name,
+      role:targetProfile.role,
+      active:targetProfile.active
+    };
+    const {data:audit,error:auditError}=await serviceClient.from('audit_logs').insert({
+      user_id:actorId,
+      action:'delete_user_requested',
+      detail:command.userId,
+      before_data:snapshot,
+      after_data:{deleted:false}
+    }).select('id').single();
+    if(auditError||!audit)return response(origin,500,{error:'user_delete_audit_failed'});
+    const {error:deleteError}=await serviceClient.auth.admin.deleteUser(command.userId,false);
+    if(deleteError){
+      await serviceClient.from('audit_logs').update({action:'delete_user_failed',after_data:{deleted:false,error:'auth_user_delete_failed'}}).eq('id',audit.id);
+      return response(origin,502,{error:'auth_user_delete_failed'});
+    }
+    const {error:finalizeError}=await serviceClient.from('audit_logs').update({action:'delete_user',after_data:{deleted:true}}).eq('id',audit.id);
+    if(finalizeError)return response(origin,500,{error:'user_deleted_audit_finalize_failed'});
+    return response(origin,200,{deleted_user:{id:command.userId}});
   }
 
   const oldMetadata=targetAuth.user.user_metadata||{};

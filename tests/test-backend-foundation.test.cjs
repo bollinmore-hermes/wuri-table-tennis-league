@@ -120,7 +120,8 @@ test('hosted Test Pages build serves public root and authenticated admin from th
   const configs=['assets/js/config.js','admin/assets/js/config.js'].map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
   assert.match(publicHtml,/assets\/js\/config\.js/);
   assert.match(publicHtml,/assets\/vendor\/supabase\.js/);
-  assert.match(adminHtml,/href="\.\.\/index\.html"/);
+  assert.equal((adminHtml.match(/href="\.\.\/index\.html"/g)||[]).length,2);
+  assert.match(adminHtml,/id="publicSiteLink"[^>]*href="\.\.\/index\.html"[^>]*target="_blank"/);
   assert.match(configs,/"environment": "test"/);
   assert.match(configs,/"projectRef": "vppjcjfbcoxzofcuxmzz"/);
   assert.doesNotMatch(configs,/zofiiibgnjuodgrzhkpn|service[_-]?role|database[_-]?password|jwt[_-]?secret|postgres(?:ql)?:/i);
