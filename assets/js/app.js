@@ -36,19 +36,52 @@ const venueInfo={
 function renderVenues(){
   const info=venueInfo[locale];
   for(const id of ["homeVenue","scheduleVenue"]){
-    const headingId=`${id}Title`,wasOpen=el(id).children[0]?.open===true;
-    const directions=dom("div",{className:"venue-directions"},
-      dom("h3",{text:info.directions}),
-      dom("h3",{text:info.cityTitle}),dom("p",{text:info.city}),
-      dom("h3",{text:info.highwayTitle}),dom("ul",{},info.highway.map(text=>dom("li",{text}))),
-      dom("p",{className:"venue-transit",text:info.transit}));
-    replace(el(id),dom("details",{className:"league-overview venue-card",attrs:wasOpen?{open:""}:{}},
-      dom("summary",{},dom("b",{text:locale==="zh"?"場館交通":"Venue & travel",attrs:{id:headingId}}),dom("span",{className:"overview-toggle",text:"＋",attrs:{"aria-hidden":"true"}})),
-      dom("div",{className:"venue-content"},
-        dom("div",{className:"venue-header"},dom("div",{},dom("h3",{className:"venue-name",text:info.name}),dom("p",{className:"venue-address",text:info.address})),
-          dom("a",{className:"btn btn-primary venue-map",text:info.map,attrs:{href:venueInfo.mapUrl,target:"_blank",rel:"noopener noreferrer"}})),
-        dom("p",{className:"venue-parking"},dom("strong",{text:`${info.parking}：`}),info.parkingText),directions)));
+    const button=dom("button",{className:"info-trigger",attrs:{id:`${id}Button`,type:"button","aria-haspopup":"dialog","aria-controls":"venueDialog"}},
+      dom("b",{text:locale==="zh"?"場館交通":"Venue & travel"}),dom("span",{className:"overview-toggle",text:"＋",attrs:{"aria-hidden":"true"}}));
+    button.addEventListener("click",()=>openInfoDialog("venueDialog",button));
+    replace(el(id),button);
   }
+  el("venueDialogTitle").textContent=info.title;
+  replace(el("venueContent"),
+    dom("div",{className:"venue-header"},dom("div",{},dom("h3",{className:"venue-name",text:info.name}),dom("p",{className:"venue-address",text:info.address})),
+      dom("a",{className:"btn btn-primary venue-map",text:info.map,attrs:{href:venueInfo.mapUrl,target:"_blank",rel:"noopener noreferrer"}})),
+    dom("p",{className:"venue-parking"},dom("strong",{text:`${info.parking}：`}),info.parkingText),
+    dom("div",{className:"venue-directions"},dom("h3",{text:info.directions}),
+      dom("h4",{text:info.cityTitle}),dom("p",{text:info.city}),
+      dom("h4",{text:info.highwayTitle}),dom("ul",{},info.highway.map(text=>dom("li",{text}))),dom("p",{className:"venue-transit",text:info.transit})));
+}
+let infoDialogOpener=null,infoDialogOverflow="";
+function openInfoDialog(id,opener){
+  const dialog=el(id);
+  if(dialog.open)return;
+  infoDialogOpener=opener?.id||null;
+  infoDialogOverflow=document.documentElement.style.overflow;
+  dialog.showModal();
+  document.documentElement.style.overflow="hidden";
+  dialog.querySelector(".info-dialog-body").scrollTop=0;
+}
+function setupInfoDialogs(){
+  for(const id of ["overviewDialog","venueDialog"]){
+    const dialog=el(id);
+    let backdropPressed=false;
+    dialog.addEventListener("keydown",event=>{
+      if(event.key!=="Tab")return;
+      const focusable=[...dialog.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]')].filter(node=>node.getClientRects().length);
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(first&&event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+      else if(last&&!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+    });
+    const outside=event=>{const rect=dialog.getBoundingClientRect();return event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom};
+    dialog.addEventListener("pointerdown",event=>{backdropPressed=event.target===dialog&&outside(event)});
+    dialog.addEventListener("click",event=>{if(backdropPressed&&event.target===dialog&&outside(event))dialog.close();backdropPressed=false});
+    dialog.addEventListener("close",()=>{
+      document.documentElement.style.overflow=infoDialogOverflow;
+      const opener=infoDialogOpener;infoDialogOpener=null;
+      if(opener)el(opener)?.focus({preventScroll:true});
+    });
+  }
+  document.querySelectorAll("[data-info-dialog]").forEach(button=>button.addEventListener("click",()=>openInfoDialog(button.dataset.infoDialog,button)));
+  document.querySelectorAll("[data-close-info]").forEach(button=>button.addEventListener("click",()=>el(button.dataset.closeInfo).close()));
 }
 let locale="zh";
 try { locale=localStorage.getItem("wuriLeagueLocale")==="en"?"en":"zh"; } catch {}
@@ -182,6 +215,7 @@ function showRepositoryError(disabled=false){
   const notice=dom("div",{className:"notice",text:message,attrs:{role:"alert"}});
   document.querySelector?.("main")?.prepend(notice);
 }
+setupInfoDialogs();
 renderVenues();
 if(repositoryError)showRepositoryError(config&&config.mode==='disabled');
 else if(typeof repository.getPublicLeagueSync==="function")applyLocale(locale);
