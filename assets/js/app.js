@@ -27,6 +27,27 @@ const uiText={
   en:{finished:"Final",win:"Win",loss:"Loss",opponentStats:"Head-to-head win rate",opponentStatsHint:"Win-loss record and win rate against each opponent, based on completed matches.",noGames:"No meetings",gamesPlayed:n=>`${n} game${n===1?'':'s'} · `,scheduleByDate:"Team schedule by date"}
 };
 
+// Venue and driving directions confirmed by the organizer for issue #23.
+const venueInfo={
+  mapUrl:"https://maps.app.goo.gl/BmK9GhG99ada9C8x7",
+  zh:{title:"比賽場館與交通",name:"僑仁國小地下室",address:"414 臺中市烏日區仁德里中山路一段341號",map:"開啟 Google Maps 導航 ↗",parking:"停車資訊",parkingText:"校園內可以停車",directions:"自行開車指引",cityTitle:"從台中市區出發",city:"沿南區建國北路往烏日方向行駛，接烏日區中山路一段，過烏日大橋後約 500 公尺即可看到右側的僑仁國小。",highwayTitle:"走國道／快速道路",highway:["由國道1號（王田交流道）或國道3號（快官交流道）轉台74線（中彰快速道路）。","下烏日交流道後，接環河路行駛，再轉入中山路一段即可抵達。"],transit:"大眾運輸資訊待公告。"},
+  en:{title:"Venue & travel",name:"Qiaoren Elementary School · Basement",address:"No. 341, Sec. 1, Zhongshan Rd., Rende Village, Wuri District, Taichung City 414",map:"Open Google Maps directions ↗",parking:"Parking",parkingText:"Parking is available on campus",directions:"Driving directions",cityTitle:"From central Taichung",city:"Follow Jianguo North Road in South District toward Wuri, then join Section 1 of Zhongshan Road. About 500 metres after Wuri Bridge, Qiaoren Elementary School is on the right.",highwayTitle:"Via national highways / expressway",highway:["From National Highway 1 (Wangtian Interchange) or National Highway 3 (Kuaiguan Interchange), join Provincial Highway 74 (Zhongzhang Expressway).","Exit at Wuri Interchange, follow Huanhe Road, then turn onto Section 1 of Zhongshan Road."],transit:"Public transport information to be announced."}
+};
+function renderVenues(){
+  const info=venueInfo[locale];
+  for(const id of ["homeVenue","scheduleVenue"]){
+    const headingId=`${id}Title`;
+    const details=dom("details",{className:"venue-directions"},
+      dom("summary",{text:info.directions}),
+      dom("h3",{text:info.cityTitle}),dom("p",{text:info.city}),
+      dom("h3",{text:info.highwayTitle}),dom("ul",{},info.highway.map(text=>dom("li",{text}))),
+      dom("p",{className:"venue-transit",text:info.transit}));
+    replace(el(id),dom("section",{className:"card venue-card",attrs:{"aria-labelledby":headingId}},
+      dom("div",{className:"venue-header"},dom("div",{},dom("h2",{text:info.title,attrs:{id:headingId}}),dom("h3",{className:"venue-name",text:info.name}),dom("p",{className:"venue-address",text:info.address})),
+        dom("a",{className:"btn btn-primary venue-map",text:info.map,attrs:{href:venueInfo.mapUrl,target:"_blank",rel:"noopener noreferrer"}})),
+      dom("p",{className:"venue-parking"},dom("strong",{text:`${info.parking}：`}),info.parkingText),details));
+  }
+}
 let locale="zh";
 try { locale=localStorage.getItem("wuriLeagueLocale")==="en"?"en":"zh"; } catch {}
 const t=key=>copy[locale][key];
@@ -150,7 +171,7 @@ function showTeam(name,group,shouldScroll=true){
   if(shouldScroll)scrollTo({top:180,behavior:"smooth"});
 }
 document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventListener("click",()=>{teamGroup=button.dataset.teamGroup;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node===button));renderTeams()}));
-function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
+function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));renderVenues();renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));
 window.WuriLeagueApp=Object.freeze({gameCardHTML,teamLogoHTML,renderSchedule,renderTeams,showTeam,switchPage,selectDefaultScheduleDate,getSummary:()=>Object.freeze({teams:teams.A.length+teams.B.length,matches:games.length,results:Object.keys(officialScores).length})});
 function showRepositoryError(disabled=false){
@@ -159,6 +180,7 @@ function showRepositoryError(disabled=false){
   const notice=dom("div",{className:"notice",text:message,attrs:{role:"alert"}});
   document.querySelector?.("main")?.prepend(notice);
 }
+renderVenues();
 if(repositoryError)showRepositoryError(config&&config.mode==='disabled');
 else if(typeof repository.getPublicLeagueSync==="function")applyLocale(locale);
 else repository.getPublicLeague().then(dataset=>{applyDataset(dataset);applyLocale(locale)}).catch(()=>showRepositoryError(false));
