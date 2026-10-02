@@ -270,6 +270,46 @@ test('disabled public config renders a safe in-page zero state without throwing'
   assert.match(alerts[0].textContent,/資料來源尚未設定.*安全停用/);
 });
 
+test('issue 38: every team filter includes both home and away and intersects group/date',()=>{
+  const browser=loadPublicApp();
+  for(const group of ['A','B'])for(const name of vm.runInNewContext(`teams.${group}`,browser)){
+    vm.runInNewContext(`scheduleTeam=${JSON.stringify(name)};selectedDate='ALL';groupFilter='ALL';renderSchedule()`,browser);
+    const matches=vm.runInNewContext('filteredSchedule()',browser);
+    assert.equal(matches.length,10);
+    const expectedIds=vm.runInNewContext(`games.filter(game=>game.home===scheduleTeam||game.away===scheduleTeam).map(game=>game.id).sort()`,browser);
+    assert.deepEqual(Array.from(matches,game=>game.id).sort(),Array.from(expectedIds));
+    assert.equal(walk(browser.__ids.get('allGames')).filter(node=>node.tagName==='ARTICLE').length,10);
+    for(const date of vm.runInNewContext('dates',browser))for(const selectedGroup of ['ALL','A','B']){
+      vm.runInNewContext(`selectedDate=${JSON.stringify(date)};groupFilter='${selectedGroup}';renderSchedule()`,browser);
+      const expected=vm.runInNewContext(`games.filter(game=>(game.home===scheduleTeam||game.away===scheduleTeam)&&game.date===selectedDate&&(groupFilter==='ALL'||game.group===groupFilter)).length`,browser);
+      assert.equal(walk(browser.__ids.get('allGames')).filter(node=>node.tagName==='ARTICLE').length,expected);
+    }
+  }
+  browser.__ids.get('clearScheduleFilters').click();
+  assert.equal(vm.runInNewContext('scheduleTeam',browser),'ALL');
+  assert.equal(browser.__ids.get('dateFilter').value,'ALL');
+  assert.equal(walk(browser.__ids.get('allGames')).filter(node=>node.tagName==='ARTICLE').length,60);
+  vm.runInNewContext(`scheduleTeam=teams.A[0]`,browser);
+  browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,2,12));
+  assert.equal(browser.__ids.get('teamFilter').value,'ALL');
+});
+
+test('issue 39: pills retain identity, selection and translated labels',()=>{
+  const browser=loadPublicApp(),pills=browser.__ids.get('datePills');
+  const first=pills.children[0];
+  assert.equal(pills.children.length,vm.runInNewContext('dates.length+1',browser));
+  assert.equal(first.dataset.scheduleDate,'ALL');
+  vm.runInNewContext(`selectedDate=dates[0];renderSchedule()`,browser);
+  assert.equal(pills.children[0],first);
+  assert.equal(pills.children.filter(node=>node.attributes['aria-pressed']==='true').length,1);
+  assert.equal(pills.children[1].attributes['aria-pressed'],'true');
+  pills.listeners.keydown({target:pills.children[1],key:'End',preventDefault(){}});
+  assert.equal(browser.__ids.get('dateFilter').value,vm.runInNewContext('dates.at(-1)',browser));
+  vm.runInNewContext(`applyLocale('en')`,browser);
+  assert.equal(pills.children[0].textContent,'All matchdays');
+  assert.equal(pills.attributes['aria-label'],'Matchday');
+});
+
 test('production artifact is fail-closed and contains no management surface',()=>{
   execFileSync(process.execPath,['scripts/build-pages.cjs'],{cwd:root,env:{...process.env,PAGES_OUTPUT_SUFFIX:'security-test'},stdio:'pipe'});
   const out=path.join(root,'pages-dist-security-test');

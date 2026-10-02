@@ -6,6 +6,7 @@
 
   <meta name="description" content="2026 烏日桌球聯賽互動式賽程與戰績網站" />
   <title>烏日桌球聯賽｜2026</title>
+  <script src="assets/js/theme.js"></script>
   <style>
     :root {
       --navy:#111214; --navy-2:#25272b; --accent:#d7a928; --accent-2:#f4cf63;
@@ -49,6 +50,18 @@
     .home-info-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}.home-info-row>*{min-width:0}.info-trigger{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:58px;padding:13px 18px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);text-align:left}.info-trigger b{white-space:nowrap}.info-trigger:hover{border-color:var(--accent)}.info-trigger:focus-visible,.info-dialog-close:focus-visible,.venue-map:focus-visible{outline:3px solid var(--accent);outline-offset:3px}#scheduleVenue{margin-bottom:24px}
     .info-dialog{width:min(760px,calc(100vw - 40px));max-width:none;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);padding:0;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--text);box-shadow:0 24px 80px rgba(0,0,0,.3);overflow:hidden}.info-dialog[open]{display:flex;flex-direction:column}.info-dialog::backdrop{background:rgba(0,0,0,.55)}.info-dialog-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line);flex:0 0 auto}.info-dialog-header h2{margin:0;font-size:22px}.info-dialog-close{min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);color:var(--text);font-weight:800;flex-shrink:0}.info-dialog-body{overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:24px;line-height:1.8;overflow-wrap:anywhere}.venue-header{display:flex;align-items:center;justify-content:space-between;gap:20px}.venue-header>div{min-width:0}.venue-name{margin:0 0 6px;font-size:20px}.venue-address{overflow-wrap:anywhere;margin:0;color:var(--muted);line-height:1.7}.venue-map{min-height:48px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#171717;flex-shrink:0}.venue-parking{margin:20px 0;line-height:1.7}.venue-directions{border-top:1px solid var(--line);padding-top:10px}.venue-directions h3{font-size:18px;margin:14px 0 10px}.venue-directions h4{font-size:16px;margin:18px 0 6px}.venue-directions p,.venue-directions li{line-height:1.8}.venue-directions p{margin:6px 0}.venue-directions ul{padding-left:22px;margin:6px 0}.venue-transit{color:var(--muted)}
     @media(max-width:540px){.home-info-row{gap:10px}.info-trigger{padding:12px 10px;gap:6px;font-size:13px;min-height:52px}.home-info-row .overview-summary{display:none}.info-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);border-radius:14px}.info-dialog-header{padding:12px 16px;gap:10px}.info-dialog-header h2{font-size:18px}.info-dialog-body{padding:16px}.venue-header{flex-direction:column;align-items:stretch;gap:14px}.venue-map{width:100%;font-size:14px}.info-dialog .cards{grid-template-columns:1fr}}
+    :root{color-scheme:light;--trend-up:#087a55;--trend-down:#ba1727;--accent-ink:#765a00}
+    .rank,.opponent-pct,.team-meta b,.home-standing h3 button{color:var(--accent-ink)}
+    :root[data-theme="dark"] .team-group-section.group-a .team-group-heading span{background:var(--group-a-bg)}
+    :root[data-theme="dark"] .team-group-section.group-b .team-group-heading span{background:var(--group-b-bg)}
+    :root[data-theme="dark"]{color-scheme:dark;--bg:#161719;--surface:#222428;--surface-2:#303338;--text:#f4f0e7;--muted:#bbb5a8;--line:#555047;--accent:#e9be49;--accent-ink:#e9be49;--accent-2:#f4cf63;--group-a-bg:#343020;--group-a-line:#9c843b;--group-a-ink:#f4d876;--group-b-bg:#20313e;--group-b-line:#568bab;--group-b-ink:#9fd9fc;--shadow:0 12px 32px rgba(0,0,0,.25);--trend-up:#64dbaa;--trend-down:#ff8793}
+    .theme-toggle{flex:0 0 44px;width:44px;height:44px;border:1px solid #777;border-radius:50%;background:transparent;color:#fff;font-size:20px}.theme-toggle:hover{border-color:var(--accent)}
+    .theme-toggle:focus-visible,.date-pill:focus-visible,.theme-select:focus-visible,.filter-btn:focus-visible,.btn:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+    .schedule-controls{display:flex;align-items:end;flex-wrap:wrap;gap:16px;margin-bottom:18px}.schedule-controls .filters{align-self:center}.filter-field{display:grid;gap:6px;min-width:0}.filter-field label{font-weight:750;font-size:13px;color:var(--muted)}.filter-field select{min-height:44px;max-width:100%}#teamFilter{width:220px}.schedule-controls .filter-btn{min-height:44px}.date-pills{display:none}.date-pill{flex:0 0 auto;min-height:44px;white-space:nowrap}.date-pill.active{background:var(--accent);color:#171717;border-color:var(--accent)}.date-pill:hover{border-color:var(--accent)}.schedule-empty{padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;color:var(--muted)}
+    :root[data-theme="dark"] .filter-btn.active:not(.date-pill){background:var(--accent);color:#171717;border-color:var(--accent)}
+    :root[data-theme="dark"] .notice{background:var(--group-a-bg);border-color:var(--group-a-line);color:var(--group-a-ink)}
+    .btn-primary{color:#171717}.btn-primary:hover{color:#171717}.trend-up{color:var(--trend-up);font-weight:900}.trend-down{color:var(--trend-down);font-weight:900}
+    @media(max-width:820px){.nav{column-gap:6px}.nav .language-switch{margin-left:auto}.theme-toggle{flex-basis:40px;width:40px;height:40px}.schedule-controls{gap:12px}.desktop-date-filter{display:none}.date-pills{display:flex;gap:8px;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;padding:5px 3px 12px;margin-bottom:12px;scroll-padding-inline:3px}.schedule-controls .filter-field{flex:1;min-width:140px}#teamFilter{width:100%}.schedule-controls #clearScheduleFilters{min-height:44px}.schedule-controls .filters{width:100%}}
   </style>
 </head>
 <body data-theme="gold">
@@ -70,6 +83,7 @@
         <button class="lang-btn active" type="button" data-locale="zh">中文</button>
         <button class="lang-btn" type="button" data-locale="en">EN</button>
       </div>
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="切換深色模式" aria-pressed="false">☾</button>
     </div>
   </header>
 
@@ -107,8 +121,14 @@
     <section class="page" id="schedule">
       <div class="page-head"><div><div class="eyebrow">SCHEDULE</div><h1 data-i18n="navSchedule">賽程</h1><p data-i18n="scheduleCopy">依日期與分組瀏覽完整賽程與正式比分。</p></div></div>
       <div class="container">
-        <div class="section-head"><div class="filters" id="groupFilters"><button class="filter-btn active" data-group="ALL" data-i18n="all">全部</button><button class="filter-btn" data-group="A">A <span data-i18n="group">組</span></button><button class="filter-btn" data-group="B">B <span data-i18n="group">組</span></button></div><select id="dateFilter" class="theme-select" style="color:var(--text);background:var(--surface);border-color:var(--line)"></select></div>
-        <div id="allGames"></div>
+        <div class="schedule-controls">
+          <div class="filters" id="groupFilters"><button class="filter-btn active" data-group="ALL" data-i18n="all">全部</button><button class="filter-btn" data-group="A">A <span data-i18n="group">組</span></button><button class="filter-btn" data-group="B">B <span data-i18n="group">組</span></button></div>
+          <div class="filter-field"><label for="teamFilter" data-i18n="team">球隊</label><select id="teamFilter" class="theme-select"></select></div>
+          <div class="filter-field desktop-date-filter"><label for="dateFilter" data-i18n="matchdayFilter">比賽日</label><select id="dateFilter" class="theme-select"></select></div>
+          <button id="clearScheduleFilters" type="button" class="btn btn-ghost" data-i18n="clearFilters">清除條件</button>
+        </div>
+        <div id="datePills" class="date-pills" role="group" aria-label="比賽日"></div>
+        <div id="allGames" aria-live="polite" aria-atomic="true"></div>
       </div>
     </section>
 

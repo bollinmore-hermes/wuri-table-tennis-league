@@ -32,7 +32,8 @@ fs.mkdirSync(evidence,{recursive:true});
       for(const source of ['home','schedule','standings','teams']){
         await nav('schedule');
         await page.locator('[data-group="A"]').click();
-        await page.locator('#dateFilter').selectOption('ALL');
+        if(width<=820)await page.locator('[data-schedule-date="ALL"]').click();
+        else await page.locator('#dateFilter').selectOption('ALL');
         await nav(source);await nav('schedule');
         assert.equal(await page.locator('#dateFilter').inputValue(),defaultDate);
         assert.equal(await page.locator('#groupFilters .active').getAttribute('data-group'),'ALL');

@@ -15,13 +15,15 @@ function applyDataset(dataset){
   for(const row of dataset.snapshots||[]){if(officialStandings[row.group]&&nameByCode[row.team_code])officialStandings[row.group].rows[nameByCode[row.team_code]]={pts:row.points,w:row.wins,l:row.losses,trend:row.rank_change||0}}
 }
 if(repository&&typeof repository.getPublicLeagueSync==="function")applyDataset(repository.getPublicLeagueSync());
-let groupFilter="ALL", selectedDate="ALL", teamGroup="ALL", activeTeamDetail=null;
+let groupFilter="ALL", selectedDate="ALL", scheduleTeam="ALL", teamGroup="ALL", activeTeamDetail=null;
 const standingsSort={A:{key:"pts",dir:"desc"},B:{key:"pts",dir:"desc"}};
 const el=id=>document.getElementById(id);
 const copy={
   zh:{brand:"烏日桌球聯賽",season:"2026 秋季聯賽・下半季",navHome:"首頁",navSchedule:"賽程",navStandings:"戰績",navTeams:"球隊",heroTitle:"每一球，<br>都是關鍵一擊。",heroCopy:"烏日桌球聯賽下半季，A、B 兩組共 12 支球隊，從例行賽一路競逐至季後賽。",viewSchedule:"查看完整賽程",liveStandings:"即時戰績",postseasonTitle:"季後賽・拚獎金",postseasonCopy:"例行賽排名將決定最終季後賽席次。",postseasonDate:"12 月 6 日",overview:"聯賽概況",nextMatchday:"下一比賽日",allSchedule:"查看所有賽程",groupStandings:"分組戰績",standingsHint:"首頁顯示精簡排名，完整資訊請前往戰績頁。",fullStandings:"完整戰績 →",group:"組",scheduleCopy:"依日期與分組瀏覽完整賽程與正式比分。",scheduleNotice:"原始圖片僅含對戰安排，未提供場地、球員與實際賽果；本頁不虛構相關資訊。",all:"全部",standingsTitle:"戰績排名",standingsCopy:"A、B 組依正式逐場賽果計算的即時排名。",rankingGuide:"排名與積分說明",rankingGuideText:"依聯賽積分排序；同分時依勝場數與勝率排序。3–0 的積分為 3–0，2–1 的積分為 2–1。",standingsNotice:"排名由正式成績表的逐場比分計算；A 組截至 2026/9/20，B 組截至 2026/9/13。",aCutoff:"正式賽果截至 2026/9/20",bCutoff:"正式賽果截至 2026/9/13",teamsCopy:"A、B 兩組參賽隊伍與各隊賽程。",footer:"2026 秋季聯賽・賽程、戰績與球隊資訊",teamsCount:"參賽球隊",matchesCount:"例行賽場次",completedCount:"已完成賽事",twoGroups:"A、B 兩組",matchdays:"個比賽日",officialBase:"正式賽果",matchesUnit:"場",overviewLine:(teams,matches,done)=>`${teams} 支球隊・${matches} 場例行賽・${done} 場已完成`,allMatchdays:"所有比賽日",noMatches:"沒有符合條件的賽事。",official:"正式賽果",scheduled:"尚未開賽",team:"球隊",points:"積分",record:"勝–敗",rankTeam:"排名／球隊",trend:"升降",wins:"勝",losses:"敗",played:"已賽",winPct:"勝率",teamMeta:(group,w,l)=>`${group} 組・${w} 勝 ${l} 敗`,teamSchedule:"賽程",close:"關閉",teamDetail:(w,l,p,m)=>`${w} 勝 ${l} 敗・${p} 積分・共安排 ${m} 場例行賽`},
   en:{brand:"Wuri Table Tennis League",season:"2026 Autumn League · Second Half",navHome:"Home",navSchedule:"Schedule",navStandings:"Standings",navTeams:"Teams",heroTitle:"Every point.<br>Every moment matters.",heroCopy:"Twelve teams across Groups A and B compete through the regular season for a place in the postseason.",viewSchedule:"View Schedule",liveStandings:"Live Standings",postseasonTitle:"Postseason · Prize Round",postseasonCopy:"Regular-season standings determine the postseason field.",postseasonDate:"December 6",overview:"League Overview",nextMatchday:"Next Matchday",allSchedule:"View Full Schedule",groupStandings:"Group Standings",standingsHint:"A compact ranking is shown here. Open Standings for full details.",fullStandings:"Full Standings →",group:"Group",scheduleCopy:"Browse the full schedule and official results by date and group.",scheduleNotice:"The source only contains match pairings. Venue, player and unreported result data are not fabricated.",all:"All",standingsTitle:"Standings",standingsCopy:"Current rankings calculated from official match results.",rankingGuide:"Ranking and points guide",rankingGuideText:"Teams are ranked by league points, then wins and winning percentage. A 3–0 result awards 3–0 points; 2–1 awards 2–1 points.",standingsNotice:"Rankings are calculated from official match results: Group A through Sep 20 and Group B through Sep 13, 2026.",aCutoff:"Official results through Sep 20, 2026",bCutoff:"Official results through Sep 13, 2026",teamsCopy:"Teams and schedules across Groups A and B.",footer:"2026 Autumn League · Schedule, standings and teams",teamsCount:"Teams",matchesCount:"Regular-season Matches",completedCount:"Completed",twoGroups:"Groups A and B",matchdays:"matchdays",officialBase:"Official results",matchesUnit:"matches",overviewLine:(teams,matches,done)=>`${teams} teams · ${matches} matches · ${done} completed`,allMatchdays:"All matchdays",noMatches:"No matches found.",official:"Official result",scheduled:"Scheduled",team:"Team",points:"Pts",record:"W–L",rankTeam:"Rank / Team",trend:"Move",wins:"W",losses:"L",played:"GP",winPct:"Win%",teamMeta:(group,w,l)=>`Group ${group} · ${w} W ${l} L`,teamSchedule:"Schedule",close:"Close",teamDetail:(w,l,p,m)=>`${w} W ${l} L · ${p} pts · ${m} regular-season matches`}
 };
+Object.assign(copy.zh,{allTeams:"所有球隊",clearFilters:"清除條件",matchdayFilter:"比賽日",darkMode:"切換深色模式",lightMode:"切換淺色模式"});
+Object.assign(copy.en,{allTeams:"All teams",clearFilters:"Clear filters",matchdayFilter:"Matchday",darkMode:"Switch to dark mode",lightMode:"Switch to light mode"});
 const uiText={
   zh:{finished:"完賽",win:"勝利",loss:"敗北",opponentStats:"對戰勝率",opponentStatsHint:"依目前已完成賽事，統計對戰各隊的勝敗與勝率。",noGames:"尚未交手",gamesPlayed:n=>`${n} 場・`,scheduleByDate:"球隊賽程（依日期）",backTeams:"回到所有球隊"},
   en:{finished:"Final",win:"Win",loss:"Loss",opponentStats:"Head-to-head win rate",opponentStatsHint:"Win-loss record and win rate against each opponent, based on completed matches.",noGames:"No meetings",gamesPlayed:n=>`${n} game${n===1?'':'s'} · `,scheduleByDate:"Team schedule by date",backTeams:"Back to all teams"}
@@ -137,7 +139,7 @@ function selectDefaultScheduleDate(scheduleDates,now=new Date()){
 }
 function switchPage(page,now=new Date()){
   if(page==="schedule"){
-    groupFilter="ALL";selectedDate=selectDefaultScheduleDate(dates,now);
+    groupFilter="ALL";scheduleTeam="ALL";selectedDate=selectDefaultScheduleDate(dates,now);
     document.querySelectorAll("[data-group]").forEach(node=>node.classList.toggle("active",node.dataset.group===groupFilter));
     renderSchedule();
   }
@@ -148,6 +150,7 @@ function switchPage(page,now=new Date()){
   }
   if(page==="home")renderHome();
   document.querySelectorAll(".page").forEach(node=>node.classList.toggle("active",node.id===page));document.querySelectorAll(".nav-btn").forEach(node=>node.classList.toggle("active",node.dataset.page===page));scrollTo({top:0,behavior:"smooth"})
+  if(page==="schedule")window.requestAnimationFrame?.(revealSelectedDate);
 }
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>switchPage(button.dataset.page)));
 document.querySelectorAll("[data-jump]").forEach(button=>button.addEventListener("click",()=>switchPage(button.dataset.jump)));
@@ -171,16 +174,48 @@ function gameCardHTML(game,{perspective=null}={}){
 }
 const gameHTML=game=>gameCardHTML(game);
 const homeGameHTML=game=>gameCardHTML(game);
+function filteredSchedule(){return games.filter(game=>(groupFilter==="ALL"||game.group===groupFilter)&&(selectedDate==="ALL"||game.date===selectedDate)&&(scheduleTeam==="ALL"||game.home===scheduleTeam||game.away===scheduleTeam)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)||a.group.localeCompare(b.group))}
+function renderDatePills(){
+  const container=el("datePills"),values=["ALL",...dates];
+  const focused=document.activeElement?.dataset?.scheduleDate,scrollLeft=container.scrollLeft;
+  const signature=JSON.stringify([locale,...dates]);
+  if(container.dataset.signature!==signature){
+    container.dataset.signature=signature;
+    replace(container,values.map(value=>dom("button",{className:"filter-btn date-pill",text:value==="ALL"?t("allMatchdays"):fmtDate(value),attrs:{type:"button","aria-pressed":"false"},dataset:{scheduleDate:value}})));
+  }
+  for(const button of container.children){const active=button.dataset.scheduleDate===selectedDate;button.classList.toggle("active",active);button.setAttribute("aria-pressed",String(active))}
+  container.setAttribute("aria-label",t("matchdayFilter"));
+  container.scrollLeft=scrollLeft;
+  if(focused)Array.from(container.children).find(button=>button.dataset.scheduleDate===focused)?.focus?.({preventScroll:true});
+}
+function revealSelectedDate(){
+  const container=el("datePills"),button=Array.from(container.children).find(node=>node.dataset.scheduleDate===selectedDate);
+  if(!button||!container.clientWidth)return;
+  const left=button.offsetLeft-container.offsetLeft,right=left+button.offsetWidth;
+  if(left<container.scrollLeft)container.scrollLeft=left;
+  else if(right>container.scrollLeft+container.clientWidth)container.scrollLeft=right-container.clientWidth;
+}
 function renderSchedule(){
-  const list=games.filter(game=>(groupFilter==="ALL"||game.group===groupFilter)&&(selectedDate==="ALL"||game.date===selectedDate)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)||a.group.localeCompare(b.group));
+  const list=filteredSchedule();
+  replace(el("teamFilter"),dom("option",{text:t("allTeams"),attrs:{value:"ALL"}}),["A","B"].map(group=>dom("optgroup",{attrs:{label:locale==="zh"?`${group} 組`:`Group ${group}`}},teams[group].map(name=>dom("option",{text:name,attrs:{value:name}})))));
+  el("teamFilter").value=scheduleTeam;
   replace(el("dateFilter"),dom("option",{text:t("allMatchdays"),attrs:{value:"ALL"}}),dates.map(date=>dom("option",{text:fmtDate(date),attrs:{value:date}})));
   el("dateFilter").value=selectedDate;
+  renderDatePills();
   const grouped=list.reduce((result,game)=>{(result[game.date]??=[]).push(game);return result},{});
   const sections=Object.entries(grouped).map(([date,daily])=>dom("section",{className:`date-section group-${daily[0].group.toLowerCase()}`},
     dom("h2",{className:"date-heading"},dom("time",{text:fmtDate(date),attrs:{datetime:date}}),dom("span",{text:`${daily.length} ${t("matchesUnit")}`})),
     dom("div",{className:"games"},daily.map(gameHTML))));
-  replace(el("allGames"),sections.length?sections:dom("p",{text:t("noMatches")}));
+  replace(el("allGames"),sections.length?sections:dom("p",{className:"schedule-empty",text:t("noMatches")}));
 }
+el("teamFilter").addEventListener("change",event=>{scheduleTeam=event.target.value;renderSchedule()});
+el("clearScheduleFilters").addEventListener("click",()=>{groupFilter="ALL";scheduleTeam="ALL";selectedDate="ALL";document.querySelectorAll("[data-group]").forEach(node=>node.classList.toggle("active",node.dataset.group==="ALL"));renderSchedule();revealSelectedDate()});
+el("datePills").addEventListener("click",event=>{const button=event.target.closest?.("[data-schedule-date]");if(!button)return;selectedDate=button.dataset.scheduleDate;renderSchedule();revealSelectedDate()});
+el("datePills").addEventListener("keydown",event=>{
+  const buttons=Array.from(el("datePills").children),index=buttons.indexOf(event.target);if(index<0)return;
+  const next=event.key==="ArrowRight"?(index+1)%buttons.length:event.key==="ArrowLeft"?(index+buttons.length-1)%buttons.length:event.key==="Home"?0:event.key==="End"?buttons.length-1:null;
+  if(next!==null){event.preventDefault();buttons[next].focus?.();selectedDate=buttons[next].dataset.scheduleDate;renderSchedule();revealSelectedDate()}
+});
 el("dateFilter").addEventListener("change",event=>{selectedDate=event.target.value;renderSchedule()});
 document.querySelectorAll("[data-group]").forEach(button=>button.addEventListener("click",()=>{groupFilter=button.dataset.group;document.querySelectorAll("[data-group]").forEach(node=>node.classList.toggle("active",node===button));renderSchedule()}));
 
@@ -191,7 +226,7 @@ function standings(group,sort=standingsSort[group]){
   const value=(row,key)=>key==="pct"?row.w/(row.w+row.l||1):row[key],direction=sort.dir==="asc"?1:-1;
   return Object.values(stats).sort((a,b)=>direction*(value(a,sort.key)-value(b,sort.key))||b.pts-a.pts||b.w-a.w||((b.w/(b.w+b.l||1))-(a.w/(a.w+a.l||1)))||a.name.localeCompare(b.name,"zh-Hant"));
 }
-function trendHTML(value){return dom("span",{text:value>0?`▲ ${value}`:value<0?`▼ ${Math.abs(value)}`:"—",attrs:{style:value>0?"color:#12b76a;font-weight:900":value<0?"color:#e21d2e;font-weight:900":"color:var(--muted)"}})}
+function trendHTML(value){return dom("span",{className:value>0?"trend-up":value<0?"trend-down":"",text:value>0?`▲ ${value}`:value<0?`▼ ${Math.abs(value)}`:"—"})}
 function sortHeader(group,key,label){const active=standingsSort[group].key===key,arrow=active?(standingsSort[group].dir==="desc"?"↓":"↑"):"";return dom("button",{className:`sort-button${active?" active":""}`,text:`${label} ${arrow}`,attrs:{type:"button"},dataset:{sortGroup:group,sortKey:key}})}
 function teamCell(row,index,group){return dom("span",{className:"team-cell"},dom("span",{className:"rank",text:index+1}),dom("button",{className:"team-link",attrs:{type:"button"},dataset:{teamLink:row.name,linkGroup:group}},teamLogoHTML(row.name,"table-team-logo"),dom("span",{className:"record-team",text:row.name})))}
 function tableHTML(group,compact=false){
@@ -224,7 +259,10 @@ function showTeam(name,group,shouldScroll=true){
   if(shouldScroll)scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventListener("click",()=>{teamGroup=button.dataset.teamGroup;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node===button));renderTeams()}));
-function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));renderVenues();renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
+function updateThemeToggle(){const dark=window.WuriLeagueTheme?.current()==="dark",button=el("themeToggle");button.textContent=dark?"☀":"☾";button.setAttribute("aria-pressed",String(dark));button.setAttribute("aria-label",t(dark?"lightMode":"darkMode"));button.setAttribute("title",t(dark?"lightMode":"darkMode"))}
+el("themeToggle").addEventListener("click",()=>{window.WuriLeagueTheme?.set(window.WuriLeagueTheme.current()==="dark"?"light":"dark");updateThemeToggle()});
+window.addEventListener?.("wuri-theme-change",updateThemeToggle);
+function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));updateThemeToggle();renderVenues();renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));
 window.WuriLeagueApp=Object.freeze({gameCardHTML,teamLogoHTML,renderSchedule,renderTeams,showTeam,switchPage,selectDefaultScheduleDate,getSummary:()=>Object.freeze({teams:teams.A.length+teams.B.length,matches:games.length,results:Object.keys(officialScores).length})});
 function showRepositoryError(disabled=false){
