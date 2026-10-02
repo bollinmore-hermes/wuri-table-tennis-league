@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "mutation": "Scorer gains full roster in get_admin_dataset",
+  "expectedExitCode": 1,
+  "actualExitCode": 1,
+  "rejected": true
+}

@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "runtime": "PGlite embedded PostgreSQL",
+  "auth": "emulated uid/roles; remote Auth and PostgREST unverified",
+  "members": 73,
+  "teams": 12,
+  "checks": [
+    "migration:001_initial_schema.sql",
+    "migration:002_official_score_rule.sql",
+    "migration:003_security_hardening.sql",
+    "migration:004_test_management_backend.sql",
+    "migration:005_player_roster_management.sql",
+    "migration:006_user_invitations.sql",
+    "migration:007_user_management.sql",
+    "migration:008_permanent_user_deletion.sql",
+    "migration:009_private_rosters.sql",
+    "admin-import",
+    "admin-full-names",
+    "idempotent-import",
+    "scorer-no-private-data",
+    "scorer-write-and-table-denial",
+    "inactive-and-unprofiled-denial",
+    "anonymous-denial",
+    "server-masked-public-response",
+    "unknown-season-empty",
+    "admin-direct-table-denial",
+    "unpublished-member-excluded",
+    "soft-deleted-member-excluded",
+    "short-name-publication-denied",
+    "transaction-rollback",
+    "mask-parity"
+  ]
+}

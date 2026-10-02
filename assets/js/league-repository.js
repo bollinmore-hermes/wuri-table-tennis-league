@@ -58,7 +58,21 @@
       snapshotKeys.add(key);
       return Object.freeze({group:row.group,snapshot_date:row.snapshot_date,team_code:row.team_code,points:row.points,wins:row.wins,losses:row.losses,rank:row.rank,rank_change:row.rank_change});
     });
-    return Object.freeze({season:payload.season?Object.freeze({...payload.season}):null,teams:freezeRows(teams),matches:freezeRows(matches),results:freezeRows(results),snapshots:Object.freeze(snapshots)});
+    if(payload.roster!==undefined&&!Array.isArray(payload.roster))throw new Error('Invalid public roster');
+    if((payload.roster||[]).length>1000)throw new Error('Public roster exceeds limits');
+    const rosterKeys=new Set(),rosterLeaders=new Set();
+    const roster=(payload.roster||[]).map(row=>{
+      if(!row||!teamCodes.has(row.team_code)||!['leader','player'].includes(row.roster_role)||!integerInRange(row.display_order,0,100))throw new Error('Invalid public roster member');
+      const key=`${row.team_code}:${row.roster_role}:${row.display_order}`;
+      if(rosterKeys.has(key)||(row.roster_role==='leader'&&rosterLeaders.has(row.team_code)))throw new Error('Duplicate public roster slot or leader');
+      rosterKeys.add(key);if(row.roster_role==='leader')rosterLeaders.add(row.team_code);
+      // Reject private fields and unmasked data even if a misconfigured RPC returns them.
+      if(Object.keys(row).some(key=>!['team_code','display_name','roster_role','display_order'].includes(key)))throw new Error('Private fields in public roster');
+      const display_name=requiredText(row.display_name,100,'masked roster name');
+      if(!/^[^＊\s]＊+[^＊\s]$/u.test(display_name)&&display_name!=='＊')throw new Error('Unmasked public roster name');
+      return {team_code:row.team_code,display_name,roster_role:row.roster_role,display_order:row.display_order};
+    });
+    return Object.freeze({roster:freezeRows(roster),season:payload.season?Object.freeze({...payload.season}):null,teams:freezeRows(teams),matches:freezeRows(matches),results:freezeRows(results),snapshots:Object.freeze(snapshots)});
   }
   class StaticLeagueRepository{
     constructor(dataset){this.dataset=normalizeDataset(dataset)}
