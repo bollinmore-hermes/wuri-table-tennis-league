@@ -62,6 +62,16 @@ test('public renderer avoids HTML string sinks and score mutation hooks',()=>{
   assert.match(appSource,/createTextNode|textContent/);
 });
 
+test('home schedule call-to-action is visually prominent and mobile friendly',()=>{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(html,/class="btn btn-primary schedule-cta"[^>]*data-jump="schedule"/);
+  assert.match(html,/\.schedule-cta\{[^}]*min-height:48px[^}]*box-shadow:/);
+  assert.match(html,/\.schedule-cta:before\{content:"📅"/);
+  assert.match(html,/@media\(max-width:540px\)\{[^}]*[\s\S]*?\.schedule-cta\{width:100%\}/);
+  assert.match(appSource,/allSchedule:"查看所有賽程"/);
+  assert.match(appSource,/allSchedule:"View Full Schedule"/);
+});
+
 test('official public data remains 12 teams, 60 matches, 26 results',()=>{
   const summary=loadPublicApp().WuriLeagueApp.getSummary();
   assert.deepEqual(JSON.parse(JSON.stringify(summary)),{teams:12,matches:60,results:26});
