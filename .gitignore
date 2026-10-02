@@ -1,3 +1,5 @@
+# Full roster data must never enter source control or artifacts.
+.private/
 node_modules/
 .env
 .env.*

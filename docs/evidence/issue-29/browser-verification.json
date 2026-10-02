@@ -1,0 +1,1668 @@
+{
+  "ok": true,
+  "browser": "Chrome/152.0.7977.84",
+  "publicArtifact": "pages-dist",
+  "adminArtifact": "admin-demo-dist (synthetic names; local demo only)",
+  "animationTimingExcluded": true,
+  "matrix": [
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 360,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "zh",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "light",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A01",
+      "members": 4,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A02",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A03",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A04",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "A06",
+      "members": 7,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B01",
+      "members": 5,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B02",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B03",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B04",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B05",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "locale": "en",
+      "theme": "dark",
+      "team_code": "B06",
+      "members": 6,
+      "overflow": false
+    },
+    {
+      "admin": true,
+      "width": 360,
+      "documentOverflow": false,
+      "editorOverflow": false,
+      "dialogWithin": true,
+      "controls": [
+        {
+          "label": "完整姓名",
+          "width": 241
+        },
+        {
+          "label": "名冊角色",
+          "width": 241
+        },
+        {
+          "label": "啟用狀態",
+          "width": 241
+        },
+        {
+          "label": "顯示順序",
+          "width": 241
+        },
+        {
+          "label": "公開名冊",
+          "width": 241
+        }
+      ]
+    },
+    {
+      "admin": true,
+      "width": 390,
+      "documentOverflow": false,
+      "editorOverflow": false,
+      "dialogWithin": true,
+      "controls": [
+        {
+          "label": "完整姓名",
+          "width": 271
+        },
+        {
+          "label": "名冊角色",
+          "width": 271
+        },
+        {
+          "label": "啟用狀態",
+          "width": 271
+        },
+        {
+          "label": "顯示順序",
+          "width": 271
+        },
+        {
+          "label": "公開名冊",
+          "width": 271
+        }
+      ]
+    },
+    {
+      "admin": true,
+      "width": 768,
+      "documentOverflow": false,
+      "editorOverflow": false,
+      "dialogWithin": true,
+      "controls": [
+        {
+          "label": "完整姓名",
+          "width": 265.5
+        },
+        {
+          "label": "名冊角色",
+          "width": 265.5
+        },
+        {
+          "label": "啟用狀態",
+          "width": 265.5
+        },
+        {
+          "label": "顯示順序",
+          "width": 265.5
+        },
+        {
+          "label": "公開名冊",
+          "width": 265.5
+        }
+      ]
+    },
+    {
+      "admin": true,
+      "width": 1280,
+      "documentOverflow": false,
+      "editorOverflow": false,
+      "dialogWithin": true,
+      "controls": [
+        {
+          "label": "完整姓名",
+          "width": 265.5
+        },
+        {
+          "label": "名冊角色",
+          "width": 265.5
+        },
+        {
+          "label": "啟用狀態",
+          "width": 265.5
+        },
+        {
+          "label": "顯示順序",
+          "width": 265.5
+        },
+        {
+          "label": "公開名冊",
+          "width": 265.5
+        }
+      ]
+    },
+    {
+      "scorer": true,
+      "privateNameAbsent": true,
+      "rosterButtons": 0
+    }
+  ],
+  "errors": [],
+  "remoteVerified": false
+}

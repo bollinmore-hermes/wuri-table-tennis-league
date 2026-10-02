@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "projectRef": "vppjcjfbcoxzofcuxmzz",
+  "applied": true,
+  "administratorAuth": true,
+  "administratorFullNamesVerified": true,
+  "publicMaskedNamesVerified": true,
+  "publicFullNamesAbsent": true,
+  "anonymousManagementDenied": true,
+  "anonymousAndAdminDirectTableDenied": true,
+  "teams": 12,
+  "leaders": 12,
+  "players": 61,
+  "members": 73,
+  "importChanged": 73,
+  "repeatImportChanged": 0,
+  "preservedLeagueCounts": {
+    "teams": 12,
+    "matches": 60,
+    "results": 26,
+    "snapshots": 12
+  },
+  "verifiedAt": "2026-10-02T14:55:33.863Z"
+}

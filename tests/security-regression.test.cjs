@@ -44,6 +44,26 @@ function loadPublicApp(config){
   return sandbox;
 }
 
+test('#29 roster detail displays every masked member in both locales and safe empty states',()=>{
+  const browser=loadPublicApp();
+  const source=browser.WuriLeagueOfficialData;
+  for(const locale of ['zh','en']){
+    vm.runInNewContext(`applyLocale("${locale}")`,browser);
+    for(const team of source.teams){
+      browser.WuriLeagueApp.showTeam(team.name,team.group,false);
+      const section=walk(browser.__ids.get('teamDetail')).find(node=>node.dataset.publicRoster==='');
+      assert(section);
+      const items=walk(section).filter(node=>node.tagName==='LI');
+      assert.deepEqual(items.map(node=>node.textContent).sort(),Array.from(source.roster).filter(row=>row.team_code===team.team_code).map(row=>row.display_name).sort());
+      assert(walk(section).some(node=>node.textContent===(locale==='zh'?'領隊':'Team manager')));
+      assert(walk(section).some(node=>node.textContent===(locale==='zh'?'隊員':'Players')));
+    }
+  }
+  vm.runInNewContext('publicRoster=[]',browser);
+  browser.WuriLeagueApp.showTeam(source.teams[0].name,source.teams[0].group,false);
+  assert(walk(browser.__ids.get('teamDetail')).some(node=>node.textContent==='Roster not provided'));
+});
+
 test('untrusted team names and match codes remain inert DOM text',()=>{
   const browser=loadPublicApp();
   const payload='<img src=x onerror="globalThis.__xss=1"><script>globalThis.__xss=1</script>';
