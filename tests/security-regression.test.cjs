@@ -98,6 +98,27 @@ test('venue information is shared by home and schedule with safe navigation',()=
   assert.match(html,/\.venue-address\{[^}]*overflow-wrap:anywhere/);
 });
 
+test('venue defaults to collapsed details and shares a non-wrapping row with league overview',()=>{
+  const browser=loadPublicApp();
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(html,/<div class="home-info-row">\s*<details[^>]*id="leagueOverview"[\s\S]*?<\/details>\s*<div id="homeVenue"><\/div>\s*<\/div>/);
+  assert.match(html,/\.home-info-row\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)[^}]*align-items:start/);
+  assert.match(html,/\.home-info-row \.overview-summary\{display:none\}/);
+  for(const id of ['homeVenue','scheduleVenue']){
+    const disclosure=browser.__ids.get(id).children[0];
+    assert.equal(disclosure.tagName,'DETAILS');
+    assert.equal(disclosure.attributes.open,undefined);
+    assert.equal(disclosure.children[0].tagName,'SUMMARY');
+    assert.equal(disclosure.children[0].children[0].textContent,'場館交通');
+    assert.equal(walk(disclosure.children[0]).some(node=>node.tagName==='A'),false);
+    assert.ok(walk(disclosure.children[1]).some(node=>node.tagName==='A'));
+  }
+  browser.__ids.get('homeVenue').children[0].open=true;
+  vm.runInNewContext('applyLocale("en")',browser);
+  assert.equal(browser.__ids.get('homeVenue').children[0].attributes.open,'');
+  assert.equal(browser.__ids.get('homeVenue').children[0].children[0].children[0].textContent,'Venue & travel');
+});
+
 test('venue remains available when league loading is disabled and supports English',()=>{
   const browser=loadPublicApp({mode:'disabled'});
   vm.runInNewContext('applyLocale("en")',browser);

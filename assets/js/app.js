@@ -36,16 +36,18 @@ const venueInfo={
 function renderVenues(){
   const info=venueInfo[locale];
   for(const id of ["homeVenue","scheduleVenue"]){
-    const headingId=`${id}Title`;
-    const details=dom("details",{className:"venue-directions"},
-      dom("summary",{text:info.directions}),
+    const headingId=`${id}Title`,wasOpen=el(id).children[0]?.open===true;
+    const directions=dom("div",{className:"venue-directions"},
+      dom("h3",{text:info.directions}),
       dom("h3",{text:info.cityTitle}),dom("p",{text:info.city}),
       dom("h3",{text:info.highwayTitle}),dom("ul",{},info.highway.map(text=>dom("li",{text}))),
       dom("p",{className:"venue-transit",text:info.transit}));
-    replace(el(id),dom("section",{className:"card venue-card",attrs:{"aria-labelledby":headingId}},
-      dom("div",{className:"venue-header"},dom("div",{},dom("h2",{text:info.title,attrs:{id:headingId}}),dom("h3",{className:"venue-name",text:info.name}),dom("p",{className:"venue-address",text:info.address})),
-        dom("a",{className:"btn btn-primary venue-map",text:info.map,attrs:{href:venueInfo.mapUrl,target:"_blank",rel:"noopener noreferrer"}})),
-      dom("p",{className:"venue-parking"},dom("strong",{text:`${info.parking}：`}),info.parkingText),details));
+    replace(el(id),dom("details",{className:"league-overview venue-card",attrs:wasOpen?{open:""}:{}},
+      dom("summary",{},dom("b",{text:locale==="zh"?"場館交通":"Venue & travel",attrs:{id:headingId}}),dom("span",{className:"overview-toggle",text:"＋",attrs:{"aria-hidden":"true"}})),
+      dom("div",{className:"venue-content"},
+        dom("div",{className:"venue-header"},dom("div",{},dom("h3",{className:"venue-name",text:info.name}),dom("p",{className:"venue-address",text:info.address})),
+          dom("a",{className:"btn btn-primary venue-map",text:info.map,attrs:{href:venueInfo.mapUrl,target:"_blank",rel:"noopener noreferrer"}})),
+        dom("p",{className:"venue-parking"},dom("strong",{text:`${info.parking}：`}),info.parkingText),directions)));
   }
 }
 let locale="zh";
