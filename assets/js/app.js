@@ -40,7 +40,7 @@ function renderVenues(){
   const info=venueInfo[locale],content=el("venueContent");
   const restoreFocus=content.contains?.(document.activeElement),scrollTop=content.scrollTop;
   venueRenderedLocale=locale;
-  for(const id of ["homeVenue","scheduleVenue"]){
+  for(const id of ["homeVenue"]){
     const button=dom("button",{className:"info-trigger",attrs:{id:`${id}Button`,type:"button","aria-haspopup":"dialog","aria-controls":"venueDialog"}},
       dom("b",{text:locale==="zh"?"場館交通":"Venue & travel"}),dom("span",{className:"overview-toggle",text:"＋",attrs:{"aria-hidden":"true"}}));
     button.addEventListener("click",()=>openInfoDialog("venueDialog",button));

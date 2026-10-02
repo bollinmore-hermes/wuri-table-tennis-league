@@ -73,10 +73,22 @@ test('home schedule call-to-action is visually prominent and mobile friendly',()
   assert.match(appSource,/allSchedule:"View Full Schedule"/);
 });
 
-test('venue information is shared by home and schedule with safe navigation',()=>{
+test('schedule has no venue container or trigger in either locale',()=>{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.doesNotMatch(html,/id="scheduleVenue"/);
+  const browser=loadPublicApp();
+  for(const locale of ['zh','en']){
+    vm.runInNewContext(`applyLocale("${locale}")`,browser);
+    browser.WuriLeagueApp.switchPage('schedule');
+    assert.equal(browser.__ids.has('scheduleVenue'),false);
+    assert.equal(browser.__ids.get('homeVenue').children.length,1);
+  }
+});
+
+test('venue information is available on home with safe navigation',()=>{
   const browser=loadPublicApp();
   const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [page,id] of [['home','homeVenue'],['schedule','scheduleVenue']]){
+  for(const [page,id] of [['home','homeVenue']]){
     assert.match(html,new RegExp(`id="${page}"[\\s\\S]*?id="${id}"`));
     const nodes=walk(browser.__ids.get('venueContent'));
     const text=nodes.map(node=>node.textContent).join(' ');
@@ -106,7 +118,7 @@ test('venue opens in a shared popup while home information buttons stay on one r
   for(const id of ['overviewDialog','venueDialog']){
     assert.match(html,new RegExp(`<dialog[^>]*id="${id}"[^>]*aria-labelledby=`));
   }
-  for(const id of ['homeVenue','scheduleVenue']){
+  for(const id of ['homeVenue']){
     const button=browser.__ids.get(id).children[0];
     assert.equal(button.tagName,'BUTTON');
     assert.equal(button.attributes['aria-haspopup'],'dialog');
@@ -136,7 +148,7 @@ test('league refresh does not replace the venue popup content or its trigger',()
 test('venue remains available when league loading is disabled and supports English',()=>{
   const browser=loadPublicApp({mode:'disabled'});
   vm.runInNewContext('applyLocale("en")',browser);
-  for(const id of ['homeVenue','scheduleVenue']){
+  for(const id of ['homeVenue']){
     const text=walk(browser.__ids.get('venueContent')).map(node=>node.textContent).join(' ');
     assert.match(text,/Qiaoren Elementary School/);
     assert.match(text,/Parking is available on campus/);
