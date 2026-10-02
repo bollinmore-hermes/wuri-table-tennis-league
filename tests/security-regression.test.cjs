@@ -72,6 +72,78 @@ test('home schedule call-to-action is visually prominent and mobile friendly',()
   assert.match(appSource,/allSchedule:"View Full Schedule"/);
 });
 
+test('venue information is shared by home and schedule with safe navigation',()=>{
+  const browser=loadPublicApp();
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  for(const [page,id] of [['home','homeVenue'],['schedule','scheduleVenue']]){
+    assert.match(html,new RegExp(`id="${page}"[\\s\\S]*?id="${id}"`));
+    const nodes=walk(browser.__ids.get('venueContent'));
+    const text=nodes.map(node=>node.textContent).join(' ');
+    assert.match(text,/僑仁國小地下室/);
+    assert.match(text,/414 臺中市烏日區仁德里中山路一段341號/);
+    assert.match(text,/校園內可以停車/);
+    assert.match(text,/王田交流道/);
+    assert.match(text,/快官交流道/);
+    assert.match(text,/台74線/);
+    assert.match(text,/大眾運輸資訊待公告/);
+    const links=nodes.filter(node=>node.tagName==='A');
+    assert.equal(links.length,1);
+    assert.equal(links[0].attributes.href,'https://maps.app.goo.gl/BmK9GhG99ada9C8x7');
+    assert.equal(links[0].attributes.target,'_blank');
+    assert.equal(links[0].attributes.rel,'noopener noreferrer');
+    assert.equal(browser.__ids.get(id).children[0].attributes['aria-controls'],'venueDialog');
+  }
+  assert.match(html,/\.info-trigger\{[^}]*width:100%/);
+  assert.match(html,/\.venue-map\{[^}]*min-height:48px/);
+  assert.match(html,/\.venue-address\{[^}]*overflow-wrap:anywhere/);
+});
+
+test('venue opens in a shared popup while home information buttons stay on one row',()=>{
+  const browser=loadPublicApp();
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(html,/<div class="home-info-row">\s*<button[^>]*id="leagueOverview"[\s\S]*?<\/button>\s*<div id="homeVenue"><\/div>/);
+  for(const id of ['overviewDialog','venueDialog']){
+    assert.match(html,new RegExp(`<dialog[^>]*id="${id}"[^>]*aria-labelledby=`));
+  }
+  for(const id of ['homeVenue','scheduleVenue']){
+    const button=browser.__ids.get(id).children[0];
+    assert.equal(button.tagName,'BUTTON');
+    assert.equal(button.attributes['aria-haspopup'],'dialog');
+    assert.equal(button.attributes['aria-controls'],'venueDialog');
+    assert.equal(button.children[0].textContent,'場館交通');
+    assert.equal(walk(button).some(node=>node.tagName==='A'),false);
+  }
+  assert.match(html,/\.home-info-row\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(html,/\.info-dialog\{[^}]*width:min\(760px/);
+  assert.match(html,/\.info-dialog-body\{[^}]*overflow-y:auto/);
+  assert.match(appSource,/showModal\(\)/);
+  assert.match(appSource,/addEventListener\("close"/);
+  assert.match(appSource,/\.focus\(/);
+  vm.runInNewContext('applyLocale("en")',browser);
+  assert.equal(browser.__ids.get('homeVenue').children[0].children[0].textContent,'Venue & travel');
+});
+
+test('league refresh does not replace the venue popup content or its trigger',()=>{
+  const browser=loadPublicApp();
+  const content=browser.__ids.get('venueContent').children[0];
+  const button=browser.__ids.get('homeVenue').children[0];
+  vm.runInNewContext('applyLocale("zh")',browser);
+  assert.equal(browser.__ids.get('venueContent').children[0],content);
+  assert.equal(browser.__ids.get('homeVenue').children[0],button);
+});
+
+test('venue remains available when league loading is disabled and supports English',()=>{
+  const browser=loadPublicApp({mode:'disabled'});
+  vm.runInNewContext('applyLocale("en")',browser);
+  for(const id of ['homeVenue','scheduleVenue']){
+    const text=walk(browser.__ids.get('venueContent')).map(node=>node.textContent).join(' ');
+    assert.match(text,/Qiaoren Elementary School/);
+    assert.match(text,/Parking is available on campus/);
+    assert.match(text,/Public transport information to be announced/);
+    assert.doesNotMatch(text,/undefined/);
+  }
+});
+
 test('official public data remains 12 teams, 60 matches, 26 results',()=>{
   const summary=loadPublicApp().WuriLeagueApp.getSummary();
   assert.deepEqual(JSON.parse(JSON.stringify(summary)),{teams:12,matches:60,results:26});
