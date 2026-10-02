@@ -67,6 +67,28 @@ test('official public data remains 12 teams, 60 matches, 26 results',()=>{
   assert.deepEqual(JSON.parse(JSON.stringify(summary)),{teams:12,matches:60,results:26});
 });
 
+test('schedule navigation defaults to the next matchday with a 19:00 cutoff',()=>{
+  const browser=loadPublicApp();
+  const select=browser.WuriLeagueApp.selectDefaultScheduleDate;
+  const matchdays=['2026-10-04','2026-10-11'];
+
+  assert.equal(select(matchdays,new Date(2026,9,4,18,59,59)),'2026-10-04');
+  assert.equal(select(matchdays,new Date(2026,9,4,19,0,0)),'2026-10-04');
+  assert.equal(select(matchdays,new Date(2026,9,4,19,0,1)),'2026-10-11');
+  assert.equal(select(matchdays,new Date(2026,9,5,12,0,0)),'2026-10-11');
+  assert.equal(select(matchdays,new Date(2026,9,12,12,0,0)),'ALL');
+});
+
+test('opening the schedule page applies its default date to the date filter',()=>{
+  const browser=loadPublicApp();
+
+  browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,4,19,0,0));
+  assert.equal(browser.__ids.get('dateFilter').value,'2026-10-04');
+
+  browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,4,19,0,1));
+  assert.equal(browser.__ids.get('dateFilter').value,'2026-10-18');
+});
+
 test('disabled public config renders a safe in-page zero state without throwing',()=>{
   const browser=loadPublicApp({mode:'disabled',supabaseUrl:'',supabasePublishableKey:'',seasonCode:'2026-autumn-second-half'});
   assert.deepEqual(JSON.parse(JSON.stringify(browser.WuriLeagueApp.getSummary())),{teams:0,matches:0,results:0});

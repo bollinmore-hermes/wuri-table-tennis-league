@@ -67,7 +67,15 @@ function teamLogoHTML(name,sizeClass){
   return frame;
 }
 const fmtDate=date=>new Intl.DateTimeFormat(locale==="zh"?"zh-TW":"en-US",{month:"long",day:"numeric",weekday:"short"}).format(new Date(`${date}T12:00:00`));
-function switchPage(page){document.querySelectorAll(".page").forEach(node=>node.classList.toggle("active",node.id===page));document.querySelectorAll(".nav-btn").forEach(node=>node.classList.toggle("active",node.dataset.page===page));scrollTo({top:0,behavior:"smooth"})}
+const localDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+function selectDefaultScheduleDate(scheduleDates,now=new Date()){
+  const today=localDateKey(now),cutoff=new Date(now);cutoff.setHours(19,0,0,0);
+  return scheduleDates.find(date=>date>=today&&(date!==today||now<=cutoff))||"ALL";
+}
+function switchPage(page,now=new Date()){
+  if(page==="schedule"){selectedDate=selectDefaultScheduleDate(dates,now);renderSchedule()}
+  document.querySelectorAll(".page").forEach(node=>node.classList.toggle("active",node.id===page));document.querySelectorAll(".nav-btn").forEach(node=>node.classList.toggle("active",node.dataset.page===page));scrollTo({top:0,behavior:"smooth"})
+}
 document.querySelectorAll("[data-page]").forEach(button=>button.addEventListener("click",()=>switchPage(button.dataset.page)));
 document.querySelectorAll("[data-jump]").forEach(button=>button.addEventListener("click",()=>switchPage(button.dataset.jump)));
 const isOfficialGame=game=>Object.prototype.hasOwnProperty.call(officialScores,game.id);
@@ -144,7 +152,7 @@ function showTeam(name,group,shouldScroll=true){
 document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventListener("click",()=>{teamGroup=button.dataset.teamGroup;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node===button));renderTeams()}));
 function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));
-window.WuriLeagueApp=Object.freeze({gameCardHTML,teamLogoHTML,renderSchedule,renderTeams,showTeam,getSummary:()=>Object.freeze({teams:teams.A.length+teams.B.length,matches:games.length,results:Object.keys(officialScores).length})});
+window.WuriLeagueApp=Object.freeze({gameCardHTML,teamLogoHTML,renderSchedule,renderTeams,showTeam,switchPage,selectDefaultScheduleDate,getSummary:()=>Object.freeze({teams:teams.A.length+teams.B.length,matches:games.length,results:Object.keys(officialScores).length})});
 function showRepositoryError(disabled=false){
   applyLocale(locale);
   const message=disabled?"測試環境資料來源尚未設定，聯賽資料已安全停用。":"聯賽資料目前無法載入，請稍後再試。";
