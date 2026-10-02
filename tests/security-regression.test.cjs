@@ -123,6 +123,15 @@ test('venue opens in a shared popup while home information buttons stay on one r
   assert.equal(browser.__ids.get('homeVenue').children[0].children[0].textContent,'Venue & travel');
 });
 
+test('league refresh does not replace the venue popup content or its trigger',()=>{
+  const browser=loadPublicApp();
+  const content=browser.__ids.get('venueContent').children[0];
+  const button=browser.__ids.get('homeVenue').children[0];
+  vm.runInNewContext('applyLocale("zh")',browser);
+  assert.equal(browser.__ids.get('venueContent').children[0],content);
+  assert.equal(browser.__ids.get('homeVenue').children[0],button);
+});
+
 test('venue remains available when league loading is disabled and supports English',()=>{
   const browser=loadPublicApp({mode:'disabled'});
   vm.runInNewContext('applyLocale("en")',browser);
