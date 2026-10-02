@@ -17,7 +17,8 @@ class FakeNode{
   prepend(...items){this.children.unshift(...items.flat(Infinity).filter(item=>item!==null&&item!==undefined).map(item=>item instanceof FakeNode?item:new FakeNode('#text',item)))}
   replaceChildren(...items){this.children=[];this.textContent='';this.append(...items)}
   setAttribute(name,value){this.attributes[name]=String(value)}
-  addEventListener(){}
+  addEventListener(type,handler){(this.listeners??={})[type]=handler}
+  click(){this.listeners?.click?.({target:this,preventDefault(){}})}
 }
 function walk(node){return [node,...node.children.flatMap(walk)]}
 function loadPublicApp(config){
@@ -169,6 +170,83 @@ test('opening the schedule page applies its default date to the date filter',()=
 
   browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,4,19,0,1));
   assert.equal(browser.__ids.get('dateFilter').value,'2026-10-18');
+});
+
+test('issue 18: compact standings include every team in official points order',()=>{
+  const browser=loadPublicApp();
+  for(const group of ['A','B']){
+    const rows=walk(browser.__ids.get(`home${group}`)).find(node=>node.tagName==='TBODY').children;
+    assert.equal(rows.length,6);
+    const names=rows.map(row=>walk(row).find(node=>node.dataset.teamLink).dataset.teamLink);
+    const expected=vm.runInNewContext(`standings('${group}',{key:'pts',dir:'desc'}).map(row=>row.name)`,browser);
+    assert.deepEqual(names,Array.from(expected));
+  }
+});
+
+test('issue 19: every opponent table places win rate second and sorts exact rates stably',()=>{
+  const browser=loadPublicApp();
+  for(const group of ['A','B'])for(const name of vm.runInNewContext(`teams.${group}`,browser)){
+    browser.WuriLeagueApp.showTeam(name,group,false);
+    const table=walk(browser.__ids.get('teamDetail')).find(node=>node.className==='opponent-table');
+    const header=walk(table).find(node=>node.tagName==='THEAD').children[0];
+    assert.equal(header.children[1].textContent,'勝率');
+    const rows=walk(table).find(node=>node.tagName==='TBODY').children;
+    assert.equal(rows.length,5);
+    assert.ok(rows.every(row=>row.children[1].className==='opponent-pct'));
+    const stats=vm.runInNewContext(`opponentStats(${JSON.stringify(name)},'${group}')`,browser);
+    const expected=Array.from(stats).sort((a,b)=>(b.played?b.wins/b.played:-1)-(a.played?a.wins/a.played:-1));
+    const actual=rows.map(row=>walk(row.children[0]).find(node=>node.tagName==='SPAN'&&node.textContent&&node.className==='').textContent);
+    assert.deepEqual(actual,expected.map(row=>row.opponent));
+  }
+  vm.runInNewContext(`teams.A=['Selected','Low','High','Tie','Unplayed'];games=[
+    ...Array.from({length:201},(_,i)=>({id:'low'+i,home:'Selected',away:'Low'})),
+    ...Array.from({length:199},(_,i)=>({id:'high'+i,home:'Selected',away:'High'})),
+    {id:'tie',home:'Selected',away:'Tie'}];
+    scores=Object.fromEntries(games.map((game,i)=>[game.id,{home:(game.id==='tie'||Number(game.id.replace(/\\D/g,''))<100)?3:0,away:(game.id==='tie'||Number(game.id.replace(/\\D/g,''))<100)?0:3}]));`,browser);
+  const rows=vm.runInNewContext(`opponentStats('Selected','A')`,browser);
+  assert.deepEqual(Array.from(rows,row=>row.opponent),['Tie','High','Low','Unplayed']);
+});
+
+test('issue 20: repeated schedule navigation resets group and date',()=>{
+  const browser=loadPublicApp();
+  for(let i=0;i<2;i++){
+    vm.runInNewContext(`groupFilter='A';selectedDate='ALL'`,browser);
+    browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,2,12));
+    assert.equal(vm.runInNewContext('groupFilter',browser),'ALL');
+    assert.equal(browser.__ids.get('dateFilter').value,'2026-10-04');
+    assert.equal(walk(browser.__ids.get('allGames')).filter(node=>node.tagName==='ARTICLE').length,4);
+  }
+});
+
+test('issues 20 and 21: team navigation and back button restore all teams',()=>{
+  const browser=loadPublicApp();
+  for(const group of ['A','B'])for(const name of vm.runInNewContext(`teams.${group}`,browser)){
+    vm.runInNewContext(`goToTeam(${JSON.stringify(name)},'${group}')`,browser);
+    assert.equal(vm.runInNewContext('teamGroup',browser),group);
+    assert.equal(vm.runInNewContext('activeTeamDetail.name',browser),name);
+    const back=walk(browser.__ids.get('teamDetail')).find(node=>node.dataset.backTeams!==undefined);
+    assert.ok(back,'every detail needs a back button');
+    assert.equal(back.textContent,'回到所有球隊');
+    back.click();
+    assert.equal(vm.runInNewContext('teamGroup',browser),'ALL');
+    assert.equal(vm.runInNewContext('activeTeamDetail',browser),null);
+    assert.equal(browser.__ids.get('teamDetail').children.length,0);
+    assert.equal(walk(browser.__ids.get('teamGrid')).filter(node=>node.dataset.team).length,12);
+  }
+  vm.runInNewContext(`goToTeam(teams.A[0],'A');applyLocale('en')`,browser);
+  assert.equal(walk(browser.__ids.get('teamDetail')).find(node=>node.dataset.backTeams!==undefined).textContent,'Back to all teams');
+  browser.WuriLeagueApp.switchPage('teams');
+  assert.equal(vm.runInNewContext('activeTeamDetail',browser),null);
+});
+
+test('issue 22: brand is a keyboard-accessible home button and home refreshes content',()=>{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.ok(/<button class="brand"[^>]*type="button"[^>]*data-page="home"/.test(html));
+  assert.ok(/\.brand:focus-visible/.test(html));
+  const browser=loadPublicApp();
+  browser.__ids.get('nextGames').replaceChildren();
+  browser.WuriLeagueApp.switchPage('home');
+  assert.ok(browser.__ids.get('nextGames').children.length>0);
 });
 
 test('disabled public config renders a safe in-page zero state without throwing',()=>{
