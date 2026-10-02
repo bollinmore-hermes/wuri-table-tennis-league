@@ -35,5 +35,5 @@ const bySlot=(a,b)=>a.team_code.localeCompare(b.team_code)||(a.roster_role==='le
    const evidence={ok:true,projectRef:ref,applied:true,administratorAuth:true,administratorFullNamesVerified:true,publicMaskedNamesVerified:true,publicFullNamesAbsent:true,anonymousManagementDenied:true,anonymousAndAdminDirectTableDenied:true,teams:payload.length,leaders:payload.length,players:fullNames.length-payload.length,members:fullNames.length,importChanged:imported.changed,repeatImportChanged:repeat.changed,preservedLeagueCounts:counts(after),verifiedAt:new Date().toISOString()};
    fs.writeFileSync(path.join(root,'docs/evidence/issue-29/remote-roster-verification.json'),JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));
   }else console.log(JSON.stringify({ok:true,projectRef:ref,dryRun:true,currentRosterCount:before.players.length,plannedMembers:fullNames.length,remoteWrites:false}));
- }finally{await client.auth.signOut();}
+ }finally{await client.auth.signOut({scope:'local'});}
 })().catch(error=>{console.error(JSON.stringify({ok:false,error:'Test roster verification or import failed; no credential/name payloads logged',stage:'assertion_or_rpc_failure'}));process.exitCode=1});

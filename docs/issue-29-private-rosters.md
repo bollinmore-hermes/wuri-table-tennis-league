@@ -35,7 +35,7 @@ The supplied source was parsed and verified programmatically: 12 teams, 12 leade
 
 ## Verification evidence
 
-- `npm test`: 104 passed, zero failed. The nested spreadsheet runner separately passed seven checks; these are not added to the outer count. The optional private official-workbook integration was not exercised because `OFFICIAL_XLSX` was unset.
+- `npm test`: 105 passed, zero failed. The nested spreadsheet runner separately passed seven checks; these are not added to the outer count. The optional private official-workbook integration was not exercised because `OFFICIAL_XLSX` was unset.
 - `npm audit --omit=dev`: zero vulnerabilities. Application package and lockfile were not changed.
 - `npm run build:pages`: success, 32 files, management assets excluded.
 - `npm run build:test`: success in disabled mode; no remote configuration was supplied, so this is structural verification, not a deployable remote acceptance environment.

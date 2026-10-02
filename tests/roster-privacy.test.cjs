@@ -29,6 +29,9 @@ test('#29 Supabase adapter sends explicit roster privacy and role fields',async(
 test('#29 full-name input defaults private and refuses short public names',async()=>{
  const repo=new LocalRepository({storage:storage(),official});await repo.login('admin');await repo.savePlayer({team_code:'A01',name:'測甲'});assert.equal((await repo.load()).players.find(p=>p.name==='測甲').public_visible,false);await assert.rejects(()=>repo.savePlayer({team_code:'A01',name:'測甲',public_visible:true}));
 });
+test('#29 Test importer logs out only its own verification session',()=>{
+ const source=fs.readFileSync(path.join(root,'scripts/import-test-rosters.cjs'),'utf8');assert.match(source,/signOut\(\{scope:'local'\}\)/);assert.doesNotMatch(source,/signOut\(\)/);
+});
 test('#29 SQL public projection and management boundary are explicit',()=>{
  const sql=fs.readFileSync(path.join(root,'supabase/migrations/009_private_rosters.sql'),'utf8');assert.match(sql,/'players',case when app_role='admin'/);assert.match(sql,/'display_name',public.mask_roster_name\(p.name\)/);assert.match(sql,/and p.public_visible/);assert.match(sql,/revoke all on table public.players from public,anon,authenticated/);assert.match(sql,/if app_role is distinct from 'admin'/);assert.match(sql,/drop function public.save_player\(uuid,text,text,text,integer\)/);assert.match(sql,/p.season_code=p_season_code/);
  const admin=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');assert.match(admin,/function openRoster\(code\)\{if\(!isAdmin\(\)\)return/);assert.match(admin,/名冊角色/);assert.match(admin,/公開遮罩姓名/);assert.match(fs.readFileSync(path.join(root,'.gitignore'),'utf8'),/^\.private\/$/m);
