@@ -62,9 +62,41 @@ test('public renderer avoids HTML string sinks and score mutation hooks',()=>{
   assert.match(appSource,/createTextNode|textContent/);
 });
 
+test('home schedule call-to-action is visually prominent and mobile friendly',()=>{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(html,/class="btn btn-primary schedule-cta"[^>]*data-jump="schedule"/);
+  assert.match(html,/\.schedule-cta\{[^}]*min-height:48px[^}]*box-shadow:/);
+  assert.match(html,/\.schedule-cta:before\{content:"📅"/);
+  assert.match(html,/@media\(max-width:540px\)\{[^}]*[\s\S]*?\.schedule-cta\{width:100%\}/);
+  assert.match(appSource,/allSchedule:"查看所有賽程"/);
+  assert.match(appSource,/allSchedule:"View Full Schedule"/);
+});
+
 test('official public data remains 12 teams, 60 matches, 26 results',()=>{
   const summary=loadPublicApp().WuriLeagueApp.getSummary();
   assert.deepEqual(JSON.parse(JSON.stringify(summary)),{teams:12,matches:60,results:26});
+});
+
+test('schedule navigation defaults to the next matchday with a 19:00 cutoff',()=>{
+  const browser=loadPublicApp();
+  const select=browser.WuriLeagueApp.selectDefaultScheduleDate;
+  const matchdays=['2026-10-04','2026-10-11'];
+
+  assert.equal(select(matchdays,new Date(2026,9,4,18,59,59)),'2026-10-04');
+  assert.equal(select(matchdays,new Date(2026,9,4,19,0,0)),'2026-10-04');
+  assert.equal(select(matchdays,new Date(2026,9,4,19,0,1)),'2026-10-11');
+  assert.equal(select(matchdays,new Date(2026,9,5,12,0,0)),'2026-10-11');
+  assert.equal(select(matchdays,new Date(2026,9,12,12,0,0)),'ALL');
+});
+
+test('opening the schedule page applies its default date to the date filter',()=>{
+  const browser=loadPublicApp();
+
+  browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,4,19,0,0));
+  assert.equal(browser.__ids.get('dateFilter').value,'2026-10-04');
+
+  browser.WuriLeagueApp.switchPage('schedule',new Date(2026,9,4,19,0,1));
+  assert.equal(browser.__ids.get('dateFilter').value,'2026-10-18');
 });
 
 test('disabled public config renders a safe in-page zero state without throwing',()=>{
