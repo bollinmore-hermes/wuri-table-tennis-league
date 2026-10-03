@@ -13,7 +13,7 @@
         const card=node('article',undefined,'group-card'+(group==='B'?' b':'')),heading=node('h3'),label=node('span',locale==='zh'?'前三名晉級':'TOP THREE QUALIFY','group-label');
         heading.append(node('span',locale==='zh'?`${group} 組`:`Group ${group}`),label);card.append(heading);
         for(let rank=1;rank<=data.postseason.placesPerGroup;rank++){
-          const row=node('div',undefined,'seat');row.append(node('span',rank,'seat-no'),node('strong',locale==='zh'?`${group} 組第 ${rank} 名`:`${group} · Place ${rank}`),node('span',locale==='zh'?'球隊待確認':'Team TBD'));card.append(row);
+          const row=node('div',undefined,'seat');row.append(node('span',rank,'seat-no'),node('strong',locale==='zh'?`${group} 組第 ${rank} 名`:`${group} · Place ${rank}`),node('span',text('notPublished')));card.append(row);
         }
         container.append(card);
       }
