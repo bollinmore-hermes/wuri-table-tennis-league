@@ -1,4 +1,6 @@
 const fs=require('node:fs');
+const {execFileSync}=require('node:child_process');
+const {createSnapshot}=require('./public-snapshot.cjs');
 const path=require('node:path');
 
 const root=path.resolve(__dirname,'..');
@@ -35,6 +37,11 @@ const jwtRole=key=>{
 };
 if(/^sb_secret_/i.test(publishableKey)||jwtRole(publishableKey)==='service_role'||/service[_-]?role|postgres(?:ql)?:|jwt[_-]?secret|database[_-]?password/i.test(`${url}\n${publishableKey}`))throw new Error('Privileged secret material is forbidden in browser builds');
 
+async function main(){
+const sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+const sourceTag=environment==='production'?(process.env.SNAPSHOT_SOURCE_TAG||execFileSync('git',['describe','--exact-match','--tags','HEAD'],{cwd:root,encoding:'utf8'}).trim()):null;
+if(sourceTag&&execFileSync('git',['rev-parse',`${sourceTag}^{commit}`],{cwd:root,encoding:'utf8'}).trim()!==sourceCommit)throw new Error('Release tag does not match checkout');
+const snapshot=await createSnapshot({environment,projectRef:target.projectRef,seasonCode:'2026-autumn-second-half',sourceCommit,sourceTag,url,key:publishableKey,requestId:process.env.SNAPSHOT_REQUEST_ID||null,fixture:process.env.NODE_ENV==='test'&&process.env.SNAPSHOT_TEST_FIXTURE==='official'?require('../assets/js/official-data.js'):null});
 const out=path.join(root,target.output);
 const adminOut=path.join(out,'admin');
 const config={
@@ -45,6 +52,7 @@ const config={
   supabasePublishableKey:publishableKey,
   seasonCode:'2026-autumn-second-half'
 };
+config.sourceCommit=sourceCommit;config.sourceTag=sourceTag;
 const configSource=`window.LEAGUE_CONFIG = Object.freeze(${JSON.stringify(config,null,2)});\n`;
 const copy=(relative,destination)=>{
   const source=path.join(root,relative),targetPath=path.join(destination,relative);
@@ -55,13 +63,17 @@ const copy=(relative,destination)=>{
 fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(adminOut,{recursive:true});
 
-for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js','assets/vendor/supabase.js'])copy(file,out);
+for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js'])copy(file,out);
 copy('assets/team-logos',out);
 let publicHtml=fs.readFileSync(path.join(out,'index.html'),'utf8');
-publicHtml=publicHtml.replace('<script src="assets/js/official-data.js"></script>','<script src="assets/js/config.js"></script>\n<script src="assets/vendor/supabase.js"></script>\n<script src="assets/js/official-data.js"></script>');
+publicHtml=publicHtml.replace('<script src="assets/js/official-data.js"></script>','<script src="assets/js/config.js"></script>');
+fs.unlinkSync(path.join(out,'assets/js/official-data.js'));
 fs.writeFileSync(path.join(out,'index.html'),publicHtml);
 fs.mkdirSync(path.join(out,'assets/js'),{recursive:true});
-fs.writeFileSync(path.join(out,'assets/js/config.js'),configSource);
+const publicConfig={mode:'snapshot',environment,projectRef:target.projectRef,seasonCode:config.seasonCode,sourceCommit,sourceTag,snapshotUrl:'public-league.json'};
+fs.writeFileSync(path.join(out,'assets/js/config.js'),`window.LEAGUE_CONFIG = Object.freeze(${JSON.stringify(publicConfig,null,2)});\n`);
+fs.writeFileSync(path.join(out,'public-league.json'),JSON.stringify(snapshot));
+fs.writeFileSync(path.join(out,'release-manifest.json'),JSON.stringify({schemaVersion:1,environment,projectRef:target.projectRef,sourceCommit,sourceTag}));
 
 for(const file of ['admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/js/official-data.js','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates/wuri-league-demo-import.xlsx'])copy(file,adminOut);
 copy('assets/team-logos',adminOut);
@@ -81,4 +93,6 @@ const opposite=environment==='test'?targets.production.projectRef:targets.test.p
 if(text.includes(opposite))throw new Error(`Generated ${target.label} artifact references the opposite Supabase project`);
 if(/service[_-]?role|postgres(?:ql)?:|jwt[_-]?secret|database[_-]?password/i.test(text))throw new Error('Generated browser artifact contains forbidden secret markers');
 
-console.log(JSON.stringify({ok:true,environment,projectRef:target.projectRef,output:target.output,public:'/',admin:'/admin/'},null,2));
+console.log(JSON.stringify({ok:true,environment,projectRef:target.projectRef,sourceCommit,sourceTag,snapshotId:snapshot.metadata.snapshotId,output:target.output,public:'/',admin:'/admin/'},null,2));
+}
+main().catch(error=>{console.error(error.message);process.exitCode=1});

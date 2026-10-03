@@ -97,10 +97,44 @@
       return normalizeDataset(data);
     }
   }
+  const PUBLIC_FIELDS={season:['code','name','start_date','end_date'],teams:['team_code','name','short_name','group','display_order','description','logo_path','active'],matches:['match_code','group','date','time','home_team_code','away_team_code','venue','status'],results:['match_code','home_score','away_score','status'],snapshots:['group','snapshot_date','team_code','points','wins','losses','rank','rank_change'],roster:['team_code','display_name','roster_role','display_order']};
+  const pick=(row,keys)=>Object.fromEntries(keys.filter(key=>row[key]!==undefined).map(key=>[key,row[key]]));
+  function toPublicDataset(payload){
+    const normalized=normalizeDataset(payload);
+    const data={season:normalized.season?pick(normalized.season,PUBLIC_FIELDS.season):null};
+    for(const key of ['teams','matches','results','snapshots','roster'])data[key]=normalized[key].map(row=>pick(row,PUBLIC_FIELDS[key]));
+    return data;
+  }
+  function normalizePublicSnapshot(snapshot,config){
+    const fail=()=>{throw new Error('Invalid public snapshot')};
+    if(!snapshot||snapshot.schemaVersion!==1||Object.keys(snapshot).some(key=>!['schemaVersion','metadata','data'].includes(key)))fail();
+    const m=snapshot.metadata;
+    if(!m||Object.keys(m).some(key=>!['environment','projectRef','seasonCode','sourceCommit','sourceTag','generatedAt','snapshotId','requestId'].includes(key)))fail();
+    if(!['test','production'].includes(m.environment)||!/^[a-z]{20}$/.test(m.projectRef)||!IDENTIFIER.test(m.seasonCode)||!/^[a-f0-9]{40}$/.test(m.sourceCommit)||!/^[a-f0-9]{64}$/.test(m.snapshotId)||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(m.generatedAt)||!Number.isFinite(Date.parse(m.generatedAt))||Date.parse(m.generatedAt)>Date.now()+300000)fail();
+    if(m.environment==='production'&&!/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(m.sourceTag||''))fail();
+    // The generated environment-specific config is the identity boundary.
+    if(m.sourceTag!==config.sourceTag)fail();
+    for(const key of ['environment','projectRef','seasonCode','sourceCommit'])if(config[key]!==m[key])fail();
+    const data=snapshot.data;
+    if(!data||Object.keys(data).some(key=>!Object.hasOwn(PUBLIC_FIELDS,key))||!data.season||data.season.code!==m.seasonCode||!data.teams?.length||!data.matches?.length)fail();
+    for(const [key,fields] of Object.entries(PUBLIC_FIELDS))for(const row of key==='season'?[data.season]:data[key]||[]){if(!row||Object.keys(row).some(field=>!fields.includes(field)))fail();}
+    return Object.freeze({metadata:Object.freeze({...m}),data:normalizeDataset(data)});
+  }
+  class SnapshotLeagueRepository{
+    constructor({config,fetch:fetcher=globalThis.fetch}={}){this.config=config;this.fetcher=fetcher;this.metadata=null;}
+    async getPublicLeague(){
+      if(this.config?.snapshotUrl!=='public-league.json'||typeof this.fetcher!=='function')throw new Error('Invalid snapshot URL');
+      const response=await this.fetcher(this.config.snapshotUrl,{cache:'no-cache',credentials:'omit',redirect:'error',signal:globalThis.AbortSignal?.timeout?.(15000)});
+      if(!response.ok||response.redirected||Number(response.headers?.get?.('content-length')||0)>2000000)throw new Error('Snapshot unavailable');
+      const text=await response.text();if(text.length>2000000)throw new Error('Snapshot exceeds limits');
+      const snapshot=normalizePublicSnapshot(JSON.parse(text),this.config);this.metadata=snapshot.metadata;return snapshot.data;
+    }
+  }
   function createConfiguredRepository(config,officialData,supabaseGlobal){
+    if(config&&config.mode==='snapshot')return new SnapshotLeagueRepository({config});
     if(config&&config.mode==='supabase')return new SupabaseLeagueRepository({url:config.supabaseUrl,publishableKey:config.supabasePublishableKey||config.supabaseAnonKey,seasonCode:config.seasonCode,createClient:supabaseGlobal&&supabaseGlobal.createClient});
     if(config&&config.mode!=='static')throw new Error('League data source is disabled');
     return new StaticLeagueRepository(officialData);
   }
-  return Object.freeze({StaticLeagueRepository,SupabaseLeagueRepository,createConfiguredRepository,normalizeDataset,scoreIsValid});
+  return Object.freeze({StaticLeagueRepository,SupabaseLeagueRepository,SnapshotLeagueRepository,createConfiguredRepository,normalizeDataset,toPublicDataset,normalizePublicSnapshot,scoreIsValid});
 });

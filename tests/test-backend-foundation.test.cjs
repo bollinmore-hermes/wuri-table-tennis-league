@@ -111,15 +111,17 @@ test('test build without secrets is structurally testable but disabled, deployme
 });
 
 test('hosted Test Pages build serves public root and authenticated admin from the exact Test project',()=>{
-  const env={...process.env,SUPABASE_TEST_URL:'https://vppjcjfbcoxzofcuxmzz.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'test-publishable-browser-key-000001'};
+  const env={...process.env,NODE_ENV:'test',SNAPSHOT_TEST_FIXTURE:'official',SUPABASE_TEST_URL:'https://vppjcjfbcoxzofcuxmzz.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'test-publishable-browser-key-000001'};
   execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','test'],{cwd:root,env,stdio:'pipe'});
   const out=path.join(root,'test-pages-dist');
-  for(const file of ['index.html','assets/js/config.js','assets/vendor/supabase.js','admin/index.html','admin/assets/js/config.js','admin/assets/js/admin.js'])assert.equal(fs.existsSync(path.join(out,file)),true,file);
+  for(const file of ['index.html','assets/js/config.js','public-league.json','release-manifest.json','admin/index.html','admin/assets/js/config.js','admin/assets/js/admin.js'])assert.equal(fs.existsSync(path.join(out,file)),true,file);
   const publicHtml=fs.readFileSync(path.join(out,'index.html'),'utf8');
   const adminHtml=fs.readFileSync(path.join(out,'admin/index.html'),'utf8');
   const configs=['assets/js/config.js','admin/assets/js/config.js'].map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
   assert.match(publicHtml,/assets\/js\/config\.js/);
-  assert.match(publicHtml,/assets\/vendor\/supabase\.js/);
+  assert.doesNotMatch(publicHtml,/assets\/vendor\/supabase\.js/);
+  assert.match(fs.readFileSync(path.join(out,'assets/js/config.js'),'utf8'),/"mode": "snapshot"/);
+  assert.equal(fs.existsSync(path.join(out,'assets/js/official-data.js')),false);
   assert.equal((adminHtml.match(/href="\.\.\/index\.html"/g)||[]).length,2);
   assert.match(adminHtml,/id="publicSiteLink"[^>]*href="\.\.\/index\.html"[^>]*target="_blank"/);
   assert.match(configs,/"environment": "test"/);

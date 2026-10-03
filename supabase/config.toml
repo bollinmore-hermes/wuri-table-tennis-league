@@ -25,3 +25,7 @@ verify_jwt = true
 
 [functions.manage-league-user]
 verify_jwt = true
+
+# JWT is verified with Auth getUser in the function; anon keys are never authority.
+[functions.publish-public-snapshot]
+verify_jwt = false
