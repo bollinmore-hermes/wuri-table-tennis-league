@@ -121,7 +121,7 @@
     return Object.freeze({metadata:Object.freeze({...m}),data:normalizeDataset(data)});
   }
   class SnapshotLeagueRepository{
-    constructor({config,fetch:fetcher=globalThis.fetch}={}){this.config=config;this.fetcher=fetcher;this.metadata=null;}
+    constructor({config,fetch:fetcher=globalThis.fetch?.bind(globalThis)}={}){this.config=config;this.fetcher=fetcher;this.metadata=null;}
     async getPublicLeague(){
       if(this.config?.snapshotUrl!=='public-league.json'||typeof this.fetcher!=='function')throw new Error('Invalid snapshot URL');
       const response=await this.fetcher(this.config.snapshotUrl,{cache:'no-cache',credentials:'omit',redirect:'error',signal:globalThis.AbortSignal?.timeout?.(15000)});

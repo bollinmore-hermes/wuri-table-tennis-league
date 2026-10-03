@@ -29,6 +29,12 @@ test('snapshot repository reads one local file, rejects redirect/oversize and ne
  await assert.rejects(()=>new api.SnapshotLeagueRepository({config:{...metadata,snapshotUrl:'https://evil.example/snapshot.json'},fetch:()=>{}}).getPublicLeague());
  const invalid=new api.SnapshotLeagueRepository({config:{...metadata,snapshotUrl:'public-league.json'},fetch:async()=>({ok:true,redirected:true,headers:{get:()=>null},text:async()=>''})});await assert.rejects(()=>invalid.getPublicLeague());
 });
+test('default browser fetch keeps the Window receiver',async()=>{
+ const vm=require('node:vm');const window={};window.globalThis=window;window.fetch=function(){assert.equal(this.fetch,window.fetch,'Window.fetch receiver must be the browser global');return Promise.resolve({ok:true,redirected:false,headers:{get:()=>null},text:async()=>JSON.stringify(envelope())})};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'assets/js/league-repository.js'),'utf8'),window);
+ const repository=new window.WuriLeagueRepository.SnapshotLeagueRepository({config:{...metadata,snapshotUrl:'public-league.json'}});
+ assert.equal((await repository.getPublicLeague()).teams.length,12);
+});
 test('snapshot mode does not require a public Supabase SDK and reports timestamp in both locales',()=>{
  const source=fs.readFileSync(path.join(root,'assets/js/app.js'),'utf8');
  assert(source.includes('repository?.metadata'));assert.match(source,/snapshotUpdated/);assert.match(source,/Last published/);
