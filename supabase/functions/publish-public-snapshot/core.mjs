@@ -51,7 +51,7 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
    const {data:row,error}=await serviceClient.rpc('reserve_public_snapshot',{p_actor_id:auth.user.id,p_source_commit:baseline.sourceCommit,p_source_tag:baseline.sourceTag});
    if(error)return reply(error.code==='P0001'?429:503,{error:error.code==='P0001'?'publication_busy':'publication_state_unavailable'});
    try{
-    await gh(`actions/workflows/${workflow}/dispatches`,{method:'POST',body:JSON.stringify({ref:'main',inputs:{request_id:row.id,expected_commit:row.source_commit,expected_tag:row.source_tag||''}})});
+    await gh(`actions/workflows/${workflow}/dispatches`,{method:'POST',body:JSON.stringify({ref:environment==='production'?baseline.sourceTag:'main',inputs:{request_id:row.id,expected_commit:row.source_commit,expected_tag:row.source_tag||''}})});
    }catch{
     await update(row.id,{status:'dispatch_unknown'});
     return reply(202,{request_id:row.id,status:'dispatch_unknown',message:'觸發結果待確認；請查詢狀態，不要重送'});

@@ -36,3 +36,26 @@ test('only admin UI exposes publication; score save never dispatches automatical
  assert.match(html,/data-admin-only data-remote-only[\s\S]*?id="publishSnapshot"/);
  const save=js.slice(js.indexOf('async function saveScore('),js.indexOf('async function verifyScoreOutcome('));assert(!save.includes('publication('));assert.match(save,/pendingScoreVerification/);assert.match(js,/if\(!isAdmin\(\)\|\|!remoteEnabled/);
 });
+
+test('Production publication dispatches the verified published release tag, never main',async()=>{
+ const {handlePublication}=await modulePromise;const options=deps();let dispatched=null;
+ options.environment='production';options.supabaseUrl='https://zofiiibgnjuodgrzhkpn.supabase.co';
+ options.serviceClient.rpc=async(name,args)=>{assert.equal(name,'reserve_public_snapshot');assert.equal(args.p_source_tag,'v0.8.0');return {data:{id,source_commit:args.p_source_commit,source_tag:args.p_source_tag},error:null}};
+ options.fetcher=async(url,config)=>{
+  assert(!url.includes('wuri-table-tennis-league-test'));
+  if(url.includes('release-manifest'))return new Response(JSON.stringify({schemaVersion:1,environment:'production',projectRef:'zofiiibgnjuodgrzhkpn',sourceCommit:'b'.repeat(40),sourceTag:'v0.8.0'}));
+  if(url.endsWith('/dispatches')){dispatched=JSON.parse(config.body);return new Response(null,{status:204})}
+  return new Response(JSON.stringify({id:5}));
+ };
+ const response=await handlePublication(request(),options);assert.equal(response.status,202);assert.equal((await response.json()).status,'queued');
+ assert.deepEqual(dispatched,{ref:'v0.8.0',inputs:{request_id:id,expected_commit:'b'.repeat(40),expected_tag:'v0.8.0'}});
+});
+test('Production invalid or missing release tag fails before reserving or dispatching',async()=>{
+ const {handlePublication}=await modulePromise;
+ for(const sourceTag of [null,'','main','vlatest','v0.8.0/other','refs/tags/v0.8.0']){
+  const options=deps();options.environment='production';options.supabaseUrl='https://zofiiibgnjuodgrzhkpn.supabase.co';let calls=0;
+  options.serviceClient.rpc=async()=>{assert.fail('Must not reserve for invalid release')};
+  options.fetcher=async url=>{calls++;assert(url.includes('release-manifest'));return new Response(JSON.stringify({schemaVersion:1,environment:'production',projectRef:'zofiiibgnjuodgrzhkpn',sourceCommit:'b'.repeat(40),sourceTag}))};
+  const response=await handlePublication(request(),options);assert.equal(response.status,503);assert.equal((await response.json()).error,'publication_unavailable');assert.equal(calls,1);
+ }
+});
