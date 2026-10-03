@@ -64,6 +64,7 @@
     @media(max-width:820px){.nav{column-gap:6px}.nav .language-switch{margin-left:auto}.theme-toggle{flex-basis:40px;width:40px;height:40px}.schedule-controls{gap:12px}.desktop-date-filter{display:none}.date-pills{display:flex;gap:8px;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;padding:5px 3px 12px;margin-bottom:12px;scroll-padding-inline:3px}.schedule-controls .filter-field{flex:1;min-width:140px}#teamFilter{width:100%}.schedule-controls #clearScheduleFilters{min-height:44px}.schedule-controls .filters{width:100%}}
   /* #29: public roster contains masked names only. */
 .public-roster{padding:24px;margin:20px 0}.public-roster h2{margin:0 0 16px}.public-roster h3{font-size:15px;margin:16px 0 8px}.roster-names{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px 20px}.roster-names li{overflow-wrap:anywhere;max-width:100%}
+.rules-entry{display:block;color:#fff;text-decoration:none;cursor:pointer}.rules-entry:hover{border-color:var(--accent)}.rules-entry:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.rules-entry-action{display:inline-block;margin-top:18px;color:var(--accent-2);font-size:13px;font-weight:900;white-space:nowrap}.ranking-rules-link{display:inline-flex;min-height:44px;align-items:center;margin:0 16px 12px;color:var(--accent-ink);font-size:14px;font-weight:800}.ranking-rules-link:focus-visible{outline:3px solid var(--accent);outline-offset:3px}@media(max-width:820px){.rules-entry{display:flex}.rules-entry-action{margin-top:0}}
 </style>
 </head>
 <body data-theme="gold">
@@ -99,7 +100,7 @@
             <p data-i18n="heroCopy">烏日桌球聯賽下半季，A、B 兩組共 12 支球隊，從例行賽一路競逐至季後賽。</p>
             <div class="hero-actions"><button class="btn btn-primary" data-jump="schedule" data-i18n="viewSchedule">查看完整賽程</button><button class="btn btn-light" data-jump="standings" data-i18n="liveStandings">即時戰績</button></div>
           </div>
-          <div class="hero-card"><div><div class="hero-card-label">POSTSEASON</div><h3 data-i18n="postseasonTitle">季後賽・拚獎金</h3><p data-i18n="postseasonCopy">例行賽排名將決定最終季後賽席次。</p></div><div class="date-badge" data-i18n="postseasonDate">12 月 6 日</div></div>
+          <a class="hero-card rules-entry" id="eventRulesEntry" href="event-rules.html"><div><div class="hero-card-label">EVENT RULES</div><h3 data-i18n="eventRulesTitle">賽事規則</h3><p data-i18n="eventRulesCopy">賽制・晉級方式・季後賽資訊</p></div><span class="rules-entry-action" data-i18n="eventRulesAction">查看規則 →</span></a>
         </div>
       </div>
       <div class="container">
@@ -137,7 +138,7 @@
     <section class="page" id="standings">
       <div class="page-head"><div><div class="eyebrow">STANDINGS</div><h1 data-i18n="standingsTitle">戰績排名</h1><p data-i18n="standingsCopy">A、B 組目前排名與官方戰績基準。</p></div></div>
       <div class="container">
-        <details class="ranking-guide"><summary data-i18n="rankingGuide">排名與積分說明</summary><p data-i18n="rankingGuideText">依聯賽積分排序；同分時依勝場數與勝率排序。目前排名以官方圖片戰績為基準，基準日之後登錄的賽果會自動累加。</p></details>
+        <details class="ranking-guide"><summary data-i18n="rankingGuide">排名與積分說明</summary><p data-i18n="rankingGuideText">聯賽積分、同分比較與棄權處理：待公布。</p><a class="ranking-rules-link" id="rankingRulesLink" href="event-rules.html" data-i18n="fullEventRules">查看完整賽事規則 →</a></details>
         <div class="subsection group-section group-a" style="margin-top:0"><div class="section-head"><div><h2>A <span data-i18n="group">組</span></h2><p data-i18n="aCutoff">官方戰績截至 2026/9/20</p></div></div><div class="table-wrap"><table id="standingsA"></table></div></div>
         <div class="subsection group-section group-b"><div class="section-head"><div><h2>B <span data-i18n="group">組</span></h2><p data-i18n="bCutoff">官方戰績截至 2026/9/13</p></div></div><div class="table-wrap"><table id="standingsB"></table></div></div>
       </div>

@@ -25,6 +25,8 @@ const copy={
 };
 Object.assign(copy.zh,{rosterTitle:"球隊名冊",rosterLeader:"領隊",rosterPlayers:"隊員",rosterEmpty:"名冊尚未提供",rosterMissingLeader:"領隊尚未提供",rosterMissingPlayers:"隊員尚未提供",allTeams:"所有球隊",clearFilters:"清除條件",matchdayFilter:"比賽日",darkMode:"切換深色模式",lightMode:"切換淺色模式"});
 Object.assign(copy.en,{rosterTitle:"Team roster",rosterLeader:"Team manager",rosterPlayers:"Players",rosterEmpty:"Roster not provided",rosterMissingLeader:"Team manager not provided",rosterMissingPlayers:"Players not provided",allTeams:"All teams",clearFilters:"Clear filters",matchdayFilter:"Matchday",darkMode:"Switch to dark mode",lightMode:"Switch to light mode"});
+Object.assign(copy.zh,{eventRulesTitle:"賽事規則",eventRulesCopy:"賽制・晉級方式・季後賽資訊",eventRulesAction:"查看規則 →",fullEventRules:"查看完整賽事規則 →",rankingGuideText:"聯賽積分、同分比較與棄權處理：待公布。"});
+Object.assign(copy.en,{eventRulesTitle:"Event rules",eventRulesCopy:"Format · Qualification · Postseason",eventRulesAction:"Read rules →",fullEventRules:"Full event rules →",rankingGuideText:"League points, tiebreakers and forfeits: To be announced."});
 const uiText={
   zh:{finished:"完賽",win:"勝利",loss:"敗北",opponentStats:"對戰勝率",opponentStatsHint:"依目前已完成賽事，統計對戰各隊的勝敗與勝率。",noGames:"尚未交手",gamesPlayed:n=>`${n} 場・`,scheduleByDate:"球隊賽程（依日期）",backTeams:"回到所有球隊"},
   en:{finished:"Final",win:"Win",loss:"Loss",opponentStats:"Head-to-head win rate",opponentStatsHint:"Win-loss record and win rate against each opponent, based on completed matches.",noGames:"No meetings",gamesPlayed:n=>`${n} game${n===1?'':'s'} · `,scheduleByDate:"Team schedule by date",backTeams:"Back to all teams"}
@@ -282,6 +284,8 @@ function showRepositoryError(disabled=false){
   const notice=dom("div",{className:"notice",text:message,attrs:{role:"alert"}});
   document.querySelector?.("main")?.prepend(notice);
 }
+const linkedPage=window.location?.hash?.slice(1)||"";
+if(["home","schedule","standings","teams"].includes(linkedPage))switchPage(linkedPage);
 setupInfoDialogs();
 renderVenues();
 if(repositoryError)showRepositoryError(config&&config.mode==='disabled');
