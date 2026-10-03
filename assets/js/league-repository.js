@@ -109,9 +109,10 @@
     const fail=()=>{throw new Error('Invalid public snapshot')};
     if(!snapshot||snapshot.schemaVersion!==1||Object.keys(snapshot).some(key=>!['schemaVersion','metadata','data'].includes(key)))fail();
     const m=snapshot.metadata;
-    if(!m||Object.keys(m).some(key=>!['environment','projectRef','seasonCode','sourceCommit','sourceTag','generatedAt','snapshotId','requestId'].includes(key)))fail();
+    if(!m||Object.keys(m).some(key=>!['environment','projectRef','seasonCode','sourceCommit','sourceTag','generatedAt','snapshotId','requestId','contentHash','hashAlgorithm'].includes(key)))fail();
     if(!['test','production'].includes(m.environment)||!/^[a-z]{20}$/.test(m.projectRef)||!IDENTIFIER.test(m.seasonCode)||!/^[a-f0-9]{40}$/.test(m.sourceCommit)||!/^[a-f0-9]{64}$/.test(m.snapshotId)||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(m.generatedAt)||!Number.isFinite(Date.parse(m.generatedAt))||Date.parse(m.generatedAt)>Date.now()+300000)fail();
     if(m.environment==='production'&&!/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(m.sourceTag||''))fail();
+    if((m.contentHash!==undefined||m.hashAlgorithm!==undefined)&&(!/^[a-f0-9]{64}$/.test(m.contentHash||'')||m.hashAlgorithm!=='public-json-sha256-v1'))fail();
     // The generated environment-specific config is the identity boundary.
     if(m.sourceTag!==config.sourceTag)fail();
     for(const key of ['environment','projectRef','seasonCode','sourceCommit'])if(config[key]!==m[key])fail();

@@ -1,3 +1,4 @@
+import {contentHash,HASH_ALGORITHM} from '../_shared/public-content.mjs';
 export const TARGETS=Object.freeze({
  test:{projectRef:'vppjcjfbcoxzofcuxmzz',repo:'bollinmore-hermes/wuri-table-tennis-league-test',site:'https://bollinmore-hermes.github.io/wuri-table-tennis-league-test/'},
  production:{projectRef:'zofiiibgnjuodgrzhkpn',repo:'bollinmore-hermes/wuri-table-tennis-league',site:'https://bollinmore-hermes.github.io/wuri-table-tennis-league/'}
@@ -33,6 +34,13 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
  if(profile?.role!=='admin'||profile.active!==true)return reply(403,{error:'admin_role_required'});
  let command;try{if(Number(request.headers.get('content-length')||0)>2048)throw new Error();const text=await request.text();if(text.length>2048)throw new Error();command=parseCommand(JSON.parse(text))}catch{return reply(400,{error:'invalid_request'})}
  if(!githubToken)return reply(503,{error:'publication_not_configured'});
+ const response=await executePublication(command,{environment,githubToken,serviceClient,fetcher,actorId:auth.user.id});
+ return new Response(response.body,{status:response.status,headers:{...Object.fromEntries(response.headers),...headers}});
+}
+export async function executePublication(command,{environment,githubToken,serviceClient,fetcher=fetch,actorId=null,automatic=false,seasonCode='2026-autumn-second-half'}){
+ const target=TARGETS[environment];
+ const reply=(status,body)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
+ if(!target||!githubToken)return reply(503,{error:'publication_not_configured'});
  const ghHeaders={Authorization:`Bearer ${githubToken}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'};
  const workflow='refresh-public-snapshot.yml';
  const gh=async(path,options={})=>{
@@ -48,8 +56,9 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
   if(command.action==='publish'){
    const baseline=verifyManifest(await publicJSON('release-manifest.json'),environment);
    await gh(`actions/workflows/${workflow}`);
-   const {data:row,error}=await serviceClient.rpc('reserve_public_snapshot',{p_actor_id:auth.user.id,p_source_commit:baseline.sourceCommit,p_source_tag:baseline.sourceTag});
+   const {data:row,error}=await serviceClient.rpc(automatic?'reserve_automatic_public_snapshot':'reserve_public_snapshot',automatic?{p_season_code:seasonCode,p_source_commit:baseline.sourceCommit,p_source_tag:baseline.sourceTag}:{p_actor_id:actorId,p_source_commit:baseline.sourceCommit,p_source_tag:baseline.sourceTag});
    if(error)return reply(error.code==='P0001'?429:503,{error:error.code==='P0001'?'publication_busy':'publication_state_unavailable'});
+   if(!row)return reply(200,{status:'unchanged'});
    try{
     await gh(`actions/workflows/${workflow}/dispatches`,{method:'POST',body:JSON.stringify({ref:environment==='production'?baseline.sourceTag:'main',inputs:{request_id:row.id,expected_commit:row.source_commit,expected_tag:row.source_tag||''}})});
    }catch{
@@ -58,7 +67,7 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
    }
    return reply(202,{request_id:row.id,status:'queued'});
   }
-  let query=serviceClient.from('snapshot_publications').select('id,source_commit,source_tag,created_at,status,run_id,published_at');
+  let query=serviceClient.from('snapshot_publications').select('id,source_commit,source_tag,created_at,status,run_id,published_at,season_code,publication_mode');
   query=command.request_id?query.eq('id',command.request_id):query.order('created_at',{ascending:false}).limit(1);
   const {data:row,error}=await query.maybeSingle();if(error)return reply(503,{error:'publication_state_unavailable'});if(!row)return reply(200,{status:'idle'});
   if(row.status==='published')return reply(200,{request_id:row.id,status:'published',published_at:row.published_at});
@@ -68,10 +77,14 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
   if(!run)return reply(200,{request_id:row.id,status:row.status==='failed'?'failed':row.status==='dispatch_unknown'?'dispatch_unknown':'queued'});
   const runUrl=`https://github.com/${target.repo}/actions/runs/${run.id}`;
   if(run.status!=='completed'){await update(row.id,{run_id:run.id,status:'running'});return reply(200,{request_id:row.id,status:'running',run_url:runUrl})}
-  if(run.conclusion!=='success'){await update(row.id,{run_id:run.id,status:'failed'});return reply(200,{request_id:row.id,status:'failed',run_url:runUrl})}
+  if(run.conclusion!=='success'){await update(row.id,{run_id:run.id,status:'failed'});if(automatic)await serviceClient.rpc('record_snapshot_automation_failure',{p_season_code:seasonCode});return reply(200,{request_id:row.id,status:'failed',run_url:runUrl})}
   const live=await publicJSON('public-league.json');
   if(live.schemaVersion!==1||live.metadata?.requestId!==row.id||live.metadata?.sourceCommit!==row.source_commit||live.metadata?.sourceTag!==row.source_tag||live.metadata?.projectRef!==target.projectRef||live.metadata?.environment!==environment)return reply(200,{request_id:row.id,status:'verifying',run_url:runUrl});
   if(!Number.isFinite(Date.parse(live.metadata.generatedAt)))throw new Error('release_unavailable');
+  if(live.metadata.contentHash!==undefined){
+   if(live.metadata.hashAlgorithm!==HASH_ALGORITHM||!/^[a-f0-9]{64}$/.test(live.metadata.contentHash)||await contentHash(live.data)!==live.metadata.contentHash||live.metadata.seasonCode!==(row.season_code||seasonCode))throw new Error('invalid_content_hash');
+   const {error:confirmedError}=await serviceClient.rpc('confirm_public_snapshot_hash',{p_request_id:row.id,p_season_code:live.metadata.seasonCode,p_content_hash:live.metadata.contentHash,p_source_commit:row.source_commit,p_source_tag:row.source_tag,p_published_at:live.metadata.generatedAt});if(confirmedError)throw new Error('publication_state_unavailable');
+  }else if(automatic)throw new Error('hash_release_required');
   await update(row.id,{run_id:run.id,status:'published',published_at:live.metadata.generatedAt});
   return reply(200,{request_id:row.id,status:'published',published_at:live.metadata.generatedAt,run_url:runUrl});
  }catch{return reply(503,{error:'publication_unavailable',message:'發布或狀態查核暫時無法完成；比分不受影響，請勿重複發布'})}
