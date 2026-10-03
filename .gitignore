@@ -12,3 +12,4 @@ test-pages-dist/
 production-pages-dist/
 admin-demo-dist/
 team-logos-*.zip
+.snapshot-baseline.json

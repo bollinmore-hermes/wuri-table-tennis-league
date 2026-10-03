@@ -1,0 +1,88 @@
+name: Refresh public snapshot
+run-name: Snapshot publication / ${{ inputs.request_id || 'manual' }}
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Server-created publication request ID (optional for manual fallback)
+        required: false
+        default: ''
+      expected_commit:
+        description: Expected currently published commit (server supplied)
+        required: false
+        default: ''
+      expected_tag:
+        description: Expected currently published release tag (server supplied)
+        required: false
+        default: ''
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: test-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      DEPLOYMENT_TARGET: test
+      SNAPSHOT_BASELINE: ${{ github.workspace }}/.snapshot-baseline.json
+    steps:
+      - name: Checkout workflow orchestration only
+        uses: actions/checkout@v6
+        with:
+          repository: bollinmore-hermes/wuri-table-tennis-league
+          ref: __ORCHESTRATOR_SHA__
+          path: orchestrator
+          persist-credentials: false
+      - name: Resolve and verify currently published source under the deployment lock
+        id: source
+        env:
+          EXPECTED_COMMIT: ${{ inputs.expected_commit }}
+          EXPECTED_TAG: ${{ inputs.expected_tag }}
+        run: node orchestrator/scripts/snapshot-deployment-gate.cjs resolve
+      - name: Checkout exact published application commit, never latest main
+        uses: actions/checkout@v6
+        with:
+          repository: bollinmore-hermes/wuri-table-tennis-league
+          ref: ${{ steps.source.outputs.source_commit }}
+          fetch-depth: 0
+          path: source
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: source/package-lock.json
+      - name: Install and test published source
+        working-directory: source
+        run: npm ci && npm test
+      - name: Generate verified public-only snapshot and build
+        working-directory: source
+        env:
+          SUPABASE_TEST_URL: ${{ secrets.SUPABASE_TEST_URL }}
+          SUPABASE_TEST_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_TEST_PUBLISHABLE_KEY }}
+          SNAPSHOT_SOURCE_TAG: ${{ steps.source.outputs.source_tag }}
+          SNAPSHOT_REQUEST_ID: ${{ inputs.request_id }}
+        run: npm run build:test-pages
+      - name: Reject release changes and stale snapshot replacement before deploying
+        working-directory: source
+        run: node scripts/snapshot-deployment-gate.cjs check
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload complete website artifact, no git commit
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: source/test-pages-dist
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify exact published snapshot
+        working-directory: source
+        run: node scripts/snapshot-deployment-gate.cjs verify
