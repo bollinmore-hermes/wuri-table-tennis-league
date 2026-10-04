@@ -5,8 +5,8 @@ export const TARGETS=Object.freeze({
 });
 const UUID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/;
 export function parseCommand(value){
- if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(key=>!['action','request_id'].includes(key))||!['publish','status'].includes(value.action))throw new Error('invalid_request');
- if(value.action==='publish'&&value.request_id!==undefined)throw new Error('invalid_request');
+ if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(key=>!['action','request_id'].includes(key))||!['publish','status','state'].includes(value.action))throw new Error('invalid_request');
+ if(value.action!=='status'&&value.request_id!==undefined)throw new Error('invalid_request');
  if(value.request_id!==undefined&&!UUID.test(value.request_id))throw new Error('invalid_request');return value;
 }
 export function verifyManifest(value,environment){
@@ -33,6 +33,15 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
  if(profileError)return reply(503,{error:'authorization_check_failed'});
  if(profile?.role!=='admin'||profile.active!==true)return reply(403,{error:'admin_role_required'});
  let command;try{if(Number(request.headers.get('content-length')||0)>2048)throw new Error();const text=await request.text();if(text.length>2048)throw new Error();command=parseCommand(JSON.parse(text))}catch{return reply(400,{error:'invalid_request'})}
+ if(command.action==='state'){
+  try{
+   const {data:s,error}=await serviceClient.rpc('get_publication_status_summary',{p_season_code:'2026-autumn-second-half'});
+   if(error||!s||s.verified_hash_known!==true||typeof s.needs_publish!=='boolean')return reply(503,{error:'publication_state_unavailable'});
+   const pending=s.pending_request_id, cooling=Number.isFinite(Date.parse(s.cooldown_until))&&Date.parse(s.cooldown_until)>Date.now();
+   const status=pending?(['queued','running','dispatch_unknown'].includes(s.pending_status)?s.pending_status:'dispatch_unknown'):!s.needs_publish?'synced':!githubToken?'not_configured':cooling?'cooldown':'dirty';
+   return reply(200,{status,can_publish:status==='dirty',needs_publish:s.needs_publish,pending_request_id:pending||null,last_published_at:s.last_published_at||null,cooldown_until:s.cooldown_until||null,automatic_enabled:s.automatic_enabled===true,automatic_interval_seconds:Number.isInteger(s.interval_seconds)?s.interval_seconds:null});
+  }catch{return reply(503,{error:'publication_state_unavailable'})}
+ }
  if(!githubToken)return reply(503,{error:'publication_not_configured'});
  const response=await executePublication(command,{environment,githubToken,serviceClient,fetcher,actorId:auth.user.id});
  return new Response(response.body,{status:response.status,headers:{...Object.fromEntries(response.headers),...headers}});
