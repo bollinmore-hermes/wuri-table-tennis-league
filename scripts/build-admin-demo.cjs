@@ -4,7 +4,7 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const out=path.join(root,'admin-demo-dist');
 const files=[
-  'admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/admin-repository.js',
+  'admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/publication-ui.js','assets/js/admin-repository.js',
   'assets/js/excel-import.js','assets/js/official-data.js','assets/vendor/xlsx.full.min.js',
   'assets/vendor/supabase.js','templates/wuri-league-demo-import.xlsx'
 ];

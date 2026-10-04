@@ -97,6 +97,12 @@
       return normalizeDataset(data);
     }
   }
+  const encoder={encode(value){return (this.instance??=new TextEncoder()).encode(value)}};
+  const compareUTF8=(a,b)=>{const x=encoder.encode(a),y=encoder.encode(b);for(let i=0;i<Math.min(x.length,y.length);i++)if(x[i]!==y[i])return x[i]-y[i];return x.length-y.length};
+  function canonicalPublicJSON(value){if(value===null)return 'null';if(Array.isArray(value))return '['+value.map(canonicalPublicJSON).sort(compareUTF8).join(',')+']';if(typeof value==='object')return '{'+Object.keys(value).sort(compareUTF8).map(k=>JSON.stringify(k)+':'+canonicalPublicJSON(value[k])).join(',')+'}';if(typeof value==='number'&&!Number.isSafeInteger(value))throw new Error('Non-integer public number');if(!['string','number','boolean'].includes(typeof value))throw new Error('Invalid public content');return JSON.stringify(value)}
+  async function sha256Text(value){const subtle=globalThis.crypto?.subtle||(await import('node:crypto')).webcrypto.subtle;return Array.from(new Uint8Array(await subtle.digest('SHA-256',encoder.encode(value))),v=>v.toString(16).padStart(2,'0')).join('')}
+  const contentHash=data=>sha256Text(canonicalPublicJSON(data));
+  async function verifySnapshotDigest(snapshot){const {snapshotId,...metadata}=snapshot.metadata;if(snapshotId!==await sha256Text(JSON.stringify({metadata,data:snapshot.data}))||snapshot.metadata.contentHash!==await contentHash(snapshot.data))throw new Error('Snapshot digest mismatch');}
   const PUBLIC_FIELDS={season:['code','name','start_date','end_date'],teams:['team_code','name','short_name','group','display_order','description','logo_path','active'],matches:['match_code','group','date','time','home_team_code','away_team_code','venue','status'],results:['match_code','home_score','away_score','status'],snapshots:['group','snapshot_date','team_code','points','wins','losses','rank','rank_change'],roster:['team_code','display_name','roster_role','display_order']};
   const pick=(row,keys)=>Object.fromEntries(keys.filter(key=>row[key]!==undefined).map(key=>[key,row[key]]));
   function toPublicDataset(payload){
@@ -109,9 +115,10 @@
     const fail=()=>{throw new Error('Invalid public snapshot')};
     if(!snapshot||snapshot.schemaVersion!==1||Object.keys(snapshot).some(key=>!['schemaVersion','metadata','data'].includes(key)))fail();
     const m=snapshot.metadata;
-    if(!m||Object.keys(m).some(key=>!['environment','projectRef','seasonCode','sourceCommit','sourceTag','generatedAt','snapshotId','requestId'].includes(key)))fail();
+    if(!m||Object.keys(m).some(key=>!['environment','projectRef','seasonCode','sourceCommit','sourceTag','generatedAt','snapshotId','requestId','contentHash','hashAlgorithm'].includes(key)))fail();
     if(!['test','production'].includes(m.environment)||!/^[a-z]{20}$/.test(m.projectRef)||!IDENTIFIER.test(m.seasonCode)||!/^[a-f0-9]{40}$/.test(m.sourceCommit)||!/^[a-f0-9]{64}$/.test(m.snapshotId)||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(m.generatedAt)||!Number.isFinite(Date.parse(m.generatedAt))||Date.parse(m.generatedAt)>Date.now()+300000)fail();
     if(m.environment==='production'&&!/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(m.sourceTag||''))fail();
+    if((m.contentHash!==undefined||m.hashAlgorithm!==undefined)&&(!/^[a-f0-9]{64}$/.test(m.contentHash||'')||m.hashAlgorithm!=='public-json-sha256-v1'))fail();
     // The generated environment-specific config is the identity boundary.
     if(m.sourceTag!==config.sourceTag)fail();
     for(const key of ['environment','projectRef','seasonCode','sourceCommit'])if(config[key]!==m[key])fail();
@@ -121,8 +128,25 @@
     return Object.freeze({metadata:Object.freeze({...m}),data:normalizeDataset(data)});
   }
   class SnapshotLeagueRepository{
-    constructor({config,fetch:fetcher=globalThis.fetch?.bind(globalThis)}={}){this.config=config;this.fetcher=fetcher;this.metadata=null;}
+    constructor({config,fetch:fetcher=globalThis.fetch?.bind(globalThis)}={}){this.config=config;this.fetcher=fetcher;this.metadata=null;this.warning=null;}
+    async getStorageSnapshot(){
+      const c=this.config,base=`https://${c.projectRef}.supabase.co`;
+      if(!/^[a-z]{20}$/.test(c.projectRef)||c.pointerUrl!==base+'/functions/v1/public-snapshot-pointer')throw new Error('Invalid pointer endpoint');
+      const read=async(url,limit,cache)=>{const r=await this.fetcher(url,{cache,credentials:'omit',redirect:'error',signal:globalThis.AbortSignal?.timeout?.(15000)});if(!r.ok||r.redirected||Number(r.headers?.get?.('content-length')||0)>limit)throw new Error('Snapshot unavailable');const text=await r.text();if(new TextEncoder().encode(text).length>limit)throw new Error('Snapshot exceeds limits');return JSON.parse(text)};
+      const p=await read(c.pointerUrl+'?fresh='+Date.now(),4096,'no-store');
+      const fields=['schemaVersion','environment','projectRef','seasonCode','bucket','objectPath','requestId','sourceCommit','sourceTag','contentHash','snapshotId','generatedAt'];
+      if(!p||p.schemaVersion!==1||Object.keys(p).some(k=>!fields.includes(k))||p.environment!==c.environment||p.projectRef!==c.projectRef||p.seasonCode!==c.seasonCode||p.bucket!=='wuri-public-snapshots'||!/^[a-f0-9]{40}$/.test(p.sourceCommit||'')||!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(p.requestId||'')||!/^[a-f0-9]{64}$/.test(p.contentHash||'')||!/^[a-f0-9]{64}$/.test(p.snapshotId||'')||(c.environment==='test'&&p.sourceTag!==null))throw new Error('Invalid public pointer');
+      const path=`${c.seasonCode}/${p.sourceCommit}/${p.requestId}-${p.contentHash}.json`;
+      if(p.objectPath!==path)throw new Error('Invalid public object path');
+      const raw=await read(`${base}/storage/v1/object/public/wuri-public-snapshots/${path}`,2000000,'no-cache');
+      // Schema-one immutable data receipts may predate a compatible program release.
+      // This never changes the deployed application commit/tag; static fallback stays strictly pinned.
+      const snapshot=normalizePublicSnapshot(raw,{...c,sourceCommit:p.sourceCommit,sourceTag:p.sourceTag});await verifySnapshotDigest(raw);
+      if(snapshot.metadata.requestId!==p.requestId||snapshot.metadata.snapshotId!==p.snapshotId||snapshot.metadata.contentHash!==p.contentHash||snapshot.metadata.generatedAt!==p.generatedAt)throw new Error('Pointer receipt mismatch');
+      this.metadata=snapshot.metadata;return snapshot.data;
+    }
     async getPublicLeague(){
+      this.warning=null;if(this.config?.pointerUrl){try{return await this.getStorageSnapshot()}catch{this.warning='storage_unavailable'}}
       if(this.config?.snapshotUrl!=='public-league.json'||typeof this.fetcher!=='function')throw new Error('Invalid snapshot URL');
       const response=await this.fetcher(this.config.snapshotUrl,{cache:'no-cache',credentials:'omit',redirect:'error',signal:globalThis.AbortSignal?.timeout?.(15000)});
       if(!response.ok||response.redirected||Number(response.headers?.get?.('content-length')||0)>2000000)throw new Error('Snapshot unavailable');
@@ -136,5 +160,5 @@
     if(config&&config.mode!=='static')throw new Error('League data source is disabled');
     return new StaticLeagueRepository(officialData);
   }
-  return Object.freeze({StaticLeagueRepository,SupabaseLeagueRepository,SnapshotLeagueRepository,createConfiguredRepository,normalizeDataset,toPublicDataset,normalizePublicSnapshot,scoreIsValid});
+  return Object.freeze({StaticLeagueRepository,SupabaseLeagueRepository,SnapshotLeagueRepository,createConfiguredRepository,normalizeDataset,toPublicDataset,normalizePublicSnapshot,scoreIsValid,canonicalPublicJSON,contentHash,sha256Text,verifySnapshotDigest});
 });

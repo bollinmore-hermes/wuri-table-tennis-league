@@ -71,11 +71,14 @@ fs.unlinkSync(path.join(out,'assets/js/official-data.js'));
 fs.writeFileSync(path.join(out,'index.html'),publicHtml);
 fs.mkdirSync(path.join(out,'assets/js'),{recursive:true});
 const publicConfig={mode:'snapshot',environment,projectRef:target.projectRef,seasonCode:config.seasonCode,sourceCommit,sourceTag,snapshotUrl:'public-league.json'};
+const delivery=environment==='test'?'storage':(process.env.PUBLIC_SNAPSHOT_DELIVERY||'actions');
+if(!['actions','storage'].includes(delivery))throw new Error('Invalid public snapshot delivery');
+if(delivery==='storage')publicConfig.pointerUrl=`${url}/functions/v1/public-snapshot-pointer`;
 fs.writeFileSync(path.join(out,'assets/js/config.js'),`window.LEAGUE_CONFIG = Object.freeze(${JSON.stringify(publicConfig,null,2)});\n`);
 fs.writeFileSync(path.join(out,'public-league.json'),JSON.stringify(snapshot));
 fs.writeFileSync(path.join(out,'release-manifest.json'),JSON.stringify({schemaVersion:1,environment,projectRef:target.projectRef,sourceCommit,sourceTag}));
 
-for(const file of ['admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/js/official-data.js','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates/wuri-league-demo-import.xlsx'])copy(file,adminOut);
+for(const file of ['admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/publication-ui.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/js/official-data.js','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates/wuri-league-demo-import.xlsx'])copy(file,adminOut);
 copy('assets/team-logos',adminOut);
 let adminHtml=fs.readFileSync(path.join(adminOut,'admin.html'),'utf8').replaceAll('href="index.html"','href="../index.html"');
 fs.writeFileSync(path.join(adminOut,'index.html'),adminHtml);
