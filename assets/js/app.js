@@ -223,11 +223,25 @@ el("dateFilter").addEventListener("change",event=>{selectedDate=event.target.val
 document.querySelectorAll("[data-group]").forEach(button=>button.addEventListener("click",()=>{groupFilter=button.dataset.group;document.querySelectorAll("[data-group]").forEach(node=>node.classList.toggle("active",node===button));renderSchedule()}));
 
 function leaguePoints(winnerScore){return winnerScore===3?[3,0]:[2,1]}
+function officialRankOrder(a,b){return b.pts-a.pts||b.w-a.w||((b.w/(b.w+b.l||1))-(a.w/(a.w+a.l||1)))||a.name.localeCompare(b.name,"zh-Hant")}
+function standingsTotals(group,completed){
+  const stats=Object.fromEntries(teams[group].map(name=>[name,{name,pts:0,w:0,l:0,trend:0}]));
+  completed.forEach(game=>{const score=scores[game.id],home=stats[game.home],away=stats[game.away],homeWon=score.home>score.away,[winnerPoints,loserPoints]=leaguePoints(Math.max(score.home,score.away));if(homeWon){home.w++;away.l++;home.pts+=winnerPoints;away.pts+=loserPoints}else{away.w++;home.l++;away.pts+=winnerPoints;home.pts+=loserPoints}});
+  return Object.values(stats);
+}
 function standings(group,sort=standingsSort[group]){
-  const stats=Object.fromEntries(teams[group].map(name=>[name,{name,pts:0,w:0,l:0,trend:officialStandings[group]?.rows?.[name]?.trend||0}]));
-  games.filter(game=>game.group===group).forEach(game=>{const score=scores[game.id];if(!score||!validScore(score.home,score.away))return;const home=stats[game.home],away=stats[game.away],homeWon=score.home>score.away,[winnerPoints,loserPoints]=leaguePoints(Math.max(score.home,score.away));if(homeWon){home.w++;away.l++;home.pts+=winnerPoints;away.pts+=loserPoints}else{away.w++;home.l++;away.pts+=winnerPoints;home.pts+=loserPoints}});
+  const completed=games.filter(game=>game.group===group&&scores[game.id]&&validScore(scores[game.id].home,scores[game.id].away));
+  const latestDate=completed.reduce((latest,game)=>game.date>latest?game.date:latest,"");
+  const previous=completed.filter(game=>game.date<latestDate);
+  const rows=standingsTotals(group,completed).sort(officialRankOrder);
+  // Compare the entire latest group matchday against its pre-day ranking.
+  // With no earlier results, there is no meaningful baseline for movement.
+  if(previous.length){
+    const previousRanks=new Map(standingsTotals(group,previous).sort(officialRankOrder).map((row,index)=>[row.name,index+1]));
+    rows.forEach((row,index)=>{row.trend=previousRanks.get(row.name)-(index+1)});
+  }
   const value=(row,key)=>key==="pct"?row.w/(row.w+row.l||1):row[key],direction=sort.dir==="asc"?1:-1;
-  return Object.values(stats).sort((a,b)=>direction*(value(a,sort.key)-value(b,sort.key))||b.pts-a.pts||b.w-a.w||((b.w/(b.w+b.l||1))-(a.w/(a.w+a.l||1)))||a.name.localeCompare(b.name,"zh-Hant"));
+  return rows.sort((a,b)=>direction*(value(a,sort.key)-value(b,sort.key))||officialRankOrder(a,b));
 }
 function trendHTML(value){return dom("span",{className:value>0?"trend-up":value<0?"trend-down":"",text:value>0?`▲ ${value}`:value<0?`▼ ${Math.abs(value)}`:"—"})}
 function sortHeader(group,key,label){const active=standingsSort[group].key===key,arrow=active?(standingsSort[group].dir==="desc"?"↓":"↑"):"";return dom("button",{className:`sort-button${active?" active":""}`,text:`${label} ${arrow}`,attrs:{type:"button"},dataset:{sortGroup:group,sortKey:key}})}
