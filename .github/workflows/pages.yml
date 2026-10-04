@@ -37,6 +37,7 @@ jobs:
       - name: Build fail-closed Production Pages artifact
         env:
           SNAPSHOT_SOURCE_TAG: ${{ github.ref_name }}
+          PUBLIC_SNAPSHOT_DELIVERY: storage
           SUPABASE_PRODUCTION_URL: ${{ secrets.SUPABASE_PRODUCTION_URL }}
           SUPABASE_PRODUCTION_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PRODUCTION_PUBLISHABLE_KEY }}
         run: npm run build:production-pages
