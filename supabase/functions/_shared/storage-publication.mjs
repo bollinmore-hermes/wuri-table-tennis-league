@@ -30,9 +30,9 @@ export async function executeStoragePublication(command,{environment,supabaseUrl
    query=command.request_id?query.eq('id',command.request_id):query.order('created_at',{ascending:false}).limit(1);
    const {data,error}=await query.maybeSingle();if(error)throw new Error('state_unavailable');row=data;
    if(!row)return reply(200,{status:'idle'});
-   if(row.delivery_method!=='storage')return reply(503,{error:'legacy_publication_requires_reconciliation'});
    if(row.status==='failed')return reply(200,{request_id:row.id,status:'failed'});
    if(row.status==='published')return reply(200,{request_id:row.id,status:'published',published_at:row.published_at});
+   if(row.delivery_method!=='storage')return reply(503,{error:'legacy_publication_requires_reconciliation'});
    writeStarted=true; // A status query cannot know whether a lost upload response committed.
   }else return reply(400,{error:'invalid_request'});
   const live=await read(publicObjectURL(supabaseUrl,row.object_path)),m=live.metadata;

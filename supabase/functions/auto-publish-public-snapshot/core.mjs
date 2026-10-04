@@ -18,7 +18,7 @@ export async function handleAutomatic(request,{environment,supabaseUrl,cronSecre
   const execute=command=>state.delivery_method==='storage'?executeStoragePublication(command,{environment,supabaseUrl,serviceClient,fetcher,automatic:true}):executePublication(command,{environment,githubToken,serviceClient,fetcher,automatic:true,seasonCode:SEASON});
   if(state.pending_id){
    const response=await execute({action:'status',request_id:state.pending_id});
-   if(response.status!==200||(await response.clone().json()).status!=='published')return response;
+   if(response.status!==200||(await response.clone().json()).status!=='published'){if(response.status>=500||(await response.clone().json()).status==='failed')await rpc('record_snapshot_automation_failure',{p_season_code:SEASON});return response;}
    // Confirmation can make newer edits dirty, including a revert to an earlier hash.
    // Read again after confirmation; never reuse the pre-confirmation comparison.
    state=await rpc('automatic_public_snapshot_state',{p_season_code:SEASON});
@@ -36,6 +36,6 @@ export async function handleAutomatic(request,{environment,supabaseUrl,cronSecre
    state=await rpc('automatic_public_snapshot_state',{p_season_code:SEASON});if(!state.needs_publish)return reply(200,{status:'unchanged',bootstrapped:true});
   }
   const response=await execute({action:'publish'});
-  if(response.status>=500)await rpc('record_snapshot_automation_failure',{p_season_code:SEASON});return response;
+  if(response.status>=500||(await response.clone().json()).status==='failed')await rpc('record_snapshot_automation_failure',{p_season_code:SEASON});return response;
  }catch{await serviceClient.rpc('record_snapshot_automation_failure',{p_season_code:SEASON}).catch(()=>{});return reply(503,{error:'automatic_publication_unavailable'});}
 }
