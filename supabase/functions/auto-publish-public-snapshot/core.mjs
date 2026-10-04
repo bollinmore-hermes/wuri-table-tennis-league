@@ -13,7 +13,15 @@ export async function handleAutomatic(request,{environment,supabaseUrl,cronSecre
  try{
   let state=await rpc('automatic_public_snapshot_state',{p_season_code:SEASON});
   if(!state?.enabled)return reply(200,{status:'disabled'});
-  if(state.pending_id)return executePublication({action:'status',request_id:state.pending_id},{environment,githubToken,serviceClient,fetcher,automatic:true,seasonCode:SEASON});
+  if(state.pending_id){
+   const response=await executePublication({action:'status',request_id:state.pending_id},{environment,githubToken,serviceClient,fetcher,automatic:true,seasonCode:SEASON});
+   if(response.status!==200||(await response.clone().json()).status!=='published')return response;
+   // Confirmation can make newer edits dirty, including a revert to an earlier hash.
+   // Read again after confirmation; never reuse the pre-confirmation comparison.
+   state=await rpc('automatic_public_snapshot_state',{p_season_code:SEASON});
+   if(!state?.enabled||state.pending_id||!state.needs_publish||!state.retry_allowed)return response;
+   // At most one follow-up reservation; the same DB lock still guards concurrency.
+  }
   if(!state.needs_publish)return reply(200,{status:'unchanged'});
   if(!state.retry_allowed)return reply(200,{status:'retry_paused'});
   if(state.published_hash===null){

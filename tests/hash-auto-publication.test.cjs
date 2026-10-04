@@ -63,3 +63,54 @@ test('failed Actions never confirms hash and invokes bounded retry accounting',a
 });
 
 test('public snapshot notice describes the snapshot, not a manual-only publication policy',()=>{const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'../assets/js/app.js'),'utf8');assert(source.includes('公開資料以最新發布快照為準'));assert(source.includes('Public data reflects the latest published snapshot'));assert(!source.includes('Results update after administrator publication'));});
+
+function pendingCycleDeps({dirty=true,completion='published',completionHttp=200,enabled=true,newPending=null,retry=true,recheckError=false,busy=false,builtData=null,currentData=null,initialPublishedHash='1'.repeat(64)}={}){
+ const id='12345678-1234-1234-1234-123456789abc',commit='a'.repeat(40),row={id,status:'running',source_commit:commit,source_tag:null,season_code:'2026-autumn-second-half'};
+ let stateReads=0,dispatches=0,reservations=0,confirmed=null;
+ const data=builtData||toPublicDataset(official),deps={environment:'test',supabaseUrl:'https://vppjcjfbcoxzofcuxmzz.supabase.co',cronSecret:'s'.repeat(64),githubToken:'server-placeholder'};
+ deps.serviceClient={rpc:async(name,args)=>{
+  if(name==='automatic_public_snapshot_state'){stateReads++;if(stateReads===1)return {data:{enabled:true,pending_id:id,needs_publish:false,published_hash:initialPublishedHash,retry_allowed:true},error:null};if(recheckError)return {data:null,error:{code:'failed'}};return {data:{enabled,pending_id:newPending,needs_publish:currentData?(await(await shared).contentHash(currentData))!==confirmed:dirty,published_hash:confirmed,retry_allowed:retry},error:null};}
+  if(name==='confirm_public_snapshot_hash'){confirmed=args.p_content_hash;return {error:null};}
+  if(name==='reserve_automatic_public_snapshot'){reservations++;assert(confirmed,'old snapshot must be confirmed before reserving another');return busy?{data:null,error:{code:'P0001'}}:{data:{id:'22345678-1234-1234-1234-123456789abc',source_commit:commit,source_tag:null},error:null};}
+  assert.equal(name,'record_snapshot_automation_failure');return {error:null};
+ },from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:row,error:null})})}),update:()=>({eq:async()=>({error:null})})})};
+ deps.fetcher=async(url,options)=>{
+  if(url.endsWith('/dispatches')){dispatches++;return new Response(null,{status:204});}
+  if(url.includes('/runs?'))return new Response(JSON.stringify({workflow_runs:[{id:8,workflow_id:7,display_title:'Snapshot publication / '+id,status:completion==='running'?'in_progress':'completed',conclusion:completion==='failed'?'failure':'success'}]}));
+  if(url.includes('release-manifest'))return new Response(JSON.stringify({schemaVersion:1,environment:'test',projectRef:'vppjcjfbcoxzofcuxmzz',sourceCommit:commit,sourceTag:null}));
+  if(url.includes('public-league')){if(completionHttp!==200)return new Response('{}',{status:completionHttp});return new Response(JSON.stringify({schemaVersion:1,metadata:{requestId:completion==='verifying'?'32345678-1234-1234-1234-123456789abc':id,sourceCommit:commit,sourceTag:null,environment:'test',projectRef:'vppjcjfbcoxzofcuxmzz',seasonCode:row.season_code,generatedAt:new Date().toISOString(),contentHash:await(await shared).contentHash(data),hashAlgorithm:'public-json-sha256-v1'},data}));}
+  return new Response(JSON.stringify({id:7}));
+ };
+ return {deps,stats:()=>({stateReads,dispatches,reservations,confirmed})};
+}
+test('pending publication success rechecks fresh state and dispatches newer edits in the same invocation',async()=>{
+ const {handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs'),fixture=pendingCycleDeps();
+ const r=await handleAutomatic(cronRequest(),fixture.deps);assert.equal(r.status,202);assert.equal((await r.json()).status,'queued');assert.equal(fixture.stats().stateReads,2);assert.equal(fixture.stats().dispatches,1);assert.equal(fixture.stats().reservations,1);
+});
+test('confirm then recheck does not republish when content is already current',async()=>{
+ const {handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs'),fixture=pendingCycleDeps({dirty:false});
+ const r=await handleAutomatic(cronRequest(),fixture.deps);assert.equal((await r.json()).status,'published');assert.equal(fixture.stats().stateReads,2);assert.equal(fixture.stats().dispatches,0);
+});
+test('ongoing, failed, verifying and unavailable previous jobs never start a follow-up',async()=>{
+ const {handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs');
+ for(const opts of [{completion:'running'},{completion:'failed'},{completion:'verifying'},{completionHttp:503}]){const fixture=pendingCycleDeps(opts);await handleAutomatic(cronRequest(),fixture.deps);assert.equal(fixture.stats().stateReads,1);assert.equal(fixture.stats().dispatches,0);}
+});
+test('fresh disable, pending reservation or retry pause prevents same-cycle follow-up',async()=>{
+ const {handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs');
+ for(const opts of [{enabled:false},{newPending:'42345678-1234-1234-1234-123456789abc'},{retry:false}]){const fixture=pendingCycleDeps(opts);const r=await handleAutomatic(cronRequest(),fixture.deps);assert.equal((await r.json()).status,'published');assert.equal(fixture.stats().stateReads,2);assert.equal(fixture.stats().reservations,0);assert.equal(fixture.stats().dispatches,0);}
+});
+test('failed fresh-state read leaves the confirmed snapshot intact without dispatch',async()=>{
+ const {handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs'),fixture=pendingCycleDeps({recheckError:true});
+ const r=await handleAutomatic(cronRequest(),fixture.deps);assert.equal(r.status,503);assert(fixture.stats().confirmed);assert.equal(fixture.stats().dispatches,0);
+});
+test('concurrent reservation remains busy after same-cycle recheck and never dispatches twice',async()=>{
+ const {handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs'),fixture=pendingCycleDeps({busy:true});
+ const r=await handleAutomatic(cronRequest(),fixture.deps);assert.equal(r.status,429);assert.equal(fixture.stats().reservations,1);assert.equal(fixture.stats().dispatches,0);
+});
+
+test('A to B to A revert is dirty after confirming B even though pre-confirmation hash matched A',async()=>{
+ const {contentHash}=await shared,{handleAutomatic}=await import('../supabase/functions/auto-publish-public-snapshot/core.mjs');
+ const a=toPublicDataset(official),b=JSON.parse(JSON.stringify(a));b.teams[0].description+=' temporary test';const hashA=await contentHash(a),hashB=await contentHash(b);assert.notEqual(hashA,hashB);
+ const fixture=pendingCycleDeps({builtData:b,currentData:a,initialPublishedHash:hashA});
+ const r=await handleAutomatic(cronRequest(),fixture.deps);assert.equal((await r.json()).status,'queued');assert.equal(fixture.stats().confirmed,hashB);assert.equal(fixture.stats().dispatches,1);
+});
