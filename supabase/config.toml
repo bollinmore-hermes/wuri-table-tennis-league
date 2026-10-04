@@ -33,3 +33,7 @@ verify_jwt = false
 # Cron-only constant-time secret authentication; browsers and user JWTs are not authority.
 [functions.auto-publish-public-snapshot]
 verify_jwt = false
+
+# Anonymous read-only pointer; no public mutation or privileged RPC access.
+[functions.public-snapshot-pointer]
+verify_jwt = false

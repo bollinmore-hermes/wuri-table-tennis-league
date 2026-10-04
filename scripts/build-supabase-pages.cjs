@@ -71,6 +71,7 @@ fs.unlinkSync(path.join(out,'assets/js/official-data.js'));
 fs.writeFileSync(path.join(out,'index.html'),publicHtml);
 fs.mkdirSync(path.join(out,'assets/js'),{recursive:true});
 const publicConfig={mode:'snapshot',environment,projectRef:target.projectRef,seasonCode:config.seasonCode,sourceCommit,sourceTag,snapshotUrl:'public-league.json'};
+if(environment==='test')publicConfig.pointerUrl=`${url}/functions/v1/public-snapshot-pointer`;
 fs.writeFileSync(path.join(out,'assets/js/config.js'),`window.LEAGUE_CONFIG = Object.freeze(${JSON.stringify(publicConfig,null,2)});\n`);
 fs.writeFileSync(path.join(out,'public-league.json'),JSON.stringify(snapshot));
 fs.writeFileSync(path.join(out,'release-manifest.json'),JSON.stringify({schemaVersion:1,environment,projectRef:target.projectRef,sourceCommit,sourceTag}));

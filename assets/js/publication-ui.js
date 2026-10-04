@@ -9,7 +9,7 @@ function create({document,authorized,call,openDialog=d=>d.showModal(),setTimer=s
  const stop=()=>{if(timer!==null)clearTimer(timer);timer=null};
  const task=text=>{el('publicationTask').textContent=text};
  const formatDate=value=>Number.isFinite(Date.parse(value))?new Date(value).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}):'尚無已確認紀錄';
- function render(){const v=summaryView(state);el('publicationStatus').textContent=v.text;el('publishSnapshot').disabled=busy||uncertain||Boolean(requestId&&!finished)||!authorized()||!v.enabled;el('checkPublication').disabled=busy||!authorized();el('openPublication').textContent=state?.status==='synced'?'公開發布・已同步':state?.status==='dirty'?'公開發布・待發布':ACTIVE.has(state?.status)?'公開發布・處理中':'公開發布';el('publicationHistory').textContent=`上次已確認上線：${formatDate(state?.last_published_at)}`;const seconds=state?.automatic_interval_seconds;el('publicationAutomation').textContent=state?.automatic_enabled?(seconds?`自動檢查每 ${seconds/60} 分鐘一次；仍需等待建置、部署與上線確認。`:'自動檢查已啟用；仍需等待建置、部署與上線確認。'):'自動檢查暫停或狀態尚未確認。';}
+ function render(){const v=summaryView(state);el('publicationStatus').textContent=v.text;el('publishSnapshot').disabled=busy||uncertain||Boolean(requestId&&!finished)||!authorized()||!v.enabled;el('checkPublication').disabled=busy||!authorized();el('openPublication').textContent=state?.status==='synced'?'公開發布・已同步':state?.status==='dirty'?'公開發布・待發布':ACTIVE.has(state?.status)?'公開發布・處理中':'公開發布';el('publicationHistory').textContent=`上次已確認上線：${formatDate(state?.last_published_at)}`;const seconds=state?.automatic_interval_seconds,direct=state?.delivery_method==='storage',detail=direct?'資料直接發布，不等待 Actions。':'仍需等待建置、部署與上線確認。';el('publicationAutomation').textContent=state?.automatic_enabled?(seconds?`自動檢查每 ${seconds/60} 分鐘一次；${detail}`:`自動檢查已啟用；${detail}`):'自動檢查暫停或狀態尚未確認。';}
  function schedule(){stop();if(!dialog.open||document.visibilityState==='hidden'||!requestId||finished||uncertain)return;if(polls>=60){task('尚未確認完成，已停止自動追蹤；不可重送，請按重新查核。');return}timer=setTimer(()=>{timer=null;polls++;check()},5000)}
  async function readState(g){const result=await call('state');if(g!==generation||!authorized())return false;state=result;if(result.pending_request_id&&!requestId){requestId=result.pending_request_id;finished=false;uncertain=false;task(labels[result.status]||labels.dispatch_unknown)}if(uncertain)task('送出結果待確認；不可重送，請重新查核。');render();return true}
  async function refresh(){if(!authorized())return;stop();const g=++generation;state={status:'checking'};render();try{if(await readState(g))schedule()}catch{if(g!==generation)return;state=null;render();if(requestId&&!finished)task('目前發布結果待確認；不可重送，請重新查核。')}}
@@ -20,9 +20,11 @@ function create({document,authorized,call,openDialog=d=>d.showModal(),setTimer=s
  schedule();}
  async function publish(){if(!authorized()||busy||el('publishSnapshot').disabled)return;stop();busy=true;render();const g=++generation;try{if(!await readState(g)||!summaryView(state).enabled)return;
   // A fresh server check and the database lock both guard stale buttons.
-  requestId=null;finished=false;task('正在送出發布要求；公開頁尚未更新。');
+  requestId=null;finished=false;task(state?.delivery_method==='storage'?'正在產生、寫入並確認公開快照；完成前仍顯示舊資料。':'正在送出發布要求；公開頁尚未更新。');
   let result;try{result=await call('publish')}catch(error){uncertain=!error.publicationRejected;state=null;task(uncertain?'送出結果待確認；不可重送，請重新查核。':'此次未啟動發布，請重新查核目前狀態。');return}
   if(result.status==='unchanged'){state={status:'synced',can_publish:false,...state};state.status='synced';state.can_publish=false;task('送出前已同步，沒有新增發布任務。');return}
+  if(result.request_id&&result.status==='published'){requestId=result.request_id;finished=true;uncertain=false;task(`本次快照已確認上線：${formatDate(result.published_at)}。已開啟的公開頁請重新整理；後續修改須另外發布。`);try{await readState(g)}catch{state=null}return}
+  if(result.request_id&&result.status==='failed'){requestId=result.request_id;finished=true;uncertain=false;task('本次發布未完成；舊快照保留，後台已儲存資料不受影響。');try{await readState(g)}catch{state=null}return}
   if(!result.request_id||!ACTIVE.has(result.status)){uncertain=true;state=null;task('送出結果待確認；不可重送，請重新查核。');return}
   requestId=result.request_id;finished=false;uncertain=false;polls=0;state={...state,status:result.status,can_publish:false};task(labels[result.status]);
  }catch{state=null;task('狀態查核未完成，尚未送出發布要求；請重新查核。')}finally{busy=false;render();schedule()}}

@@ -1,21 +1,14 @@
 import {contentHash,HASH_ALGORITHM} from '../_shared/public-content.mjs';
-export const TARGETS=Object.freeze({
- test:{projectRef:'vppjcjfbcoxzofcuxmzz',repo:'bollinmore-hermes/wuri-table-tennis-league-test',site:'https://bollinmore-hermes.github.io/wuri-table-tennis-league-test/'},
- production:{projectRef:'zofiiibgnjuodgrzhkpn',repo:'bollinmore-hermes/wuri-table-tennis-league',site:'https://bollinmore-hermes.github.io/wuri-table-tennis-league/'}
-});
+import {TARGETS,verifyManifest} from '../_shared/publication-targets.mjs';
+import {executeStoragePublication} from '../_shared/storage-publication.mjs';
+export {TARGETS,verifyManifest};
 const UUID=/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/;
 export function parseCommand(value){
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(key=>!['action','request_id'].includes(key))||!['publish','status','state'].includes(value.action))throw new Error('invalid_request');
  if(value.action!=='status'&&value.request_id!==undefined)throw new Error('invalid_request');
  if(value.request_id!==undefined&&!UUID.test(value.request_id))throw new Error('invalid_request');return value;
 }
-export function verifyManifest(value,environment){
- const target=TARGETS[environment];
- if(!target||value?.schemaVersion!==1||value.environment!==environment||value.projectRef!==target.projectRef||!/^[a-f0-9]{40}$/.test(value.sourceCommit||''))throw new Error('release_unavailable');
- if(environment==='production'&&!/^v\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(value.sourceTag||''))throw new Error('release_unavailable');
- return {sourceCommit:value.sourceCommit,sourceTag:value.sourceTag||null};
-}
-export async function handlePublication(request,{environment,supabaseUrl,githubToken,userClient,serviceClient,fetcher=fetch}){
+export async function handlePublication(request,{environment,supabaseUrl,githubToken,userClient,serviceClient,fetcher=fetch,getDelivery=async()=>'actions'}){
  const origin=request.headers.get('origin')||'';
  const allowed=origin==='https://bollinmore-hermes.github.io';
  const headers={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Origin'};
@@ -38,10 +31,12 @@ export async function handlePublication(request,{environment,supabaseUrl,githubT
    const {data:s,error}=await serviceClient.rpc('get_publication_status_summary',{p_season_code:'2026-autumn-second-half'});
    if(error||!s||s.verified_hash_known!==true||typeof s.needs_publish!=='boolean')return reply(503,{error:'publication_state_unavailable'});
    const pending=s.pending_request_id, cooling=Number.isFinite(Date.parse(s.cooldown_until))&&Date.parse(s.cooldown_until)>Date.now();
-   const status=pending?(['queued','running','dispatch_unknown'].includes(s.pending_status)?s.pending_status:'dispatch_unknown'):!s.needs_publish?'synced':!githubToken?'not_configured':cooling?'cooldown':'dirty';
-   return reply(200,{status,can_publish:status==='dirty',needs_publish:s.needs_publish,pending_request_id:pending||null,last_published_at:s.last_published_at||null,cooldown_until:s.cooldown_until||null,automatic_enabled:s.automatic_enabled===true,automatic_interval_seconds:Number.isInteger(s.interval_seconds)?s.interval_seconds:null});
+   const status=pending?(['queued','running','dispatch_unknown'].includes(s.pending_status)?s.pending_status:'dispatch_unknown'):!s.needs_publish?'synced':(!githubToken&&s.delivery_method!=='storage')?'not_configured':cooling?'cooldown':'dirty';
+   return reply(200,{status,can_publish:status==='dirty',needs_publish:s.needs_publish,pending_request_id:pending||null,last_published_at:s.last_published_at||null,cooldown_until:s.cooldown_until||null,automatic_enabled:s.automatic_enabled===true,automatic_interval_seconds:Number.isInteger(s.interval_seconds)?s.interval_seconds:null,delivery_method:s.delivery_method||'actions'});
   }catch{return reply(503,{error:'publication_state_unavailable'})}
  }
+ let delivery;try{delivery=await getDelivery()}catch{return reply(503,{error:'publication_state_unavailable'})}
+ if(delivery==='storage'){const response=await executeStoragePublication(command,{environment,supabaseUrl,serviceClient,fetcher,actorId:auth.user.id});return new Response(response.body,{status:response.status,headers:{...Object.fromEntries(response.headers),...headers}})}
  if(!githubToken)return reply(503,{error:'publication_not_configured'});
  const response=await executePublication(command,{environment,githubToken,serviceClient,fetcher,actorId:auth.user.id});
  return new Response(response.body,{status:response.status,headers:{...Object.fromEntries(response.headers),...headers}});

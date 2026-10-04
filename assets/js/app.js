@@ -279,6 +279,7 @@ function renderSnapshotNotice(){
   const metadata=repository?.metadata;if(!metadata)return;
   let notice=document.getElementById("snapshotNotice");
   if(!notice){notice=dom("p",{className:"notice",attrs:{id:"snapshotNotice",role:"status"}});document.querySelector?.("main")?.prepend(notice)}
+  if(repository.warning){notice.textContent=locale==="zh"?"最新公開快照暫時無法讀取，顯示本站備援快照（可能較舊）。":"Latest public snapshot unavailable; showing the site's fallback snapshot, which may be older.";return}
   const snapshotUpdated=locale==="zh"?"最後發布資料":"Last published";
   notice.textContent=`${snapshotUpdated}：${new Intl.DateTimeFormat(locale==="zh"?"zh-TW":"en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Taipei"}).format(new Date(metadata.generatedAt))} · ${locale==="zh"?"公開資料以最新發布快照為準":"Public data reflects the latest published snapshot"}`;
 }
