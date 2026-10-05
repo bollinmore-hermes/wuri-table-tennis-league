@@ -65,6 +65,7 @@
   /* #29: public roster contains masked names only. */
 .public-roster{padding:24px;margin:20px 0}.public-roster h2{margin:0 0 16px}.public-roster h3{font-size:15px;margin:16px 0 8px}.roster-names{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:10px 20px}.roster-names li{overflow-wrap:anywhere;max-width:100%}
 .rules-entry{display:block;color:#fff;text-decoration:none;cursor:pointer}.rules-entry:hover{border-color:var(--accent)}.rules-entry:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.rules-entry-action{display:inline-block;margin-top:18px;color:var(--accent-2);font-size:13px;font-weight:900;white-space:nowrap}.ranking-rules-link{display:inline-flex;min-height:44px;align-items:center;margin:0 16px 12px;color:var(--accent-ink);font-size:14px;font-weight:800}.ranking-rules-link:focus-visible{outline:3px solid var(--accent);outline-offset:3px}@media(max-width:820px){.rules-entry{display:flex}.rules-entry-action{margin-top:0}}
+.group-section .standings-copy-head{flex-direction:row;align-items:flex-start}.standings-copy-head>div{min-width:0}.standings-copy{width:44px;height:44px;flex:0 0 auto;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text)}.standings-copy svg{width:22px;height:22px}.standings-copy:hover{border-color:var(--accent)}.standings-copy:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.standings-copy:disabled{opacity:.55;cursor:wait}.standings-copy-status{position:fixed;z-index:100;left:50%;bottom:24px;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:var(--shadow);font-size:13px;color:var(--text);line-height:1.6;margin:0}.standings-copy-status:empty{display:none}
 </style>
 </head>
 <body data-theme="gold">
@@ -139,8 +140,8 @@
       <div class="page-head"><div><div class="eyebrow">STANDINGS</div><h1 data-i18n="standingsTitle">戰績排名</h1><p data-i18n="standingsCopy">A、B 組目前排名與官方戰績基準。</p></div></div>
       <div class="container">
         <details class="ranking-guide"><summary data-i18n="rankingGuide">排名與積分說明</summary><p data-i18n="rankingGuideText">聯賽積分、同分比較與棄權處理：待公布。</p><a class="ranking-rules-link" id="rankingRulesLink" href="event-rules.html" data-i18n="fullEventRules">查看完整賽事規則 →</a></details>
-        <div class="subsection group-section group-a" style="margin-top:0"><div class="section-head"><div><h2>A <span data-i18n="group">組</span></h2><p data-i18n="aCutoff">正式賽果載入中</p></div></div><div class="table-wrap"><table id="standingsA"></table></div></div>
-        <div class="subsection group-section group-b"><div class="section-head"><div><h2>B <span data-i18n="group">組</span></h2><p data-i18n="bCutoff">正式賽果載入中</p></div></div><div class="table-wrap"><table id="standingsB"></table></div></div>
+        <div class="subsection group-section group-a" style="margin-top:0"><div class="section-head standings-copy-head"><div><h2>A <span data-i18n="group">組</span></h2><p data-i18n="aCutoff">正式賽果載入中</p></div><button class="standings-copy" type="button" data-copy-standings="A" aria-label="複製 A 組完整表格圖片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div><p class="standings-copy-status" id="standingsCopyStatusA" role="status" aria-live="polite"></p><div class="table-wrap"><table id="standingsA"></table></div></div>
+        <div class="subsection group-section group-b"><div class="section-head standings-copy-head"><div><h2>B <span data-i18n="group">組</span></h2><p data-i18n="bCutoff">正式賽果載入中</p></div><button class="standings-copy" type="button" data-copy-standings="B" aria-label="複製 B 組完整表格圖片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button></div><p class="standings-copy-status" id="standingsCopyStatusB" role="status" aria-live="polite"></p><div class="table-wrap"><table id="standingsB"></table></div></div>
       </div>
     </section>
 
@@ -164,6 +165,7 @@
 
 <script src="assets/js/official-data.js"></script>
 <script src="assets/js/league-repository.js"></script>
+<script src="assets/js/standings-image.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>
