@@ -63,7 +63,7 @@ const copy=(relative,destination)=>{
 fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(adminOut,{recursive:true});
 
-for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js'])copy(file,out);
+for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js','assets/js/standings-image.js'])copy(file,out);
 copy('assets/team-logos',out);
 let publicHtml=fs.readFileSync(path.join(out,'index.html'),'utf8');
 publicHtml=publicHtml.replace('<script src="assets/js/official-data.js"></script>','<script src="assets/js/config.js"></script>');
