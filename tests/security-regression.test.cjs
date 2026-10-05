@@ -44,6 +44,52 @@ function loadPublicApp(config){
   return sandbox;
 }
 
+function attachCutoffLabels(browser){
+  const labels={A:new FakeNode('p'),B:new FakeNode('p')};
+  labels.A.dataset.i18n='aCutoff';labels.B.dataset.i18n='bCutoff';
+  const original=browser.document.querySelectorAll;
+  browser.document.querySelectorAll=selector=>{
+    if(selector==='[data-i18n]')return Object.values(labels);
+    if(selector==='[data-i18n="aCutoff"]')return [labels.A];
+    if(selector==='[data-i18n="bCutoff"]')return [labels.B];
+    return original(selector);
+  };
+  return labels;
+}
+
+test('result cutoff follows each group valid results, not old snapshot dates or future scheduled games',()=>{
+  const browser=loadPublicApp(),labels=attachCutoffLabels(browser);
+  vm.runInNewContext(`applyLocale('zh');games.push({id:'cutoff-oct4',group:'B',date:'2026-10-04',time:'15:30',home:teams.B[0],away:teams.B[4]});scores={...scores,'cutoff-oct4':{home:2,away:1}};renderStandings()`,browser);
+  assert.equal(labels.A.textContent,'正式賽果截至 2026/9/20');
+  assert.equal(labels.B.textContent,'正式賽果截至 2026/10/4');
+  vm.runInNewContext(`games.push({id:'invalid-cutoff',group:'B',date:'2026-11-29',time:'15:30',home:teams.B[0],away:teams.B[4]});scores={...scores,'invalid-cutoff':{home:0,away:0}};renderStandings()`,browser);
+  assert.equal(labels.B.textContent,'正式賽果截至 2026/10/4');
+});
+
+test('locale changes cannot restore fixed dates and English dates are localized',()=>{
+  const browser=loadPublicApp(),labels=attachCutoffLabels(browser);
+  vm.runInNewContext(`games.push({id:'cutoff-oct4',group:'B',date:'2026-10-04',time:'15:30',home:teams.B[0],away:teams.B[4]});scores={...scores,'cutoff-oct4':{home:3,away:0}};applyLocale('en')`,browser);
+  assert.equal(labels.A.textContent,'Official results through Sep 20, 2026');
+  assert.equal(labels.B.textContent,'Official results through Oct 4, 2026');
+  vm.runInNewContext(`applyLocale('zh');applyLocale('en');applyLocale('zh')`,browser);
+  assert.equal(labels.B.textContent,'正式賽果截至 2026/10/4');
+});
+
+test('cutoffs refresh after dataset hydration and disappear when a group has no valid results',()=>{
+  const browser=loadPublicApp(),labels=attachCutoffLabels(browser);
+  vm.runInNewContext(`scores={};applyLocale('zh')`,browser);
+  assert.equal(labels.A.textContent,'尚無正式賽果');assert.equal(labels.B.textContent,'尚無正式賽果');
+  vm.runInNewContext(`applyDataset(WuriLeagueRepository.normalizeDataset(WuriLeagueOfficialData));applyLocale('zh')`,browser);
+  assert.equal(labels.A.textContent,'正式賽果截至 2026/9/20');assert.equal(labels.B.textContent,'正式賽果截至 2026/9/13');
+  vm.runInNewContext(`scores={};applyLocale('en')`,browser);
+  assert.equal(labels.A.textContent,'No official results yet');assert.equal(labels.B.textContent,'No official results yet');
+});
+
+test('initial HTML cutoff placeholders never claim a stale hard-coded match date',()=>{
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.doesNotMatch(html,/<p data-i18n="[ab]Cutoff">[^<]*\d{4}/);
+});
+
 test('#29 roster detail displays every masked member in both locales and safe empty states',()=>{
   const browser=loadPublicApp();
   const source=browser.WuriLeagueOfficialData;
