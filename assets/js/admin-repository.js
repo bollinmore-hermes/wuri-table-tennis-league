@@ -37,7 +37,8 @@ class LocalRepository{
 }
 class SupabaseRepository{
   constructor(client,excel,seasonCode='2026-autumn-second-half'){this.client=client;this.excel=excel;this.seasonCode=seasonCode;this.role=null;}
-  async _authenticatedUser(user){if(!user)return null;const {data:profile,error}=await this.client.rpc('get_my_profile');if(error)throw error;this.role=profile.role;return {user,role:profile.role,name:profile.display_name};}
+  async _authenticatedUser(user){this.role=null;if(!user)return null;const {data:profile,error}=await this.client.rpc('get_my_profile');if(error||!profile||profile.active===false||!['admin','scorer'].includes(profile.role)){await this.client.auth.signOut({scope:'local'}).catch(()=>{});throw new Error('此帳號尚未獲邀請、已停用或授權已失效，請聯絡管理員。')}this.role=profile.role;return {user,role:profile.role,name:profile.display_name};}
+  async loginWithGoogle(redirectTo){try{const {data,error}=await this.client.auth.signInWithOAuth({provider:'google',options:{redirectTo,skipBrowserRedirect:true,queryParams:{prompt:'select_account'}}});if(error||!data?.url)throw new Error();return data.url}catch{throw new Error('Google 登入暫時無法啟動，請改用 Email 與密碼登入或聯絡管理員。')}}
   async login(_,email,password){const {data:auth,error}=await this.client.auth.signInWithPassword({email,password});if(error)throw error;return this._authenticatedUser(auth.user);}
   async resume(){const {data,error}=await this.client.auth.getSession();if(error)throw error;return this._authenticatedUser(data.session?.user||null);}
   async requestPasswordReset(email,redirectTo){const {error}=await this.client.auth.resetPasswordForEmail(email,{redirectTo});if(error)throw error;return true;}

@@ -33,7 +33,7 @@ fs.writeFileSync(path.join(publicOut,'index.html'),publicHtml);
 fs.mkdirSync(path.join(publicOut,'assets/js'),{recursive:true});
 fs.writeFileSync(path.join(publicOut,'assets/js/config.js'),configSource);
 
-for(const file of ['admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/publication-ui.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/js/official-data.js','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates/wuri-league-demo-import.xlsx'])copy(file,adminOut);
+for(const file of ['admin.html','assets/css/admin-v2.css','assets/js/admin.js','assets/js/admin-auth.js','assets/js/publication-ui.js','assets/js/admin-repository.js','assets/js/excel-import.js','assets/js/official-data.js','assets/vendor/xlsx.full.min.js','assets/vendor/supabase.js','templates/wuri-league-demo-import.xlsx'])copy(file,adminOut);
 copy('assets/team-logos',adminOut);
 let adminHtml=fs.readFileSync(path.join(adminOut,'admin.html'),'utf8').replaceAll('href="index.html"','href="../public/index.html"');
 fs.writeFileSync(path.join(adminOut,'index.html'),adminHtml);
