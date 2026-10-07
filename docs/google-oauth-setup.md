@@ -45,7 +45,25 @@ Google Client 與 Supabase redirect 是不同設定：前者回 Supabase，後�
 6. 原有密碼登入、邀請與 recovery 連結：仍有效；recovery 顯示設定密碼畫面，不被自動恢復管理後台蓋掉。
 7. 在邀請前後及 OAuth 前後核對 auth.users、auth.identities 與 profiles，不能單靠前端登入成功推論帳號連結安全。
 
-自動測試使用 SDK/RPC 模擬驗證程式契約，不能取代 Google 真實驗收。供應者、信件送達、未接受邀請帳號連結及不同角色真實 OAuth 驗收未完成前，不關閉 #52、不合併或發布正式版本。
+自動測試使用 SDK/RPC 模擬驗證程式契約，不能取代 Google 真實驗收。
+
+### v0.10.0 發布範圍與驗收狀態
+
+使用者另行核准合併與正式前端發布，Production Auth 設定維持原狀。這取代初始 Test-only 發布限制；不代表正式 Google 登入已交付。Google OAuth 專案維持目前 Testing 與未驗證品牌狀態，不設定自訂網域。
+
+Test 已完成：
+- 管理員 Google 登入；後端比對證明原 Auth ID 與 admin/active profile 保留。
+- 受邀賽務帳號未開邀請信，直接 Google 登入，顯示 scorer 且無管理員選單；目前後端恰好 1 個 Auth user / 1 個 profile，Google Email 相符且已驗證。此帳號沒有登入前基準，不能宣稱 Auth ID 前後連續性。
+- 未受邀帳號被拒絕的 UI，由使用者實測回報；不等同該帳號全部管理 API 已驗證。
+- 賽務帳號停用前：get_my_profile=200，get_admin_users=403/42501。
+- 保留停用前分頁及舊憑證後停用：上述兩個唯讀 RPC 均為 403/42501。使用者也確認停用後無法重新登入、恢復啟用後重新登入正常。此驗收僅涵蓋這兩個 RPC，不擴大為全部 API 或 profile 刪除情境。
+
+未完成／保留：
+- 真實 Google 取消、既有邀請及密碼重設的端到端信件／連結驗收。
+- 刪除 profile 的撤銷授權情境，以及其他管理 API 的完整真實角色矩陣。
+- Production Google provider、Client 憑證及精確 OAuth redirect 尚未設定；正式站 Google 按鈕應維持停用，密碼登入保留。不得複製 Test 身分或資料、開放自由註冊來繞過設定。
+
+#52 保持開啟追蹤上述正式啟用與殘餘驗收；PR 合併及前端版本發布不視為整項需求完全結案。
 
 ## 參考資料
 
