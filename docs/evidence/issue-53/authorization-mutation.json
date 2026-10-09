@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "projectRef": "vppjcjfbcoxzofcuxmzz",
+  "mutation": "queue guard replaced with NULL-unsafe predicate within transaction",
+  "regressionDetected": true,
+  "mutationTransactionRolledBack": true,
+  "originalRemoteVerificationPass": true,
+  "notProduction": true
+}

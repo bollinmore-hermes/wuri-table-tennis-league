@@ -1,0 +1,81 @@
+{
+  "ok": true,
+  "artifactBase": "http://127.0.0.1:8893/",
+  "browser": "Chrome/152.0.7977.84",
+  "nativeHostedData": true,
+  "noConfigOrApiFixturesForNativeView": true,
+  "dateGroups": 12,
+  "matches": 60,
+  "noPerCardDateOrIdleProse": true,
+  "noMeaninglessRadio": true,
+  "statusOptions": [
+    [
+      "ALL",
+      "全部"
+    ],
+    [
+      "reported",
+      "核對"
+    ],
+    [
+      "missing",
+      "補登"
+    ],
+    [
+      "final",
+      "完成"
+    ]
+  ],
+  "statusMatrix": [
+    {
+      "value": "ALL",
+      "label": "全部",
+      "matches": 60
+    },
+    {
+      "value": "reported",
+      "label": "核對",
+      "matches": 0
+    },
+    {
+      "value": "missing",
+      "label": "補登",
+      "matches": 34
+    },
+    {
+      "value": "final",
+      "label": "完成",
+      "matches": 26
+    }
+  ],
+  "eachTeamListedOnce": true,
+  "saveButtonLabel": "儲存",
+  "originalMatchIdsPreserved": true,
+  "validationOnlyAfterInvalidSubmit": true,
+  "handlerFaultFixture": "in-memory only; no remote writes",
+  "draftRetention": true,
+  "remoteScoreWrites": 0,
+  "matrix": [
+    {
+      "width": 360,
+      "overflow": false,
+      "scoreDigitsClear": true
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "scoreDigitsClear": true
+    },
+    {
+      "width": 768,
+      "overflow": false,
+      "scoreDigitsClear": true
+    },
+    {
+      "width": 1280,
+      "overflow": false,
+      "scoreDigitsClear": true
+    }
+  ],
+  "pageErrors": 0
+}

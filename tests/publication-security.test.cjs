@@ -34,7 +34,7 @@ test('SQL reserves globally under a lock, audits, and is service-only',()=>{
 test('only admin UI exposes publication; score save never dispatches automatically',()=>{
  const html=fs.readFileSync(path.resolve(__dirname,'../admin.html'),'utf8');const js=fs.readFileSync(path.resolve(__dirname,'../assets/js/admin.js'),'utf8');
  assert.match(html,/data-admin-only data-remote-only[\s\S]*?id="publishSnapshot"/);
- const save=js.slice(js.indexOf('async function saveScore('),js.indexOf('async function verifyScoreOutcome('));assert(!save.includes('publication('));assert.match(save,/pendingScoreVerification/);assert.match(js,/if\(!isAdmin\(\)\|\|!remoteEnabled/);
+ const save=fs.readFileSync(path.resolve(__dirname,'../assets/js/result-review.js'),'utf8');assert(!save.includes('publication('));assert.match(save,/request\.blocked/);assert.match(js,/if\(!isAdmin\(\)\|\|!remoteEnabled/);
 });
 
 test('Production publication dispatches the verified published release tag, never main',async()=>{
