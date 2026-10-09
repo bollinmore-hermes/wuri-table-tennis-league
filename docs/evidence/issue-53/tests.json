@@ -2,11 +2,10 @@
   "ok": true,
   "command": "npm test",
   "exitCode": 0,
-  "tests": 224,
-  "pass": 224,
+  "tests": 229,
+  "pass": 229,
   "fail": 0,
   "skipped": 0,
-  "optionalIntegrationNotes": [
-    "ℹ skipped 0"
-  ]
+  "revision": "date grouping and concise inline result review",
+  "optionalIntegrationNotes": []
 }

@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "artifactBase": "http://127.0.0.1:8893/",
+  "browser": "Chrome/152.0.7977.84",
+  "nativeHostedData": true,
+  "noConfigOrApiFixturesForNativeView": true,
+  "dateGroups": 12,
+  "matches": 60,
+  "noPerCardDateOrIdleProse": true,
+  "noMeaninglessRadio": true,
+  "originalMatchIdsPreserved": true,
+  "validationOnlyAfterInvalidSubmit": true,
+  "handlerFaultFixture": "in-memory only; no remote writes",
+  "draftRetention": true,
+  "remoteScoreWrites": 0,
+  "matrix": [
+    {
+      "width": 360,
+      "overflow": false,
+      "scoreDigitsClear": true
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "scoreDigitsClear": true
+    },
+    {
+      "width": 768,
+      "overflow": false,
+      "scoreDigitsClear": true
+    },
+    {
+      "width": 1280,
+      "overflow": false,
+      "scoreDigitsClear": true
+    }
+  ],
+  "pageErrors": 0
+}
