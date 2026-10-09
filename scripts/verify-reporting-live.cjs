@@ -8,7 +8,7 @@ async function get(file){const response=await fetch(new URL(file+'?issue53='+sha
  const identity=[];
  for(const route of ['','admin/','referee/']){
    const source=await get(route+'assets/js/config.js'),match=source.match(/Object\.freeze\((\{[\s\S]*\})\)/);assert(match,'config wrapper '+route);
-   const cfg=JSON.parse(match[1]);assert.equal(cfg.environment,'test');assert.equal(cfg.projectRef,'vppjcjfbcoxzofcuxmzz');assert.equal(new URL(cfg.supabaseUrl).hostname,'vppjcjfbcoxzofcuxmzz.supabase.co');assert(!source.includes('zofiiibgnjuodgrzhkpn'));
+   const cfg=JSON.parse(match[1]);assert.equal(cfg.environment,'test');assert.equal(cfg.projectRef,'vppjcjfbcoxzofcuxmzz');assert.equal(cfg.sourceCommit,sha);if(route===''){assert.equal(cfg.mode,'snapshot');assert.equal(new URL(cfg.pointerUrl).hostname,'vppjcjfbcoxzofcuxmzz.supabase.co');assert.equal(cfg.supabasePublishableKey,undefined)}else{assert.equal(cfg.mode,'supabase');assert.equal(new URL(cfg.supabaseUrl).hostname,'vppjcjfbcoxzofcuxmzz.supabase.co')}assert(!source.includes('zofiiibgnjuodgrzhkpn'));
    identity.push({route:route||'/',environment:cfg.environment,projectRef:cfg.projectRef});
  }
  const admin=await get('admin/'),referee=await get('referee/');assert(admin.includes('賽果核對'));assert(admin.includes('回報連結管理'));assert(!admin.includes('id="scoreDialog"'));assert(referee.includes('裁判賽後比分回報'));assert(!referee.includes('result-review.js'));assert(!referee.includes('report-links.js'));
