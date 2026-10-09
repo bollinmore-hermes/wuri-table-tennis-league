@@ -158,8 +158,8 @@ test('admin UI contract uses numeric score selects, safe DOM rendering and role 
   const js=fs.readFileSync(path.join(root,'assets/js/admin.js'),'utf8');
   const css=fs.readFileSync(path.join(root,'assets/css/admin-v2.css'),'utf8');
   assert.match(html,/assets\/js\/admin-repository\.js/);
-  assert.match(html,/id="homeScore"[^>]*>[\s\S]*?<option>0<\/option>[\s\S]*?<option>3<\/option>/);
-  assert.match(html,/id="awayScore"[^>]*>[\s\S]*?<option>0<\/option>[\s\S]*?<option>3<\/option>/);
+  assert.match(fs.readFileSync(path.join(root,'assets/js/result-review.js'),'utf8'),/\['0','1','2','3'\]/);
+  assert.match(fs.readFileSync(path.join(root,'assets/js/result-review.js'),'utf8'),/\['0','1','2','3'\]/);
   assert.match(html,/data-admin-only/);
   assert.doesNotMatch(js,/\b(?:innerHTML|outerHTML|insertAdjacentHTML)\b/);
   assert.match(css,/appearance:none/);
@@ -214,20 +214,20 @@ test('score entry is the only score-writing surface and schedule remains read-on
     assert.notEqual(end,-1,`missing ${nextName}`);
     return js.slice(start,end);
   };
-  const schedule=functionBody('renderSchedule','resultActions');
-  const resultActionsBody=functionBody('resultActions','renderResults');
+  const schedule=functionBody('renderSchedule','renderResults');
+  const resultActionsBody=fs.readFileSync(path.join(root,'assets/js/result-review.js'),'utf8');
 
-  assert.match(html,/data-page="results"[^>]*>[\s\S]*?比分登錄/);
-  assert.match(html,/id="page-results"[\s\S]*?<h2>比分登錄<\/h2>/);
+  assert.match(html,/data-page="results"[^>]*>[\s\S]*?賽果核對/);
+  assert.match(html,/id="page-results"[\s\S]*?<h2>賽果核對<\/h2>/);
   assert.doesNotMatch(html,/賽果管理/);
-  assert.match(js,/results:'比分登錄'/);
+  assert.match(js,/results:'賽果核對'/);
   assert.doesNotMatch(schedule,/openScoreDialog/);
   assert.doesNotMatch(schedule,/>登錄<|['"]登錄['"]|['"]賽果['"]/);
   assert.ok(schedule.includes("text:result?`${result.home_score}–${result.away_score}`:'—'"));
   assert.match(schedule,/result\?\.locked/);
   assert.match(schedule,/已鎖定/);
-  assert.match(resultActionsBody,/openScoreDialog\(match\)/);
-  assert.match(html,/<span>備註（最多 500 字）<\/span><textarea id="scoreNote" rows="4" maxlength="500"><\/textarea>/);
+  assert.match(resultActionsBody,/api\.confirm/);assert.doesNotMatch(html,/id="scoreDialog"/);
+  assert.match(resultActionsBody,/maxlength:'500'/);assert.match(resultActionsBody,/備註（最多 500 字）/);
   assert.match(css,/button,input,select,textarea\{font:inherit\}/);
   assert.match(css,/\.field textarea\{[^}]*width:100%[^}]*min-height:110px[^}]*resize:vertical/);
   assert.match(css,/@media\(max-width:760px\)\{[\s\S]*?\.field textarea\{min-height:130px\}/);
