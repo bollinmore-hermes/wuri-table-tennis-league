@@ -8,6 +8,48 @@
   "matches": 60,
   "noPerCardDateOrIdleProse": true,
   "noMeaninglessRadio": true,
+  "statusOptions": [
+    [
+      "ALL",
+      "全部"
+    ],
+    [
+      "reported",
+      "核對"
+    ],
+    [
+      "missing",
+      "補登"
+    ],
+    [
+      "final",
+      "完成"
+    ]
+  ],
+  "statusMatrix": [
+    {
+      "value": "ALL",
+      "label": "全部",
+      "matches": 60
+    },
+    {
+      "value": "reported",
+      "label": "核對",
+      "matches": 0
+    },
+    {
+      "value": "missing",
+      "label": "補登",
+      "matches": 34
+    },
+    {
+      "value": "final",
+      "label": "完成",
+      "matches": 26
+    }
+  ],
+  "eachTeamListedOnce": true,
+  "saveButtonLabel": "儲存",
   "originalMatchIdsPreserved": true,
   "validationOnlyAfterInvalidSubmit": true,
   "handlerFaultFixture": "in-memory only; no remote writes",

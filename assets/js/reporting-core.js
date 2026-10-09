@@ -1,6 +1,8 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.WuriReporting=api})(globalThis,function(){
 'use strict';
 const valid=(a,b)=>a!==''&&b!==''&&a!=null&&b!=null&&((Number(a)===3&&Number(b)===0)||(Number(a)===0&&Number(b)===3)||(Number(a)===2&&Number(b)===1)||(Number(a)===1&&Number(b)===2));
+const reviewLabels=Object.freeze({reported:'核對',missing:'補登',final:'完成'});
+const reviewState=(result,hasReports)=>result?'final':hasReports?'reported':'missing';
 function draft(result,reports){if(result)return {home:String(result.home_score),away:String(result.away_score),source:'custom',note:result.note||'',version:result.version||0};const r=reports.length===1&&valid(reports[0].home_score,reports[0].away_score)?reports[0]:null;return {home:r?String(r.home_score):'',away:r?String(r.away_score):'',source:r?.id||'',note:'',version:0}}
 class RequestState{
  constructor(uuid=()=>crypto.randomUUID()){this.uuid=uuid;this.phase='idle';this.payload=null;this.requestId=null;this.receipt=null}
@@ -22,5 +24,5 @@ function adapter(client,seasonCode){
  lock:(code,version)=>call('lock_match_result',{p_match_code:code,p_expected_version:version,p_published:true},true)
  }
 }
-return {valid,draft,RequestState,adapter};
+return {valid,draft,reviewState,reviewLabels,RequestState,adapter};
 });

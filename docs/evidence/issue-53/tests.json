@@ -2,10 +2,12 @@
   "ok": true,
   "command": "npm test",
   "exitCode": 0,
-  "tests": 229,
-  "pass": 229,
+  "tests": 235,
+  "pass": 235,
   "fail": 0,
   "skipped": 0,
-  "revision": "date grouping and concise inline result review",
-  "optionalIntegrationNotes": []
+  "revision": "three review states, one team identity, unified save button",
+  "optionalIntegrationNotes": [
+    "OFFICIAL_XLSX 未設定；私人正式工作簿的選用整合測試未執行。"
+  ]
 }

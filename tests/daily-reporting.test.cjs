@@ -1,6 +1,9 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
 const R=require('../assets/js/reporting-core.js');
+test('review classification is exhaustive and completion is independent of lock/publication/report conflicts',()=>{
+ assert.equal(R.reviewState(null,false),'missing');assert.equal(R.reviewState(null,true),'reported');for(const result of [{locked:false,published:false},{locked:true,published:false},{locked:false,published:true}])for(const hasReports of [false,true])assert.equal(R.reviewState(result,hasReports),'final');assert.deepEqual(R.reviewLabels,{reported:'核對',missing:'補登',final:'完成'});
+});
 test('report input rejects blank and illegal scores',()=>{for(const pair of [['','3'],['3',''],['3','1'],['1','1']])assert.equal(R.valid(...pair),false);for(const pair of [['3','0'],['0','3'],['2','1'],['1','2']])assert.equal(R.valid(...pair),true)});
 test('single report is selected, conflicting reports are never auto-selected',()=>{assert.equal(R.draft(null,[{id:'r',home_score:3,away_score:0}]).source,'r');assert.equal(R.draft(null,[{id:'r',home_score:3,away_score:0},{id:'s',home_score:2,away_score:1}]).source,'');assert.equal(R.draft({home_score:1,away_score:2,version:5},[]).source,'custom')});
 test('uncertain writes are frozen until exact receipt reconciliation; repeat writes blocked',async()=>{let writes=0;const s=new R.RequestState(()=> 'request-1');const payload={match_code:'M1',home_score:3,away_score:0};await assert.rejects(s.send(payload,async()=>{writes++;throw Error('network')}));assert.equal(s.phase,'unknown');await assert.rejects(s.send(payload,async()=>writes++));assert.equal(writes,1);assert.throws(()=>s.resolve({status:'received',match_code:'M2',request_id:'request-1'}));s.resolve({status:'received',match_code:'M1',request_id:'request-1'});assert.equal(s.phase,'saved')});
