@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "projectRef": "vppjcjfbcoxzofcuxmzz",
+  "realAdminAuth": true,
+  "realAnonymousRPC": true,
+  "scopeAndDedupeVerified": true,
+  "privateTablesDeniedToAnonAndBrowserAdmin": true,
+  "originalPublicProjectionUnchanged": true,
+  "retainedSynthetic": {
+    "seasons": 1,
+    "groups": 2,
+    "teams": 4,
+    "matches": 4,
+    "reports": 3
+  },
+  "scorerJwt": "not tested; scorer database guards verified separately",
+  "fixtureCapabilityFile": ".private/issue53-fixture.json (gitignored, never publish)"
+}

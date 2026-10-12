@@ -17,9 +17,13 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
+    "qrcode": "1.5.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
+    "esbuild": "0.25.12",
+    "jsqr": "1.4.0",
+    "linkedom": "0.18.12",
     "supabase": "^2.117.0"
   }
 }

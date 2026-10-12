@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "isolatedMutations": true,
+  "productionSourcesUntouched": true,
+  "cases": [
+    {
+      "mutation": "block uncertain resubmission",
+      "detected": true,
+      "exitCode": 1
+    },
+    {
+      "mutation": "never auto-select conflicting reports",
+      "detected": true,
+      "exitCode": 1
+    },
+    {
+      "mutation": "match/request receipt binding",
+      "detected": true,
+      "exitCode": 1
+    },
+    {
+      "mutation": "manual score edits change adopted source",
+      "detected": true,
+      "exitCode": 1
+    }
+  ],
+  "cleanSuitePass": true
+}

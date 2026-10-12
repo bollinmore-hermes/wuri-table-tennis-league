@@ -1,0 +1,98 @@
+{
+  "ok": true,
+  "browser": "Chrome/152.0.7977.84",
+  "artifactBase": "http://127.0.0.1:8893/",
+  "fixtureSeasonOnlyInjected": true,
+  "realAdminAuthAndRemoteWrites": true,
+  "conflictChoiceAndDraftRetention": true,
+  "confirmedReadback": true,
+  "anonymousClosurePerMatch": true,
+  "qrDecodedFromLabelledCanvas": true,
+  "nativeClipboardVerified": true,
+  "physicalPrintingAndPhoneScan": "human acceptance pending",
+  "realScorerBrowser": "not tested; SQL role-context and UI handler gates verified separately",
+  "matrix": [
+    {
+      "screen": "referee-picker",
+      "width": 360,
+      "overflow": false,
+      "count": 3
+    },
+    {
+      "screen": "referee-picker",
+      "width": 390,
+      "overflow": false,
+      "count": 3
+    },
+    {
+      "screen": "referee-picker",
+      "width": 768,
+      "overflow": false,
+      "count": 3
+    },
+    {
+      "screen": "referee-picker",
+      "width": 1280,
+      "overflow": false,
+      "count": 3
+    },
+    {
+      "screen": "referee-score",
+      "width": 360,
+      "overflow": false,
+      "nativeArrowsSuppressed": true
+    },
+    {
+      "screen": "referee-score",
+      "width": 390,
+      "overflow": false,
+      "nativeArrowsSuppressed": true
+    },
+    {
+      "screen": "referee-score",
+      "width": 768,
+      "overflow": false,
+      "nativeArrowsSuppressed": true
+    },
+    {
+      "screen": "referee-score",
+      "width": 1280,
+      "overflow": false,
+      "nativeArrowsSuppressed": true
+    },
+    {
+      "screen": "review",
+      "width": 360,
+      "overflow": false,
+      "cards": 4,
+      "controls": true,
+      "popups": false
+    },
+    {
+      "screen": "review",
+      "width": 390,
+      "overflow": false,
+      "cards": 4,
+      "controls": true,
+      "popups": false
+    },
+    {
+      "screen": "review",
+      "width": 768,
+      "overflow": false,
+      "cards": 4,
+      "controls": true,
+      "popups": false
+    },
+    {
+      "screen": "review",
+      "width": 1280,
+      "overflow": false,
+      "cards": 4,
+      "controls": true,
+      "popups": false
+    }
+  ],
+  "pageErrors": 0,
+  "retainedSyntheticResults": 1
+}
