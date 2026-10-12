@@ -217,10 +217,10 @@ test('score entry is the only score-writing surface and schedule remains read-on
   const schedule=functionBody('renderSchedule','renderResults');
   const resultActionsBody=fs.readFileSync(path.join(root,'assets/js/result-review.js'),'utf8');
 
-  assert.match(html,/data-page="results"[^>]*>[\s\S]*?賽果核對/);
-  assert.match(html,/id="page-results"[\s\S]*?<h2>賽果核對<\/h2>/);
+  assert.match(html,/data-page="results"[^>]*>[\s\S]*?比分登錄/);
+  assert.match(html,/id="page-results"[\s\S]*?<h2>比分登錄<\/h2>/);
   assert.doesNotMatch(html,/賽果管理/);
-  assert.match(js,/results:'賽果核對'/);
+  assert.match(js,/results:'比分登錄'/);
   assert.doesNotMatch(schedule,/openScoreDialog/);
   assert.doesNotMatch(schedule,/>登錄<|['"]登錄['"]|['"]賽果['"]/);
   assert.ok(schedule.includes("text:result?`${result.home_score}–${result.away_score}`:'—'"));
