@@ -9,7 +9,7 @@ function filter({status='ALL',group='ALL',search='',kind='results'}={}){
  const start=source.indexOf('function filteredMatches('),end=source.indexOf('function renderSchedule(',start);assert(start>=0&&end>start);vm.runInNewContext(source.slice(start,end),box);return Array.from(box.filteredMatches(kind),m=>m.match_code);
 }
 test('review filter offers only All, Review, Manual Entry and Complete',()=>{
- const {document}=parseHTML(html);const options=[...document.querySelector('#resultStatus').options];assert.deepEqual(options.map(o=>[o.value,o.textContent]),[['ALL','全部'],['reported','核對'],['missing','補登'],['final','完成']]);
+ const {document}=parseHTML(html);const options=[...document.querySelector('#resultStatus').options];assert.deepEqual(options.map(o=>[o.value,o.textContent]),[['ALL','全部'],['reported','需核對'],['missing','待登錄'],['final','完成']]);
 });
 test('actual admin filter partitions missing, reported, and completed matches without overlap',()=>{
  assert.deepEqual(filter(),['M','R','F']);assert.deepEqual(filter({status:'missing'}),['M']);assert.deepEqual(filter({status:'reported'}),['R']);assert.deepEqual(filter({status:'final'}),['F']);
