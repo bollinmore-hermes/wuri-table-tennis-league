@@ -283,8 +283,8 @@ function nextFollowedMatch(name,matches,results,now=new Date()){
     .sort((a,b)=>a.date.localeCompare(b.date)||String(a.time||'').localeCompare(String(b.time||''))||String(a.id).localeCompare(String(b.id)))[0]||null;
 }
 // Follow-team UI.
-Object.assign(copy.zh,{followTitle:"我關注的球隊",followHint:"一次關注一隊，不需登入；只記在這個瀏覽器。",followAction:"關注此隊",followClear:"取消關注",followMissing:"此球隊目前不在參賽清單，請前往其他球隊介紹頁。",followStorage:"瀏覽器無法儲存選擇，本次仍可使用；重新開啟後可能不會保留。",followNoNext:"目前沒有後續賽程。",followNext:"下一場比賽",followTablePending:"桌號待公布",followTimePending:"時間待公布",followTeamPage:"查看球隊賽程",followRank:(group,rank)=>`${group} 組・第 ${rank} 名`});
-Object.assign(copy.en,{followTitle:"Team I follow",followHint:"Follow one team at a time, without signing in. Saved only in this browser.",followAction:"Follow this team",followClear:"Unfollow",followMissing:"This team is no longer listed. Open another team profile.",followStorage:"Browser storage is unavailable. You can still use this tab, but your choice may not persist.",followNoNext:"No upcoming matches scheduled.",followNext:"Next match",followTablePending:"Table to be announced",followTimePending:"Time to be announced",followTeamPage:"View team schedule",followRank:(group,rank)=>`Group ${group} · Rank ${rank}`});
+Object.assign(copy.zh,{followTitle:"我關注的球隊",followAction:"關注此隊",followClear:"取消關注",followMissing:"此球隊目前不在參賽清單，請前往其他球隊介紹頁。",followStorage:"瀏覽器無法儲存選擇，本次仍可使用；重新開啟後可能不會保留。",followNoNext:"目前沒有後續賽程。",followNext:"下一場比賽",followTablePending:"桌號待公布",followTimePending:"時間待公布",followTeamPage:"查看球隊賽程",followRank:(group,rank)=>`${group} 組・第 ${rank} 名`});
+Object.assign(copy.en,{followTitle:"Team I follow",followAction:"Follow this team",followClear:"Unfollow",followMissing:"This team is no longer listed. Open another team profile.",followStorage:"Browser storage is unavailable. You can still use this tab, but your choice may not persist.",followNoNext:"No upcoming matches scheduled.",followNext:"Next match",followTablePending:"Table to be announced",followTimePending:"Time to be announced",followTeamPage:"View team schedule",followRank:(group,rank)=>`Group ${group} · Rank ${rank}`});
 function renderFollowedTeam(){
   const card=el("followTeamCard"),summary=el("followTeamSummary");if(!card||!summary)return;
   const team=followTeamRecords.find(team=>team.team_code===followedTeamCode);
@@ -307,7 +307,7 @@ function updateFollowTeamControl(){
   const code=activeFollowButton.dataset.followTeamCode,exists=followTeamRecords.some(team=>team.team_code===code),following=exists&&followedTeamCode===code;
   activeFollowButton.textContent=t(following?"followClear":"followAction");
   activeFollowButton.setAttribute("aria-pressed",String(following));activeFollowButton.disabled=!exists;
-  activeFollowNotice.textContent=!exists?t("followMissing"):!followStorageAvailable?t("followStorage"):t("followHint");
+  activeFollowNotice.textContent=!exists?t("followMissing"):!followStorageAvailable?t("followStorage"):"";
 }
 function createFollowTeamControl(name){
   const code=teamCodesByName[name];
@@ -352,12 +352,10 @@ function updateThemeToggle(){const dark=window.WuriLeagueTheme?.current()==="dar
 el("themeToggle").addEventListener("click",()=>{window.WuriLeagueTheme?.set(window.WuriLeagueTheme.current()==="dark"?"light":"dark");updateThemeToggle()});
 window.addEventListener?.("wuri-theme-change",updateThemeToggle);
 function renderSnapshotNotice(){
-  const metadata=repository?.metadata;if(!metadata)return;
   let notice=document.getElementById("snapshotNotice");
+  if(!repository?.warning){notice?.remove?.();return}
   if(!notice){notice=dom("p",{className:"notice",attrs:{id:"snapshotNotice",role:"status"}});document.querySelector?.("main")?.prepend(notice)}
-  if(repository.warning){notice.textContent=locale==="zh"?"最新公開快照暫時無法讀取，顯示本站備援快照（可能較舊）。":"Latest public snapshot unavailable; showing the site's fallback snapshot, which may be older.";return}
-  const snapshotUpdated=locale==="zh"?"最後發布資料":"Last published";
-  notice.textContent=`${snapshotUpdated}：${new Intl.DateTimeFormat(locale==="zh"?"zh-TW":"en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Taipei"}).format(new Date(metadata.generatedAt))} · ${locale==="zh"?"公開資料以最新發布快照為準":"Public data reflects the latest published snapshot"}`;
+  notice.textContent=locale==="zh"?"最新公開快照暫時無法讀取，顯示本站備援快照（可能較舊）。":"Latest public snapshot unavailable; showing the site's fallback snapshot, which may be older.";
 }
 function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));updateThemeToggle();renderSnapshotNotice();renderVenues();renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));

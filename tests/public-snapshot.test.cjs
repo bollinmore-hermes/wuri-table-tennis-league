@@ -35,7 +35,8 @@ test('default browser fetch keeps the Window receiver',async()=>{
  const repository=new window.WuriLeagueRepository.SnapshotLeagueRepository({config:{...metadata,snapshotUrl:'public-league.json'}});
  assert.equal((await repository.getPublicLeague()).teams.length,12);
 });
-test('snapshot mode does not require a public Supabase SDK and reports timestamp in both locales',()=>{
+test('snapshot UI omits routine timestamp but retains fallback warnings in both locales',()=>{
  const source=fs.readFileSync(path.join(root,'assets/js/app.js'),'utf8');
- assert(source.includes('repository?.metadata'));assert.match(source,/snapshotUpdated/);assert.match(source,/Last published/);
+ assert.match(source,/repository\?\.warning/);assert.match(source,/備援快照/);assert.match(source,/fallback snapshot/);
+ assert.doesNotMatch(source,/snapshotUpdated|最後發布資料|Last published/);
 });

@@ -36,6 +36,8 @@ async function click(selector){const point=await evaluate(`(() => {const e=docum
   for(const width of [320,390,768,1280])for(const locale of ['zh','en'])for(const theme of ['light','dark']){
     await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});
     await evaluate(`applyLocale('${locale}');WuriLeagueTheme.set('${theme}');goToTeam(teams.B[0],'B')`);
+    assert.equal(await evaluate(`document.querySelector('#snapshotNotice')`),null);
+    assert.equal(await evaluate(`document.querySelector('#followTeamDetailNotice').textContent`),'');
     if(await evaluate(`followedTeamCode!=='B01'`))await click('#followTeamToggle');
     const detail=await evaluate(`(()=>{const b=document.querySelector('#followTeamToggle'),r=b.getBoundingClientRect(),card=b.closest('.team-detail').getBoundingClientRect();return {pressed:b.getAttribute('aria-pressed'),text:b.textContent,buttonFits:r.left>=card.left&&r.right<=card.right,labelFits:b.scrollWidth<=b.clientWidth,noOverflow:document.documentElement.scrollWidth<=innerWidth}})()`);
     assert.equal(detail.pressed,'true');assert.equal(detail.text,locale==='zh'?'取消關注':'Unfollow');assert(detail.buttonFits&&detail.labelFits&&detail.noOverflow,JSON.stringify(detail));
