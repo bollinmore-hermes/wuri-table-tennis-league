@@ -40,9 +40,11 @@ test('32: no future match and missing time/table remain safe',()=>{
   b.ctx.matches=[{id:'missing',date:'2026-10-13',home:'One',away:'Two'}];
   assert.equal(b.run('nextFollowedMatch("One",matches,results,new Date("2026-10-13T07:30:00Z")).id'),'missing');
 });
-test('32: homepage provides optional labelled controls and live summary',()=>{
+test('32 feedback: home has summary only, initially hidden, with no selection controls',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-  assert.match(html,/label[^>]+for="followTeamSelect"/);assert.match(html,/id="followTeamSelect"/);assert.match(html,/id="followTeamSummary"[^>]+aria-live="polite"/);
+  assert.doesNotMatch(html,/followTeamSelect|clearFollowTeam/);
+  assert.match(html,/id="followTeamCard"[^>]+hidden/);
+  assert.match(html,/id="followTeamSummary"[^>]+aria-live="polite"/);
 });
 
 class TestNode{
@@ -67,15 +69,20 @@ test('32: UI keeps rank independent of standings sort, changes locale and opens 
   b.run('applyLocale("en")');assert.match(b.text(),/Group A · Rank/);assert.match(b.text(),/Table to be announced/);
   const identity=b.ids.get('followTeamSummary').children[0].children[0];identity.children.at(-1).listeners.click();assert.equal(b.run('activeTeamDetail.name'),'快樂Da桌球');
 });
-test('32: stale selection, no future games, blocked data and clear focus are safe',()=>{
-  const stale=uiLoad('removed');assert.match(stale.text(),/原關注球隊/);assert.equal(stale.data.get('wuriLeagueFollow:2026-autumn-second-half'),'removed');
+test('32 feedback: no follow or obsolete team hides home without erasing saved choice',()=>{
+  for(const stored of [null,'removed']){const b=uiLoad(stored);assert.equal(b.ids.get('followTeamCard').hidden,true);assert.equal(b.text(),'');if(stored)assert.equal(b.data.get('wuriLeagueFollow:2026-autumn-second-half'),stored)}
+  const disabled=uiLoad('A01',true);assert.equal(disabled.ids.get('followTeamCard').hidden,true);assert.equal(disabled.data.get('wuriLeagueFollow:2026-autumn-second-half'),'A01');
   const b=uiLoad('A01');b.run('games=[];renderFollowedTeam()');assert.match(b.text(),/目前沒有後續賽程/);
-  b.ids.get('clearFollowTeam').listeners.click();assert.match(b.text(),/選擇一支球隊/);assert.equal(b.data.size,1);assert.equal(b.ids.get('followTeamSelect').focused,true);
-  const disabled=uiLoad('A01',true);assert.match(disabled.text(),/聯賽資料尚未載入/);assert.equal(disabled.ids.get('followTeamSelect').disabled,true);assert.equal(disabled.data.get('wuriLeagueFollow:2026-autumn-second-half'),'A01');
 });
-test('32: select options retain identity during unchanged refresh and invalid input is ignored',()=>{
-  const b=uiLoad('A01'),select=b.ids.get('followTeamSelect'),option=select.children[0];
-  b.run('renderHome()');assert.equal(select.children[0],option);
-  select.value='not-a-team';select.listeners.change({target:select});assert.equal(b.run('followedTeamCode'),'A01');
-  select.value='B01';select.listeners.change({target:select});assert.match(b.text(),/我們這一隊/);
+test('32 feedback: detail follow button replaces and cancels without rebuilding focused control',()=>{
+  const b=uiLoad();b.run('goToTeam(teams.A[0],"A")');
+  const button=b.run('activeFollowButton');assert.equal(button.textContent,'關注此隊');assert.equal(button.attributes['aria-pressed'],'false');
+  button.focus();button.listeners.click();assert.equal(b.run('activeFollowButton'),button);assert.equal(button.focused,true);assert.equal(button.textContent,'取消關注');assert.equal(button.attributes['aria-pressed'],'true');assert.equal(b.ids.get('followTeamCard').hidden,false);
+  b.run('goToTeam(teams.B[0],"B")');const other=b.run('activeFollowButton');assert.equal(other.textContent,'關注此隊');other.listeners.click();assert.equal(b.run('followedTeamCode'),'B01');assert.match(b.text(),/我們這一隊/);
+  other.listeners.click();assert.equal(b.run('followedTeamCode'),null);assert.equal(other.textContent,'關注此隊');assert.equal(b.ids.get('followTeamCard').hidden,true);assert.equal(b.data.has('wuriLeagueFollow:2026-autumn-second-half'),false);
+});
+test('32 feedback: detail control localizes, warns when storage blocked and rejects removed teams',()=>{
+  const b=uiLoad('A01');b.run('goToTeam(teams.A[0],"A");applyLocale("en")');assert.equal(b.run('activeFollowButton.textContent'),'Unfollow');
+  b.run('applyLocale("zh");localStorage.setItem=()=>{throw Error("blocked")};localStorage.removeItem=()=>{throw Error("blocked")}');b.run('activeFollowButton').listeners.click();assert.match(b.run('activeFollowNotice.textContent'),/無法儲存/);assert.equal(b.run('followedTeamCode'),null);
+  b.run('followTeamRecords=[]');b.run('activeFollowButton').listeners.click();assert.equal(b.run('activeFollowButton.disabled'),true);assert.equal(b.run('followedTeamCode'),null);
 });

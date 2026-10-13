@@ -283,23 +283,14 @@ function nextFollowedMatch(name,matches,results,now=new Date()){
     .sort((a,b)=>a.date.localeCompare(b.date)||String(a.time||'').localeCompare(String(b.time||''))||String(a.id).localeCompare(String(b.id)))[0]||null;
 }
 // Follow-team UI.
-Object.assign(copy.zh,{followTitle:"我關注的球隊",followHint:"自行選一隊，不需登入；只記在這個瀏覽器。",followChoose:"選擇關注球隊",followClear:"取消關注",followNone:"尚未選擇",followEmpty:"選擇一支球隊，快速查看下一場與組內排名。",followMissing:"原關注球隊目前不在參賽清單，請重新選擇或取消關注。",followStorage:"瀏覽器無法儲存選擇，本次仍可使用；重新開啟後可能不會保留。",followLoading:"聯賽資料尚未載入，請稍後再試。",followNoNext:"目前沒有後續賽程。",followNext:"下一場比賽",followTablePending:"桌號待公布",followTimePending:"時間待公布",followTeamPage:"查看球隊賽程",followRank:(group,rank)=>`${group} 組・第 ${rank} 名`});
-Object.assign(copy.en,{followTitle:"Team I follow",followHint:"Choose a team without signing in. Saved only in this browser.",followChoose:"Choose a team to follow",followClear:"Unfollow",followNone:"No team selected",followEmpty:"Choose a team for its next match and group ranking.",followMissing:"Your followed team is no longer listed. Choose another team or unfollow.",followStorage:"Browser storage is unavailable. You can still use this tab, but your choice may not persist.",followLoading:"League data is not available yet. Please try again later.",followNoNext:"No upcoming matches scheduled.",followNext:"Next match",followTablePending:"Table to be announced",followTimePending:"Time to be announced",followTeamPage:"View team schedule",followRank:(group,rank)=>`Group ${group} · Rank ${rank}`});
+Object.assign(copy.zh,{followTitle:"我關注的球隊",followHint:"一次關注一隊，不需登入；只記在這個瀏覽器。",followAction:"關注此隊",followClear:"取消關注",followMissing:"此球隊目前不在參賽清單，請前往其他球隊介紹頁。",followStorage:"瀏覽器無法儲存選擇，本次仍可使用；重新開啟後可能不會保留。",followNoNext:"目前沒有後續賽程。",followNext:"下一場比賽",followTablePending:"桌號待公布",followTimePending:"時間待公布",followTeamPage:"查看球隊賽程",followRank:(group,rank)=>`${group} 組・第 ${rank} 名`});
+Object.assign(copy.en,{followTitle:"Team I follow",followHint:"Follow one team at a time, without signing in. Saved only in this browser.",followAction:"Follow this team",followClear:"Unfollow",followMissing:"This team is no longer listed. Open another team profile.",followStorage:"Browser storage is unavailable. You can still use this tab, but your choice may not persist.",followNoNext:"No upcoming matches scheduled.",followNext:"Next match",followTablePending:"Table to be announced",followTimePending:"Time to be announced",followTeamPage:"View team schedule",followRank:(group,rank)=>`Group ${group} · Rank ${rank}`});
 function renderFollowedTeam(){
-  const select=el("followTeamSelect");if(!select)return;
-  const records=[...followTeamRecords].sort((a,b)=>a.group.localeCompare(b.group)||a.display_order-b.display_order);
-  const signature=JSON.stringify([locale,records.map(team=>[team.team_code,team.name,team.group])]);
-  if(select.dataset.signature!==signature){
-    replace(select,dom("option",{text:t("followNone"),attrs:{value:""}}),["A","B"].map(group=>dom("optgroup",{attrs:{label:locale==="zh"?`${group} 組`:`Group ${group}`}},records.filter(team=>team.group===group).map(team=>dom("option",{text:team.name,attrs:{value:team.team_code}})))));
-    select.dataset.signature=signature;
-  }
-  const team=records.find(team=>team.team_code===followedTeamCode);
-  select.value=team?team.team_code:"";select.disabled=!followDatasetLoaded||!records.length;
-  el("clearFollowTeam").disabled=!followedTeamCode;
+  const card=el("followTeamCard"),summary=el("followTeamSummary");if(!card||!summary)return;
+  const team=followTeamRecords.find(team=>team.team_code===followedTeamCode);
+  card.hidden=!followDatasetLoaded||!team;
   el("followStorageNotice").textContent=followStorageAvailable?"":t("followStorage");
-  const summary=el("followTeamSummary");
-  if(!followDatasetLoaded){replace(summary,dom("p",{className:"follow-empty",text:t("followLoading")}));return}
-  if(!team){replace(summary,dom("p",{className:"follow-empty",text:t(followedTeamCode?"followMissing":"followEmpty")}));return}
+  if(card.hidden){replace(summary);return}
   const rows=standings(team.group,{key:"pts",dir:"desc"}),rank=rows.findIndex(row=>row.name===team.name)+1;
   const link=dom("button",{className:"btn btn-ghost",text:t("followTeamPage"),attrs:{type:"button"}});
   link.addEventListener("click",()=>goToTeam(team.name,team.group));
@@ -310,9 +301,26 @@ function renderFollowedTeam(){
   else match.append(dom("p",{className:"follow-note",text:t("followNoNext")}));
   replace(summary,dom("div",{className:"follow-summary"},identity,match));
 }
-el("followTeamSelect")?.addEventListener("change",event=>{const code=event.target.value;if(code&&!followTeamRecords.some(team=>team.team_code===code))return;saveFollowedTeam(code);renderFollowedTeam()});
-el("clearFollowTeam")?.addEventListener("click",()=>{saveFollowedTeam(null);renderFollowedTeam();el("followTeamSelect").focus({preventScroll:true})});
-window.addEventListener?.("storage",event=>{if(event.key!==followStorageKey&&event.key!==null)return;try{followedTeamCode=localStorage.getItem(followStorageKey)||null}catch{followStorageAvailable=false}renderFollowedTeam()});
+let activeFollowButton=null,activeFollowNotice=null;
+function updateFollowTeamControl(){
+  if(!activeFollowButton)return;
+  const code=activeFollowButton.dataset.followTeamCode,exists=followTeamRecords.some(team=>team.team_code===code),following=exists&&followedTeamCode===code;
+  activeFollowButton.textContent=t(following?"followClear":"followAction");
+  activeFollowButton.setAttribute("aria-pressed",String(following));activeFollowButton.disabled=!exists;
+  activeFollowNotice.textContent=!exists?t("followMissing"):!followStorageAvailable?t("followStorage"):t("followHint");
+}
+function createFollowTeamControl(name){
+  const code=teamCodesByName[name];
+  const button=dom("button",{className:"btn btn-ghost follow-team-toggle",attrs:{id:"followTeamToggle",type:"button","aria-pressed":"false","aria-describedby":"followTeamDetailNotice"},dataset:{followTeamCode:code}});
+  const notice=dom("p",{className:"follow-note",attrs:{id:"followTeamDetailNotice",role:"status"}});
+  activeFollowButton=button;activeFollowNotice=notice;updateFollowTeamControl();
+  button.addEventListener("click",()=>{
+    if(!followTeamRecords.some(team=>team.team_code===code)){updateFollowTeamControl();return}
+    saveFollowedTeam(followedTeamCode===code?null:code);renderFollowedTeam();updateFollowTeamControl();
+  });
+  return dom("div",{className:"follow-team-action"},button,notice);
+}
+window.addEventListener?.("storage",event=>{if(event.key!==followStorageKey&&event.key!==null)return;try{followedTeamCode=localStorage.getItem(followStorageKey)||null;followStorageAvailable=true}catch{followStorageAvailable=false}renderFollowedTeam();updateFollowTeamControl()});
 function renderHome(){renderFollowedTeam();const officialCount=games.filter(isOfficialGame).length,completed=games.filter(game=>scores[game.id]&&validScore(scores[game.id].home,scores[game.id].away)).length,totalTeams=teams.A.length+teams.B.length;el("overviewSummary").textContent=t("overviewLine")(totalTeams,games.length,completed);replace(el("homeStats"),statCard(t("teamsCount"),totalTeams,t("twoGroups")),statCard(t("matchesCount"),games.length,`${dates.length} ${t("matchdays")}`),statCard(t("completedCount"),completed,`${t("officialBase")} ${officialCount} ${t("matchesUnit")}`));const today=new Date().toISOString().slice(0,10),next=dates.find(date=>date>=today)||dates[dates.length-1];el("nextDateText").textContent=next?fmtDate(next):t("noMatches");replace(el("nextGames"),next?games.filter(game=>game.date===next).map(homeGameHTML):[])}
 function renderTeams(){const visibleGroups=teamGroup==="ALL"?["A","B"]:[teamGroup],sections=visibleGroups.map(group=>{const grid=dom("div",{className:"team-grid"});teams[group].forEach(name=>{const stats=standings(group).find(row=>row.name===name),card=dom("article",{className:`card team-card group-${group.toLowerCase()}`,attrs:{tabindex:"0",role:"button"},dataset:{team:name,tgroup:group}},teamLogoHTML(name,"team-card-logo"),dom("div",{className:"team-meta"},dom("h3",{text:name}),dom("span",{},dom("b",{text:t("teamMeta")(group,stats.w,stats.l)}))));const open=()=>showTeam(name,group);card.addEventListener("click",open);card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();open()}});grid.append(card)});return dom("section",{className:`team-group-section group-${group.toLowerCase()}`,dataset:{teamSection:group}},dom("div",{className:"team-group-heading"},dom("span",{text:group}),dom("h2",{text:locale==="zh"?`${group} ${t("group")}`:`${t("group")} ${group}`})),grid)});replace(el("teamGrid"),sections)}
 function opponentStats(name,group){return teams[group].filter(opponent=>opponent!==name).map(opponent=>{const meetings=games.filter(game=>(game.home===name&&game.away===opponent)||(game.away===name&&game.home===opponent)).filter(game=>{const score=scores[game.id];return score&&validScore(score.home,score.away)}),wins=meetings.filter(game=>{const score=scores[game.id];return game.home===name?score.home>score.away:score.away>score.home}).length;return {opponent,played:meetings.length,wins,losses:meetings.length-wins,pct:meetings.length?Math.round(wins/meetings.length*100):null}}).sort((a,b)=>(b.played?b.wins/b.played:-1)-(a.played?a.wins/a.played:-1))}
@@ -336,7 +344,7 @@ function showTeam(name,group,shouldScroll=true){
   const schedule=Object.entries(grouped).map(([date,daily])=>dom("section",{className:`date-section group-${group.toLowerCase()}`},dom("h3",{className:"date-heading"},dom("time",{text:fmtDate(date),attrs:{datetime:date}}),dom("span",{text:`${daily.length} ${t("matchesUnit")}`})),dom("div",{className:"games"},daily.map(game=>gameCardHTML(game,{perspective:name})))));
   const close=dom("button",{className:"btn btn-ghost",text:t("close"),attrs:{type:"button"}});close.addEventListener("click",()=>{activeTeamDetail=null;replace(el("teamDetail"))});
   const back=dom("button",{className:"btn btn-ghost back-teams",text:u("backTeams"),attrs:{type:"button"},dataset:{backTeams:""}});back.addEventListener("click",()=>{switchPage("teams");el("teamFilters").querySelector?.('[data-team-group="ALL"]')?.focus({preventScroll:true})});
-  replace(el("teamDetail"),back,dom("div",{className:"card team-detail"},teamLogoHTML(name,"team-detail-logo"),dom("div",{},dom("div",{className:"eyebrow",text:`${group} GROUP TEAM`}),dom("h2",{text:name}),dom("p",{text:t("teamDetail")(stats.w,stats.l,stats.pts,list.length)}))),rosterSection(name),opponentSection,dom("div",{className:"section-head"},dom("div",{},dom("h2",{text:`${name}・${u("scheduleByDate")}`})),close),schedule);
+  replace(el("teamDetail"),back,dom("div",{className:"card team-detail"},teamLogoHTML(name,"team-detail-logo"),dom("div",{},dom("div",{className:"eyebrow",text:`${group} GROUP TEAM`}),dom("div",{className:"team-title-row"},dom("h2",{text:name}),createFollowTeamControl(name)),dom("p",{text:t("teamDetail")(stats.w,stats.l,stats.pts,list.length)}))),rosterSection(name),opponentSection,dom("div",{className:"section-head"},dom("div",{},dom("h2",{text:`${name}・${u("scheduleByDate")}`})),close),schedule);
   if(shouldScroll)scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventListener("click",()=>{teamGroup=button.dataset.teamGroup;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node===button));renderTeams()}));
