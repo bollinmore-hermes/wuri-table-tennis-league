@@ -62,7 +62,7 @@ test('failed Actions never confirms hash and invokes bounded retry accounting',a
  const r=await executePublication({action:'status',request_id:id},{environment:'test',githubToken:'placeholder',automatic:true,serviceClient:client,fetcher:async url=>new Response(JSON.stringify(url.includes('/runs?')?{workflow_runs:[{id:8,workflow_id:7,display_title:'Snapshot publication / '+id,status:'completed',conclusion:'failure'}]}:{id:7}))});assert.equal((await r.json()).status,'failed');assert.equal(failure,1);
 });
 
-test('public snapshot notice describes the snapshot, not a manual-only publication policy',()=>{const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'../assets/js/app.js'),'utf8');assert(source.includes('公開資料以最新發布快照為準'));assert(source.includes('Public data reflects the latest published snapshot'));assert(!source.includes('Results update after administrator publication'));});
+test('public snapshot UI omits routine publication copy without claiming manual-only updates',()=>{const source=require('node:fs').readFileSync(require('node:path').join(__dirname,'../assets/js/app.js'),'utf8');assert(!source.includes('公開資料以最新發布快照為準'));assert(!source.includes('Public data reflects the latest published snapshot'));assert(!source.includes('Results update after administrator publication'));assert(source.includes('fallback snapshot'));});
 
 function pendingCycleDeps({dirty=true,completion='published',completionHttp=200,enabled=true,newPending=null,retry=true,recheckError=false,busy=false,builtData=null,currentData=null,initialPublishedHash='1'.repeat(64)}={}){
  const id='12345678-1234-1234-1234-123456789abc',commit='a'.repeat(40),row={id,status:'running',source_commit:commit,source_tag:null,season_code:'2026-autumn-second-half'};

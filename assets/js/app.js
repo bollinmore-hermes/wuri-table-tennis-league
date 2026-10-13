@@ -2,9 +2,10 @@
 const config=window.LEAGUE_CONFIG||{mode:"static",seasonCode:"2026-autumn-second-half"};
 let repository=null,repositoryError=null;
 try{repository=window.WuriLeagueRepository.createConfiguredRepository(config,window.WuriLeagueOfficialData,window.supabase)}catch(error){repositoryError=error}
-let publicRoster=[],teamCodesByName={},teams={A:[],B:[]},officialStandings={A:{rows:{}},B:{rows:{}}},officialScores={},games=[],scores={},dates=[];
+let publicRoster=[],teamCodesByName={},followTeamRecords=[],followDatasetLoaded=false,teams={A:[],B:[]},officialStandings={A:{rows:{}},B:{rows:{}}},officialScores={},games=[],scores={},dates=[];
 const validScore=window.WuriLeagueRepository.scoreIsValid;
 function applyDataset(dataset){
+  followTeamRecords=dataset.teams.filter(team=>team.active&&["A","B"].includes(team.group));followDatasetLoaded=true;
   publicRoster=dataset.roster||[];teamCodesByName=Object.fromEntries(dataset.teams.map(team=>[team.name,team.team_code]));
   teams={A:dataset.teams.filter(team=>team.group==="A"&&team.active).sort((a,b)=>a.display_order-b.display_order).map(team=>team.name),B:dataset.teams.filter(team=>team.group==="B"&&team.active).sort((a,b)=>a.display_order-b.display_order).map(team=>team.name)};
   games=dataset.matches.map(match=>({id:match.match_code,group:match.group,date:match.date,time:match.time,home:match.home,away:match.away}));
@@ -267,7 +268,60 @@ function resultCutoffText(group){
 function renderResultCutoffs(){for(const group of ["A","B"])document.querySelectorAll(`[data-i18n="${group.toLowerCase()}Cutoff"]`).forEach(node=>{node.textContent=resultCutoffText(group)})}
 function renderStandings(){renderResultCutoffs();replace(el("standingsA"),tableHTML("A"));replace(el("standingsB"),tableHTML("B"));replace(el("homeA"),tableHTML("A",true));replace(el("homeB"),tableHTML("B",true));bindStandings();window.WuriStandingsImage?.bind({locale})}
 function statCard(label,value,detail){return dom("div",{className:"card stat-card"},dom("span",{text:label}),dom("strong",{text:value}),dom("small",{text:detail}))}
-function renderHome(){const officialCount=games.filter(isOfficialGame).length,completed=games.filter(game=>scores[game.id]&&validScore(scores[game.id].home,scores[game.id].away)).length,totalTeams=teams.A.length+teams.B.length;el("overviewSummary").textContent=t("overviewLine")(totalTeams,games.length,completed);replace(el("homeStats"),statCard(t("teamsCount"),totalTeams,t("twoGroups")),statCard(t("matchesCount"),games.length,`${dates.length} ${t("matchdays")}`),statCard(t("completedCount"),completed,`${t("officialBase")} ${officialCount} ${t("matchesUnit")}`));const today=new Date().toISOString().slice(0,10),next=dates.find(date=>date>=today)||dates[dates.length-1];el("nextDateText").textContent=next?fmtDate(next):t("noMatches");replace(el("nextGames"),next?games.filter(game=>game.date===next).map(homeGameHTML):[])}
+// Follow-team preference and pure summary helpers.
+const followStorageKey=`wuriLeagueFollow:${config.seasonCode||"2026-autumn-second-half"}`;
+let followedTeamCode=null,followStorageAvailable=true;
+try{followedTeamCode=localStorage.getItem(followStorageKey)||null}catch{followStorageAvailable=false}
+function saveFollowedTeam(code){
+  followedTeamCode=code||null;
+  try{if(followedTeamCode)localStorage.setItem(followStorageKey,followedTeamCode);else localStorage.removeItem(followStorageKey);followStorageAvailable=true}catch{followStorageAvailable=false}
+}
+function nextFollowedMatch(name,matches,results,now=new Date()){
+  const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now).map(part=>[part.type,part.value]));
+  const today=`${parts.year}-${parts.month}-${parts.day}`,time=`${parts.hour}:${parts.minute}`;
+  return matches.filter(game=>(game.home===name||game.away===name)&&!Object.prototype.hasOwnProperty.call(results,game.id)&&(game.date>today||(game.date===today&&(!game.time||game.time.slice(0,5)>=time))))
+    .sort((a,b)=>a.date.localeCompare(b.date)||String(a.time||'').localeCompare(String(b.time||''))||String(a.id).localeCompare(String(b.id)))[0]||null;
+}
+// Follow-team UI.
+Object.assign(copy.zh,{followTitle:"我關注的球隊",followAction:"關注此隊",followClear:"取消關注",followMissing:"此球隊目前不在參賽清單，請前往其他球隊介紹頁。",followStorage:"瀏覽器無法儲存選擇，本次仍可使用；重新開啟後可能不會保留。",followNoNext:"目前沒有後續賽程。",followNext:"下一場比賽",followTablePending:"桌號待公布",followTimePending:"時間待公布",followTeamPage:"查看球隊賽程",followRank:(group,rank)=>`${group} 組・第 ${rank} 名`});
+Object.assign(copy.en,{followTitle:"Team I follow",followAction:"Follow this team",followClear:"Unfollow",followMissing:"This team is no longer listed. Open another team profile.",followStorage:"Browser storage is unavailable. You can still use this tab, but your choice may not persist.",followNoNext:"No upcoming matches scheduled.",followNext:"Next match",followTablePending:"Table to be announced",followTimePending:"Time to be announced",followTeamPage:"View team schedule",followRank:(group,rank)=>`Group ${group} · Rank ${rank}`});
+function renderFollowedTeam(){
+  const card=el("followTeamCard"),summary=el("followTeamSummary");if(!card||!summary)return;
+  const team=followTeamRecords.find(team=>team.team_code===followedTeamCode);
+  card.hidden=!followDatasetLoaded||!team;
+  el("followStorageNotice").textContent=followStorageAvailable?"":t("followStorage");
+  if(card.hidden){replace(summary);return}
+  const rows=standings(team.group,{key:"pts",dir:"desc"}),rank=rows.findIndex(row=>row.name===team.name)+1;
+  const link=dom("button",{className:"btn btn-ghost",text:t("followTeamPage"),attrs:{type:"button"}});
+  link.addEventListener("click",()=>goToTeam(team.name,team.group));
+  const identity=dom("div",{},dom("h3",{},teamLogoHTML(team.name,"table-team-logo")," ",team.name),dom("p",{className:"follow-rank",text:t("followRank")(team.group,rank)}),link);
+  const next=nextFollowedMatch(team.name,games,officialScores);
+  const match=dom("div",{},dom("h3",{text:t("followNext")}));
+  if(next)match.append(dom("p",{},dom("time",{text:`${fmtDate(next.date)} · ${next.time?next.time.slice(0,5):t("followTimePending")}`,attrs:{datetime:next.date}})),dom("p",{text:`${team.name} vs ${next.home===team.name?next.away:next.home}`}),dom("p",{className:"follow-note",text:t("followTablePending")}));
+  else match.append(dom("p",{className:"follow-note",text:t("followNoNext")}));
+  replace(summary,dom("div",{className:"follow-summary"},identity,match));
+}
+let activeFollowButton=null,activeFollowNotice=null;
+function updateFollowTeamControl(){
+  if(!activeFollowButton)return;
+  const code=activeFollowButton.dataset.followTeamCode,exists=followTeamRecords.some(team=>team.team_code===code),following=exists&&followedTeamCode===code;
+  activeFollowButton.textContent=t(following?"followClear":"followAction");
+  activeFollowButton.setAttribute("aria-pressed",String(following));activeFollowButton.disabled=!exists;
+  activeFollowNotice.textContent=!exists?t("followMissing"):!followStorageAvailable?t("followStorage"):"";
+}
+function createFollowTeamControl(name){
+  const code=teamCodesByName[name];
+  const button=dom("button",{className:"btn btn-ghost follow-team-toggle",attrs:{id:"followTeamToggle",type:"button","aria-pressed":"false","aria-describedby":"followTeamDetailNotice"},dataset:{followTeamCode:code}});
+  const notice=dom("p",{className:"follow-note",attrs:{id:"followTeamDetailNotice",role:"status"}});
+  activeFollowButton=button;activeFollowNotice=notice;updateFollowTeamControl();
+  button.addEventListener("click",()=>{
+    if(!followTeamRecords.some(team=>team.team_code===code)){updateFollowTeamControl();return}
+    saveFollowedTeam(followedTeamCode===code?null:code);renderFollowedTeam();updateFollowTeamControl();
+  });
+  return dom("div",{className:"follow-team-action"},button,notice);
+}
+window.addEventListener?.("storage",event=>{if(event.key!==followStorageKey&&event.key!==null)return;try{followedTeamCode=localStorage.getItem(followStorageKey)||null;followStorageAvailable=true}catch{followStorageAvailable=false}renderFollowedTeam();updateFollowTeamControl()});
+function renderHome(){renderFollowedTeam();const officialCount=games.filter(isOfficialGame).length,completed=games.filter(game=>scores[game.id]&&validScore(scores[game.id].home,scores[game.id].away)).length,totalTeams=teams.A.length+teams.B.length;el("overviewSummary").textContent=t("overviewLine")(totalTeams,games.length,completed);replace(el("homeStats"),statCard(t("teamsCount"),totalTeams,t("twoGroups")),statCard(t("matchesCount"),games.length,`${dates.length} ${t("matchdays")}`),statCard(t("completedCount"),completed,`${t("officialBase")} ${officialCount} ${t("matchesUnit")}`));const today=new Date().toISOString().slice(0,10),next=dates.find(date=>date>=today)||dates[dates.length-1];el("nextDateText").textContent=next?fmtDate(next):t("noMatches");replace(el("nextGames"),next?games.filter(game=>game.date===next).map(homeGameHTML):[])}
 function renderTeams(){const visibleGroups=teamGroup==="ALL"?["A","B"]:[teamGroup],sections=visibleGroups.map(group=>{const grid=dom("div",{className:"team-grid"});teams[group].forEach(name=>{const stats=standings(group).find(row=>row.name===name),card=dom("article",{className:`card team-card group-${group.toLowerCase()}`,attrs:{tabindex:"0",role:"button"},dataset:{team:name,tgroup:group}},teamLogoHTML(name,"team-card-logo"),dom("div",{className:"team-meta"},dom("h3",{text:name}),dom("span",{},dom("b",{text:t("teamMeta")(group,stats.w,stats.l)}))));const open=()=>showTeam(name,group);card.addEventListener("click",open);card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();open()}});grid.append(card)});return dom("section",{className:`team-group-section group-${group.toLowerCase()}`,dataset:{teamSection:group}},dom("div",{className:"team-group-heading"},dom("span",{text:group}),dom("h2",{text:locale==="zh"?`${group} ${t("group")}`:`${t("group")} ${group}`})),grid)});replace(el("teamGrid"),sections)}
 function opponentStats(name,group){return teams[group].filter(opponent=>opponent!==name).map(opponent=>{const meetings=games.filter(game=>(game.home===name&&game.away===opponent)||(game.away===name&&game.home===opponent)).filter(game=>{const score=scores[game.id];return score&&validScore(score.home,score.away)}),wins=meetings.filter(game=>{const score=scores[game.id];return game.home===name?score.home>score.away:score.away>score.home}).length;return {opponent,played:meetings.length,wins,losses:meetings.length-wins,pct:meetings.length?Math.round(wins/meetings.length*100):null}}).sort((a,b)=>(b.played?b.wins/b.played:-1)-(a.played?a.wins/a.played:-1))}
 function goToTeam(name,group){switchPage("teams");teamGroup=group;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node.dataset.teamGroup===group));renderTeams();showTeam(name,group)}
@@ -290,7 +344,7 @@ function showTeam(name,group,shouldScroll=true){
   const schedule=Object.entries(grouped).map(([date,daily])=>dom("section",{className:`date-section group-${group.toLowerCase()}`},dom("h3",{className:"date-heading"},dom("time",{text:fmtDate(date),attrs:{datetime:date}}),dom("span",{text:`${daily.length} ${t("matchesUnit")}`})),dom("div",{className:"games"},daily.map(game=>gameCardHTML(game,{perspective:name})))));
   const close=dom("button",{className:"btn btn-ghost",text:t("close"),attrs:{type:"button"}});close.addEventListener("click",()=>{activeTeamDetail=null;replace(el("teamDetail"))});
   const back=dom("button",{className:"btn btn-ghost back-teams",text:u("backTeams"),attrs:{type:"button"},dataset:{backTeams:""}});back.addEventListener("click",()=>{switchPage("teams");el("teamFilters").querySelector?.('[data-team-group="ALL"]')?.focus({preventScroll:true})});
-  replace(el("teamDetail"),back,dom("div",{className:"card team-detail"},teamLogoHTML(name,"team-detail-logo"),dom("div",{},dom("div",{className:"eyebrow",text:`${group} GROUP TEAM`}),dom("h2",{text:name}),dom("p",{text:t("teamDetail")(stats.w,stats.l,stats.pts,list.length)}))),rosterSection(name),opponentSection,dom("div",{className:"section-head"},dom("div",{},dom("h2",{text:`${name}・${u("scheduleByDate")}`})),close),schedule);
+  replace(el("teamDetail"),back,dom("div",{className:"card team-detail"},teamLogoHTML(name,"team-detail-logo"),dom("div",{},dom("div",{className:"eyebrow",text:`${group} GROUP TEAM`}),dom("div",{className:"team-title-row"},dom("h2",{text:name}),createFollowTeamControl(name)),dom("p",{text:t("teamDetail")(stats.w,stats.l,stats.pts,list.length)}))),rosterSection(name),opponentSection,dom("div",{className:"section-head"},dom("div",{},dom("h2",{text:`${name}・${u("scheduleByDate")}`})),close),schedule);
   if(shouldScroll)scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll("[data-team-group]").forEach(button=>button.addEventListener("click",()=>{teamGroup=button.dataset.teamGroup;document.querySelectorAll("[data-team-group]").forEach(node=>node.classList.toggle("active",node===button));renderTeams()}));
@@ -298,12 +352,10 @@ function updateThemeToggle(){const dark=window.WuriLeagueTheme?.current()==="dar
 el("themeToggle").addEventListener("click",()=>{window.WuriLeagueTheme?.set(window.WuriLeagueTheme.current()==="dark"?"light":"dark");updateThemeToggle()});
 window.addEventListener?.("wuri-theme-change",updateThemeToggle);
 function renderSnapshotNotice(){
-  const metadata=repository?.metadata;if(!metadata)return;
   let notice=document.getElementById("snapshotNotice");
+  if(!repository?.warning){notice?.remove?.();return}
   if(!notice){notice=dom("p",{className:"notice",attrs:{id:"snapshotNotice",role:"status"}});document.querySelector?.("main")?.prepend(notice)}
-  if(repository.warning){notice.textContent=locale==="zh"?"最新公開快照暫時無法讀取，顯示本站備援快照（可能較舊）。":"Latest public snapshot unavailable; showing the site's fallback snapshot, which may be older.";return}
-  const snapshotUpdated=locale==="zh"?"最後發布資料":"Last published";
-  notice.textContent=`${snapshotUpdated}：${new Intl.DateTimeFormat(locale==="zh"?"zh-TW":"en-GB",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Taipei"}).format(new Date(metadata.generatedAt))} · ${locale==="zh"?"公開資料以最新發布快照為準":"Public data reflects the latest published snapshot"}`;
+  notice.textContent=locale==="zh"?"最新公開快照暫時無法讀取，顯示本站備援快照（可能較舊）。":"Latest public snapshot unavailable; showing the site's fallback snapshot, which may be older.";
 }
 function applyLocale(next){locale=next==="en"?"en":"zh";try{localStorage.setItem("wuriLeagueLocale",locale)}catch{}document.documentElement.lang=locale==="zh"?"zh-Hant":"en";document.title=locale==="zh"?"烏日桌球聯賽｜2026":"Wuri Table Tennis League | 2026";document.querySelectorAll("[data-i18n]").forEach(node=>{node.textContent=t(node.dataset.i18n)});document.querySelectorAll("[data-i18n-lines]").forEach(node=>setLineText(node,t(node.dataset.i18nLines)));document.querySelectorAll("[data-locale]").forEach(button=>button.classList.toggle("active",button.dataset.locale===locale));updateThemeToggle();renderSnapshotNotice();renderVenues();renderSchedule();renderStandings();renderHome();renderTeams();if(activeTeamDetail)showTeam(activeTeamDetail.name,activeTeamDetail.group,false)}
 document.querySelectorAll("[data-locale]").forEach(button=>button.addEventListener("click",()=>applyLocale(button.dataset.locale)));
