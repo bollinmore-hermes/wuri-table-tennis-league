@@ -8,7 +8,11 @@ test('Production build explicitly enables Storage; legacy default, invalid-mode 
  const env={...process.env,NODE_ENV:'test',SNAPSHOT_TEST_FIXTURE:'official',SNAPSHOT_SOURCE_TAG:'v0.8.2',SUPABASE_PRODUCTION_URL:'https://zofiiibgnjuodgrzhkpn.supabase.co',SUPABASE_PRODUCTION_PUBLISHABLE_KEY:'production-publishable-fixture-only-000001'};
  const run=delivery=>execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','production'],{cwd:fixture,env:{...env,PUBLIC_SNAPSHOT_DELIVERY:delivery},stdio:'pipe'});
  const read=()=>fs.readFileSync(path.join(fixture,'production-pages-dist/assets/js/config.js'),'utf8');
- run('storage');assert.match(read(),/"pointerUrl": "https:\/\/zofiiibgnjuodgrzhkpn.supabase.co\/functions\/v1\/public-snapshot-pointer"/);assert.doesNotMatch(read(),/vppjcjfbcoxzofcuxmzz/);
+ run('storage');assert.match(read(),/"analyticsMeasurementId": "G-TQEJNT378W"/);
+ for(const route of ['admin','referee']){assert.doesNotMatch(fs.readFileSync(path.join(fixture,`production-pages-dist/${route}/assets/js/config.js`),'utf8'),/analyticsMeasurementId|G-TQEJNT378W/);assert.equal(fs.existsSync(path.join(fixture,`production-pages-dist/${route}/assets/js/public-analytics.js`)),false)}
+ execFileSync(process.execPath,['scripts/build-supabase-pages.cjs','test'],{cwd:fixture,env:{...env,SUPABASE_TEST_URL:'https://vppjcjfbcoxzofcuxmzz.supabase.co',SUPABASE_TEST_PUBLISHABLE_KEY:'test-publishable-fixture-only-000001'},stdio:'pipe'});
+ assert.doesNotMatch(fs.readFileSync(path.join(fixture,'test-pages-dist/assets/js/config.js'),'utf8'),/analyticsMeasurementId|G-TQEJNT378W/);
+ assert.match(read(),/"pointerUrl": "https:\/\/zofiiibgnjuodgrzhkpn.supabase.co\/functions\/v1\/public-snapshot-pointer"/);assert.doesNotMatch(read(),/vppjcjfbcoxzofcuxmzz/);
  run('');assert.doesNotMatch(read(),/pointerUrl/);assert.throws(()=>run('typo'),/Invalid public snapshot delivery/);
  const workflow=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');assert.match(workflow,/PUBLIC_SNAPSHOT_DELIVERY:\s*storage/);assert.match(workflow,/tags:\s*\n\s*- 'v\*'/);assert.doesNotMatch(workflow,/branches:\s*\n\s*- main/);
  }finally{fs.rmSync(fixture,{recursive:true,force:true})}

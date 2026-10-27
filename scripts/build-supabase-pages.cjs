@@ -63,7 +63,7 @@ const copy=(relative,destination)=>{
 fs.rmSync(out,{recursive:true,force:true});
 fs.mkdirSync(adminOut,{recursive:true});
 
-for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js','assets/js/standings-image.js'])copy(file,out);
+for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js','assets/js/public-analytics.js','assets/js/standings-image.js'])copy(file,out);
 copy('assets/team-logos',out);
 let publicHtml=fs.readFileSync(path.join(out,'index.html'),'utf8');
 publicHtml=publicHtml.replace('<script src="assets/js/official-data.js"></script>','<script src="assets/js/config.js"></script>');
@@ -71,6 +71,7 @@ fs.unlinkSync(path.join(out,'assets/js/official-data.js'));
 fs.writeFileSync(path.join(out,'index.html'),publicHtml);
 fs.mkdirSync(path.join(out,'assets/js'),{recursive:true});
 const publicConfig={mode:'snapshot',environment,projectRef:target.projectRef,seasonCode:config.seasonCode,sourceCommit,sourceTag,snapshotUrl:'public-league.json'};
+if(environment==='production')publicConfig.analyticsMeasurementId='G-TQEJNT378W';
 const delivery=environment==='test'?'storage':(process.env.PUBLIC_SNAPSHOT_DELIVERY||'actions');
 if(!['actions','storage'].includes(delivery))throw new Error('Invalid public snapshot delivery');
 if(delivery==='storage')publicConfig.pointerUrl=`${url}/functions/v1/public-snapshot-pointer`;
