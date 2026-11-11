@@ -20,6 +20,7 @@ if(configured&&publishableKey.length<20)throw new Error('SUPABASE_TEST_PUBLISHAB
 if(/^sb_secret_/i.test(publishableKey)||jwtRole(publishableKey)==='service_role'||/service[_-]?role|postgres(?:ql)?:|jwt[_-]?secret|database[_-]?password/i.test(`${url}\n${publishableKey}`))throw new Error('Privileged secret material is forbidden in browser builds');
 
 const config={mode:configured?'supabase':'disabled',supabaseUrl:configured?url:'',supabasePublishableKey:configured?publishableKey:'',seasonCode:'2026-autumn-second-half'};
+config.environment='test';config.projectRef=configured?new URL(url).hostname.split('.')[0]:null;if(configured)config.archivesEndpoint=`${url}/functions/v1/season-archives`;
 const configSource=`window.LEAGUE_CONFIG = Object.freeze(${JSON.stringify(config,null,2)});\n`;
 const copy=(relative,destination)=>{const source=path.join(root,relative),target=path.join(destination,relative);fs.mkdirSync(path.dirname(target),{recursive:true});fs.cpSync(source,target,{recursive:true})};
 fs.rmSync(out,{recursive:true,force:true});
@@ -27,6 +28,8 @@ for(const dir of [publicOut,adminOut])fs.mkdirSync(dir,{recursive:true});
 
 for(const file of ['index.html','event-rules.html','assets/css/event-rules.css','assets/js/event-rules-data.js','assets/js/event-rules.js','assets/js/theme.js','assets/js/official-data.js','assets/js/league-repository.js','assets/js/app.js','assets/js/public-analytics.js','assets/js/standings-image.js','assets/vendor/supabase.js'])copy(file,publicOut);
 copy('assets/team-logos',publicOut);
+require('./archive-build.cjs').publicArchive(root,publicOut);
+require('./archive-build.cjs').adminArchive(root,adminOut);
 let publicHtml=fs.readFileSync(path.join(publicOut,'index.html'),'utf8');
 publicHtml=publicHtml.replace('<script src="assets/js/official-data.js"></script>','<script src="assets/js/config.js"></script>\n<script src="assets/vendor/supabase.js"></script>\n<script src="assets/js/official-data.js"></script>');
 fs.writeFileSync(path.join(publicOut,'index.html'),publicHtml);

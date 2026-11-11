@@ -37,3 +37,7 @@ verify_jwt = false
 # Anonymous read-only pointer; no public mutation or privileged RPC access.
 [functions.public-snapshot-pointer]
 verify_jwt = false
+
+# Public GET and authenticated active-admin POST; caller JWT verified in function.
+[functions.season-archives]
+verify_jwt = false
