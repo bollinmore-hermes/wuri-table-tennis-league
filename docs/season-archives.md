@@ -2,7 +2,7 @@
 
 ## Scope and boundaries
 
-Public entry: `archives.html`; detail permalink: `archives.html?season=<code>`.
+Public entry: the Standings page (`index.html#standings`) → 歷屆戰績 → `archives.html`. The homepage has no archive entry; the archive header returns to `index.html#standings`. Existing archive URLs remain valid; detail permalink: `archives.html?season=<code>`.
 Management entry: `admin/season-archive-admin.html` in hosted builds; requires the existing active-admin session from the management site. Scorers, inactive/unprofiled users and anonymous clients cannot reserve archives. The public pages never initialize Analytics or Auth.
 
 Only real published archives are listed. No past seasons, winners, rules or prizes are invented. Current and historical seasons remain separate. There is no new automatic season rollover, playoff-bracket system, unlock or history-overwrite feature.
