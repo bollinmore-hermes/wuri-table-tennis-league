@@ -30,6 +30,7 @@
     const d=node.dataset;
     if(sections.includes(d.page||d.jump))send('public_navigation',{destination:d.page||d.jump});
     else if(['overviewDialog','venueDialog'].includes(d.infoDialog)||node.id==='homeVenueButton')send('public_info_open',{info_type:d.infoDialog==='overviewDialog'?'overview':'venue'});
+    else if(node.id==='archiveStandingsEntry')send('public_archive_open');
     else if(node.classList.contains('venue-map'))send('public_map_open');
     else if(['eventRulesEntry','rankingRulesLink'].includes(node.id))send('public_rules_open');
     else if(['zh','en'].includes(d.locale))send('public_language_change',{language:d.locale});

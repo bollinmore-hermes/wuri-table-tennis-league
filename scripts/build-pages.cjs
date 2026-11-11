@@ -30,6 +30,7 @@ for(const directory of publicDirectories){
   if(!fs.statSync(source).isDirectory())throw new Error(`Missing public source directory: ${directory}`);
   fs.cpSync(source,path.join(out,directory),{recursive:true});
 }
+require('./archive-build.cjs').publicArchive(root,out,{configured:false});
 fs.writeFileSync(path.join(out,'.nojekyll'),'');
 
 const walk=directory=>fs.readdirSync(directory,{withFileTypes:true}).flatMap(entry=>{
